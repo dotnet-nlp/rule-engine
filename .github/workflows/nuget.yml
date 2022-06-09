@@ -1,9 +1,8 @@
-name: .NET
+name: Release NuGet packages on tag pushed
 on:
   push:
     tags:
     - "v[0-9]+.[0-9]+.[0-9]+"
-
 jobs:
   build:
     runs-on: ubuntu-latest
