@@ -1,0 +1,67 @@
+﻿using System.Collections.Generic;
+using RuleEngine.Core.Evaluation.Cache;
+using RuleEngine.Core.Evaluation.Rule.Input;
+using RuleEngine.Core.Evaluation.Rule.Projection.Arguments;
+using RuleEngine.Core.Evaluation.Rule.Projection.Parameters;
+using RuleEngine.Core.Evaluation.Rule.Result;
+
+namespace RuleEngine.Core.Evaluation.Rule.Cache;
+
+internal sealed class CachingRuleMatcher : IRuleMatcher
+{
+    private readonly int _id;
+    private readonly IRuleMatcher _source;
+
+    public RuleParameters Parameters => _source.Parameters;
+    public RuleMatchResultDescription ResultDescription => _source.ResultDescription;
+
+    public CachingRuleMatcher(int id, IRuleMatcher source)
+    {
+        _id = id;
+        _source = source;
+    }
+
+    public RuleMatchResultCollection Match(RuleInput input, int firstSymbolIndex, IRuleSpaceCache cache)
+    {
+        var matchResult = cache.GetResult(_id, input.Sequence, firstSymbolIndex, null);
+
+        if (matchResult is not null)
+        {
+            return matchResult;
+        }
+
+        // todo [code quality] separate cache from IRuleMatcher
+        matchResult = _source.Match(input, firstSymbolIndex, cache);
+
+        cache.SetResult(_id, input.Sequence, firstSymbolIndex, null, matchResult);
+
+        return matchResult;
+    }
+
+    public RuleMatchResultCollection MatchAndProject(
+        RuleInput input,
+        int firstSymbolIndex,
+        RuleArguments ruleArguments,
+        IRuleSpaceCache cache
+    )
+    {
+        var matchResult = cache.GetResult(_id, input.Sequence, firstSymbolIndex, ruleArguments.Values);
+
+        if (matchResult is not null)
+        {
+            return matchResult;
+        }
+
+        // todo [code quality] separate cache from IRuleMatcher
+        matchResult = _source.MatchAndProject(input, firstSymbolIndex, ruleArguments, cache);
+
+        cache.SetResult(_id, input.Sequence, firstSymbolIndex, ruleArguments.Values, matchResult);
+
+        return matchResult;
+    }
+
+    public IEnumerable<string> GetUsedWords()
+    {
+        return _source.GetUsedWords();
+    }
+}
