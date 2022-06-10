@@ -13,6 +13,8 @@ public sealed class GrammarBasedPegPatternTokenizer : IPatternTokenizer
 {
     public IPatternToken Tokenize(string pattern, string? @namespace, bool caseSensitive)
     {
+        pattern = pattern.ReplaceLineEndings();
+
         if (!caseSensitive)
         {
             throw new PegPatternTokenizationException(

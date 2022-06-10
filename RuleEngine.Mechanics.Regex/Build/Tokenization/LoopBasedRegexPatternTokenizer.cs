@@ -26,6 +26,8 @@ public sealed class LoopBasedRegexPatternTokenizer : IPatternTokenizer
 
     public IPatternToken Tokenize(string pattern, string? @namespace, bool caseSensitive)
     {
+        pattern = pattern.ReplaceLineEndings();
+
         var usedMarkers = new HashSet<string>();
 
         var groups = new Stack<List<List<IBranchItemToken>>>();

@@ -26,6 +26,8 @@ public class LoopBasedPegPatternTokenizer : IPatternTokenizer
 
     public IPatternToken Tokenize(string pattern, string? @namespace, bool caseSensitive)
     {
+        pattern = pattern.ReplaceLineEndings();
+
         var groups = new Stack<List<List<BranchItemToken>>>();
 
         List<List<BranchItemToken>> currentBranchItems;

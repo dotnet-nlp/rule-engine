@@ -13,6 +13,8 @@ public sealed class GrammarBasedRegexPatternTokenizer : IPatternTokenizer
 {
     public IPatternToken Tokenize(string pattern, string? @namespace, bool caseSensitive)
     {
+        pattern = pattern.ReplaceLineEndings();
+
         if (!caseSensitive)
         {
             throw new RegexPatternTokenizationException(
