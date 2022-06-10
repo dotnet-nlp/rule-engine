@@ -32,8 +32,8 @@ internal sealed class ErrorIndexHelperTests
     [TestCase("foo", "\r\n\r\n", 0, 0, 0, null, null)]
     [TestCase("foo", "\r\n\r\n", 1, 0, 1, null, null)]
     [TestCase("foo", "\r\n\r\n", 2, 1, 0, null, null)]
-    [TestCase("foo", "\r\n\r\n", 3, 1, 1, null, null)]
-    public void Foo(
+    [TestCase("foo", "\r\n\n", 3, 1, 1, null, null)]
+    public void FillsExceptionData(
         string message,
         string source,
         int errorIndex,

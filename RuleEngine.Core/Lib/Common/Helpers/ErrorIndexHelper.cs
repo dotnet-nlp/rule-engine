@@ -15,7 +15,7 @@ public static class ErrorIndexHelper
         {
             data["error_index"] = errorIndex.Value;
 
-            var context = FindContext(source, errorIndex.Value);
+            var context = FindContext(source.ReplaceLineEndings(), errorIndex.Value);
 
             data["error_line_index"] = context.LineIndex;
             data["error_position_in_line"] = context.PositionInLine;
