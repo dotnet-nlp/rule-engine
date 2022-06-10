@@ -23,11 +23,11 @@ jobs:
       - name: Restore dependencies
         run: dotnet restore
       - name: Build
-        run: dotnet build --no-restore --configuration Release /p:Version=${VERSION}
+        run: dotnet build ${MSBUILD_PROPERTIES} --configuration Release --no-restore
       - name: Test
-        run: dotnet test --no-restore --no-build --configuration Release /p:Version=${VERSION} --verbosity normal
+        run: dotnet test ${MSBUILD_PROPERTIES} --configuration Release --no-restore --no-build --verbosity normal
       - name: Pack
-        run: dotnet pack --no-restore --no-build --configuration Release /p:Version=${VERSION} /p:RepositoryUrl=${REPOSITORY_URL} /p:PublishRepositoryUrl=true --include-source --include-symbols --output . 
+        run: dotnet pack ${MSBUILD_PROPERTIES} --configuration Release --no-restore --no-build --include-source --include-symbols --output . 
       - name: Push
         run: |
           dotnet nuget push RuleEngine.Core.${VERSION}.nupkg --source ${SERVER_URL} --api-key ${GITHUB_TOKEN}
@@ -37,3 +37,4 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SERVER_URL: https://nuget.pkg.github.com/dotnet-nlp/index.json
           REPOSITORY_URL: ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}
+          MSBUILD_PROPERTIES: /p:Version=${VERSION} /p:RepositoryUrl=${REPOSITORY_URL} /p:PublishRepositoryUrl=true
