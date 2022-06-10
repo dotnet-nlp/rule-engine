@@ -15,18 +15,18 @@ namespace RuleEngine.Core.Lib.CodeAnalysis.Tokenization;
 // todo [non-realtime performance] get rid of chars (now it's needed to speed-up IronMeta)
 public sealed class CSharpCodeTokenizer
 {
-    private static readonly ErrorIndexHelper ErrorIndexHelper = new ErrorIndexHelper(Environment.NewLine);
-
     private const string IdentifierPattern = "[a-zA-Z_][a-zA-Z0-9_]*";
     private static readonly Regex IdentifierRegex = new($"{IdentifierPattern}", RegexOptions.Compiled);
     private static readonly Regex NamespaceRegex = new($"{IdentifierPattern}(?:\\.{IdentifierPattern})*", RegexOptions.Compiled);
     private static readonly Regex IntRegex = new("\\d+", RegexOptions.Compiled);
     private static readonly Regex StringRegex = new("\"([^\"\\\\]|\\\\.)*\"", RegexOptions.Compiled);
 
+    private readonly ErrorIndexHelper _errorIndexHelper;
     private readonly CSharpSyntaxMatcher _cSharpSyntaxMatcher;
 
-    public CSharpCodeTokenizer()
+    public CSharpCodeTokenizer(ErrorIndexHelper errorIndexHelper)
     {
+        _errorIndexHelper = errorIndexHelper;
         _cSharpSyntaxMatcher = new CSharpSyntaxMatcher();
     }
 
@@ -41,7 +41,7 @@ public sealed class CSharpCodeTokenizer
         if (!result.Success)
         {
             throw new RuleEngineTokenizationException(
-                $"Failed to parse c# type.{GetDetails(source, result.ErrorIndex)}",
+                $"Failed to parse c# type.{_errorIndexHelper.GetDetails(source, result.ErrorIndex)}",
                 source
             );
         }
@@ -62,7 +62,7 @@ public sealed class CSharpCodeTokenizer
     }
 
     // todo whitespace tolerance could be added here
-    public static string ParseNamespace(string source, ref int index)
+    public string ParseNamespace(string source, ref int index)
     {
         var match = NamespaceRegex.Match(source, index);
 
@@ -87,14 +87,14 @@ public sealed class CSharpCodeTokenizer
         return match.Value;
     }
 
-    public static string ParseIdentifier(string source, ref int index, string reference)
+    public string ParseIdentifier(string source, ref int index, string reference)
     {
         var match = IdentifierRegex.Match(source, index);
 
         if (!match.Success)
         {
             throw new RuleEngineTokenizationException(
-                $"Failed to parse c# identifier in {reference} at all.{GetDetails(source, index)}",
+                $"Failed to parse c# identifier in {reference} at all.{_errorIndexHelper.GetDetails(source, index)}",
                 source
             );
         }
@@ -102,7 +102,7 @@ public sealed class CSharpCodeTokenizer
         if (match.Index != index)
         {
             throw new RuleEngineTokenizationException(
-                $"Failed to parse c# identifier in {reference}.{GetDetails(source, index)}",
+                $"Failed to parse c# identifier in {reference}.{_errorIndexHelper.GetDetails(source, index)}",
                 source
             );
         }
@@ -133,7 +133,7 @@ public sealed class CSharpCodeTokenizer
                 if (index == commentStartIndex)
                 {
                     throw new RuleEngineTokenizationException(
-                        $"Failed to parse whitespace {reference}.{GetDetails(source, index)}",
+                        $"Failed to parse whitespace {reference}.{_errorIndexHelper.GetDetails(source, index)}",
                         source
                     );
                 }
@@ -147,7 +147,7 @@ public sealed class CSharpCodeTokenizer
         if (required && startIndex == index)
         {
             throw new RuleEngineTokenizationException(
-                $"Failed to parse whitespace after {reference}.{GetDetails(source, index)}",
+                $"Failed to parse whitespace after {reference}.{_errorIndexHelper.GetDetails(source, index)}",
                 source
             );
         }
@@ -237,7 +237,7 @@ public sealed class CSharpCodeTokenizer
         if (!bodyMatchResult.Success)
         {
             throw new RuleEngineTokenizationException(
-                $"Failed to parse c# method body.{GetDetails(source, bodyMatchResult.ErrorIndex)}",
+                $"Failed to parse c# method body.{_errorIndexHelper.GetDetails(source, bodyMatchResult.ErrorIndex)}",
                 source
             );
         }
@@ -255,24 +255,6 @@ public sealed class CSharpCodeTokenizer
         index = bodyMatchResult.NextIndex;
 
         return bodyContainer.Value;
-    }
-
-    public static string GetDetails(string pattern, int position)
-    {
-        var errorContext = ErrorIndexHelper.FindContext(pattern, position, 10);
-
-        var details = string.Empty;
-
-        if (errorContext.Highlighter != null)
-        {
-            return $" " +
-                   $"Absolute position: {position}. " +
-                   $"Line: {errorContext.LineIndex}; position in line: {errorContext.PositionInLine}. " +
-                   $"Near character: '{errorContext.Highlighter.ErrorCharacter}'. " +
-                   $"Context: '{errorContext.Highlighter.StringAroundError}'.";
-        }
-
-        return details;
     }
 
     public IProjectionToken ParseConstantProjection(string source, ref int index)
@@ -294,7 +276,7 @@ public sealed class CSharpCodeTokenizer
 
         throw new RuleEngineTokenizationException(
             $"Cannot parse non-c# projection {index}." +
-            $"{GetDetails(source, index)}",
+            $"{_errorIndexHelper.GetDetails(source, index)}",
             source
         );
     }
@@ -352,7 +334,7 @@ public sealed class CSharpCodeTokenizer
         if (!TryParseWord("using", source, ref index))
         {
             throw new RuleEngineTokenizationException(
-                $"Invalid using declaration.{GetDetails(source, index)}",
+                $"Invalid using declaration.{_errorIndexHelper.GetDetails(source, index)}",
                 source
             );
         }
@@ -364,7 +346,7 @@ public sealed class CSharpCodeTokenizer
         if (index >= source.Length || source[index] != ';')
         {
             throw new RuleEngineTokenizationException(
-                $"Using declaration has missing ';'.{GetDetails(source, index)}",
+                $"Using declaration has missing ';'.{_errorIndexHelper.GetDetails(source, index)}",
                 source
             );
         }

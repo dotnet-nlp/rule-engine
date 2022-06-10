@@ -18,10 +18,16 @@ namespace RuleEngine.Mechanics.Regex.Build.Tokenization;
 public sealed class LoopBasedRegexPatternTokenizer : IPatternTokenizer
 {
     private readonly StringInterner _stringInterner;
+    private readonly ErrorIndexHelper _errorIndexHelper;
+    private readonly QuantifierReader _quantifierReader;
+    private readonly NerReader _nerReader;
 
     public LoopBasedRegexPatternTokenizer(StringInterner stringInterner)
     {
         _stringInterner = stringInterner;
+        _errorIndexHelper = new ErrorIndexHelper(Environment.NewLine);
+        _quantifierReader = new QuantifierReader(_errorIndexHelper);
+        _nerReader = new NerReader(_errorIndexHelper);
     }
 
     public IPatternToken Tokenize(string pattern, string? @namespace, bool caseSensitive)
@@ -72,7 +78,7 @@ public sealed class LoopBasedRegexPatternTokenizer : IPatternTokenizer
                     if (groups.Count < 1)
                     {
                         throw new RegexPatternTokenizationException(
-                            $"Too many closing brackets.{CSharpCodeTokenizer.GetDetails(pattern, i - 1)}",
+                            $"Too many closing brackets.{_errorIndexHelper.GetDetails(pattern, i - 1)}",
                             pattern
                         );
                     }
@@ -113,7 +119,7 @@ public sealed class LoopBasedRegexPatternTokenizer : IPatternTokenizer
                 {
                     i--;
                     var firstQuantifierCharIndex = i;
-                    QuantifyLastBranchItem(QuantifierReader.ReadQuantifier(pattern, ref i), firstQuantifierCharIndex);
+                    QuantifyLastBranchItem(_quantifierReader.ReadQuantifier(pattern, ref i), firstQuantifierCharIndex);
 
                     lastReadTokenIsQuantifier = true;
 
@@ -150,7 +156,7 @@ public sealed class LoopBasedRegexPatternTokenizer : IPatternTokenizer
                 case '<':
                 {
                     i--;
-                    var ner = NerReader.ReadNerDeclaration(pattern, ref i, @namespace);
+                    var ner = _nerReader.ReadNerDeclaration(pattern, ref i, @namespace);
 
                     AddItemToCurrentBranch(
                         ner.Reference,
@@ -206,7 +212,7 @@ public sealed class LoopBasedRegexPatternTokenizer : IPatternTokenizer
                     else
                     {
                         throw new RegexPatternTokenizationException(
-                            $"Unexpected char.{CSharpCodeTokenizer.GetDetails(pattern, i - 1)}",
+                            $"Unexpected char.{_errorIndexHelper.GetDetails(pattern, i - 1)}",
                             pattern
                         );
                     }
@@ -223,7 +229,7 @@ public sealed class LoopBasedRegexPatternTokenizer : IPatternTokenizer
         if (groups.Count > 0)
         {
             throw new RegexPatternTokenizationException(
-                $"Not closed open parentheses.{CSharpCodeTokenizer.GetDetails(pattern, i - 1)}",
+                $"Not closed open parentheses.{_errorIndexHelper.GetDetails(pattern, i - 1)}",
                 pattern
             );
         }
@@ -269,7 +275,7 @@ public sealed class LoopBasedRegexPatternTokenizer : IPatternTokenizer
                 throw new RegexPatternTokenizationException(
                     $"Cannot apply quantifier '{quantifier}': " +
                     $"last branch item '{lastBranchItem.ToString()}' is not quantifiable." +
-                    $"{CSharpCodeTokenizer.GetDetails(pattern, firstQuantifierChar.Value)}",
+                    $"{_errorIndexHelper.GetDetails(pattern, firstQuantifierChar.Value)}",
                     pattern
                 );
             }
@@ -283,12 +289,12 @@ public sealed class LoopBasedRegexPatternTokenizer : IPatternTokenizer
         }
     }
 
-    private static void ThrowIfBranchIsEmpty(ICollection currentBranchItems, string pattern, int i)
+    private void ThrowIfBranchIsEmpty(ICollection currentBranchItems, string pattern, int i)
     {
         if (currentBranchItems.Count == 0)
         {
             throw new RegexPatternTokenizationException(
-                $"Empty branches are not allowed.{CSharpCodeTokenizer.GetDetails(pattern, i)}",
+                $"Empty branches are not allowed.{_errorIndexHelper.GetDetails(pattern, i)}",
                 pattern
             );
         }
@@ -311,7 +317,7 @@ public sealed class LoopBasedRegexPatternTokenizer : IPatternTokenizer
         return new RegexGroupToken(branches.Select(branch => new BranchToken(branch.ToArray())).ToArray());
     }
 
-    private static void ThrowIfNotInQuantifierPosition(
+    private void ThrowIfNotInQuantifierPosition(
         IEnumerable<IBranchItemToken> currentBranchItems,
         string pattern,
         int quantifierFirstCharIndex,
@@ -324,7 +330,7 @@ public sealed class LoopBasedRegexPatternTokenizer : IPatternTokenizer
         {
             throw new RegexPatternTokenizationException(
                 $"Quantifier is only allowed after quantifiable lexeme." +
-                $"{CSharpCodeTokenizer.GetDetails(pattern, quantifierFirstCharIndex)}",
+                $"{_errorIndexHelper.GetDetails(pattern, quantifierFirstCharIndex)}",
                 pattern
             );
         }
@@ -335,13 +341,13 @@ public sealed class LoopBasedRegexPatternTokenizer : IPatternTokenizer
         {
             throw new RegexPatternTokenizationException(
                 $"Quantifier must stand right after the lexeme it's quantifying." +
-                $"{CSharpCodeTokenizer.GetDetails(pattern, quantifierFirstCharIndex)}",
+                $"{_errorIndexHelper.GetDetails(pattern, quantifierFirstCharIndex)}",
                 pattern
             );
         }
     }
 
-    private static void ThrowIfCharIsLetter(string pattern, int i)
+    private void ThrowIfCharIsLetter(string pattern, int i)
     {
         if (i >= pattern.Length)
         {
@@ -353,7 +359,7 @@ public sealed class LoopBasedRegexPatternTokenizer : IPatternTokenizer
         if (IsCharRussian(c) || IsCharEngOrDigit(c))
         {
             throw new RegexPatternTokenizationException(
-                $"Found word start in invalid position.{CSharpCodeTokenizer.GetDetails(pattern, i)}",
+                $"Found word start in invalid position.{_errorIndexHelper.GetDetails(pattern, i)}",
                 pattern
             );
         }
@@ -379,7 +385,7 @@ public sealed class LoopBasedRegexPatternTokenizer : IPatternTokenizer
             or >= 'A' and <= 'Z';
     }
 
-    private static MarkerToken ParseMarker(string pattern, ref int i, ISet<string> usedMarkers)
+    private MarkerToken ParseMarker(string pattern, ref int i, ISet<string> usedMarkers)
     {
         var initialPosition = i;
 
@@ -392,7 +398,7 @@ public sealed class LoopBasedRegexPatternTokenizer : IPatternTokenizer
         if (i == pattern.Length - 1 && pattern[i] != MarkerToken.MarkerEnd)
         {
             throw new RegexPatternTokenizationException(
-                $"Not found end of marker.{CSharpCodeTokenizer.GetDetails(pattern, initialPosition)}",
+                $"Not found end of marker.{_errorIndexHelper.GetDetails(pattern, initialPosition)}",
                 pattern
             );
         }
@@ -401,7 +407,7 @@ public sealed class LoopBasedRegexPatternTokenizer : IPatternTokenizer
         if (markerLength == 0)
         {
             throw new RegexPatternTokenizationException(
-                $"Empty marker.{CSharpCodeTokenizer.GetDetails(pattern, initialPosition)}",
+                $"Empty marker.{_errorIndexHelper.GetDetails(pattern, initialPosition)}",
                 pattern
             );
         }
@@ -412,7 +418,7 @@ public sealed class LoopBasedRegexPatternTokenizer : IPatternTokenizer
         if (!usedMarkers.Add(marker))
         {
             throw new RegexPatternTokenizationException(
-                $"Duplicated marker '{marker}'.{CSharpCodeTokenizer.GetDetails(pattern, initialPosition)}",
+                $"Duplicated marker '{marker}'.{_errorIndexHelper.GetDetails(pattern, initialPosition)}",
                 pattern
             );
         }
@@ -450,7 +456,7 @@ public sealed class LoopBasedRegexPatternTokenizer : IPatternTokenizer
                 case '\\':
                 {
                     throw new RegexPatternTokenizationException(
-                        $"Unhandled char in literal set.{CSharpCodeTokenizer.GetDetails(pattern, i - 1)}",
+                        $"Unhandled char in literal set.{_errorIndexHelper.GetDetails(pattern, i - 1)}",
                         pattern
                     );
                 }
@@ -497,7 +503,7 @@ public sealed class LoopBasedRegexPatternTokenizer : IPatternTokenizer
                     else
                     {
                         throw new RegexPatternTokenizationException(
-                            $"Unhandled char in literal set.{CSharpCodeTokenizer.GetDetails(pattern, i - 1)}",
+                            $"Unhandled char in literal set.{_errorIndexHelper.GetDetails(pattern, i - 1)}",
                             pattern
                         );
                     }
@@ -508,7 +514,7 @@ public sealed class LoopBasedRegexPatternTokenizer : IPatternTokenizer
         }
 
         throw new RegexPatternTokenizationException(
-            $"Unbound character set.{CSharpCodeTokenizer.GetDetails(pattern, startIndex)}",
+            $"Unbound character set.{_errorIndexHelper.GetDetails(pattern, startIndex)}",
             pattern
         );
     }
@@ -518,7 +524,7 @@ public sealed class LoopBasedRegexPatternTokenizer : IPatternTokenizer
         if (i >= pattern.Length)
         {
             throw new RegexPatternTokenizationException(
-                $"Empty word.{CSharpCodeTokenizer.GetDetails(pattern, i)}",
+                $"Empty word.{_errorIndexHelper.GetDetails(pattern, i)}",
                 pattern
             );
         }
@@ -540,7 +546,7 @@ public sealed class LoopBasedRegexPatternTokenizer : IPatternTokenizer
             {
                 throw new RegexPatternTokenizationException(
                     $"Unhandled char. Check word for different language usage." +
-                    $"{CSharpCodeTokenizer.GetDetails(pattern, i)}",
+                    $"{_errorIndexHelper.GetDetails(pattern, i)}",
                     pattern
                 );
             }
@@ -558,7 +564,7 @@ public sealed class LoopBasedRegexPatternTokenizer : IPatternTokenizer
             {
                 throw new RegexPatternTokenizationException(
                     $"Unhandled char. Check word for different language usage." +
-                    $"{CSharpCodeTokenizer.GetDetails(pattern, i)}",
+                    $"{_errorIndexHelper.GetDetails(pattern, i)}",
                     pattern
                 );
             }
@@ -574,7 +580,7 @@ public sealed class LoopBasedRegexPatternTokenizer : IPatternTokenizer
         if (word.Length == 0)
         {
             throw new RegexPatternTokenizationException(
-                $"Empty word.{CSharpCodeTokenizer.GetDetails(pattern, startIndex)}",
+                $"Empty word.{_errorIndexHelper.GetDetails(pattern, startIndex)}",
                 pattern
             );
         }
@@ -584,15 +590,22 @@ public sealed class LoopBasedRegexPatternTokenizer : IPatternTokenizer
         return word;
     }
 
-    private static class QuantifierReader
+    private sealed class QuantifierReader
     {
+        private readonly ErrorIndexHelper _errorIndexHelper;
+
+        public QuantifierReader(ErrorIndexHelper errorIndexHelper)
+        {
+            _errorIndexHelper = errorIndexHelper;
+        }
+
         /// <summary>
         /// This method reads quantifiers {n,m}, {n}, {n,}
         /// </summary>
         /// <param name="pattern">String with regular expression to process</param>
         /// <param name="i">Index of the quantifier opening character "{"</param>
         /// <returns>Quantifier lexeme</returns>
-        public static QuantifierToken ReadQuantifier(string pattern, ref int i)
+        public QuantifierToken ReadQuantifier(string pattern, ref int i)
         {
             var initialPosition = i;
             var nStrBuilder = new StringBuilder();
@@ -633,7 +646,7 @@ public sealed class LoopBasedRegexPatternTokenizer : IPatternTokenizer
             if (!reachedClosing)
             {
                 throw new RegexPatternTokenizationException(
-                    $"Unmatched opening bracket '{{'.{CSharpCodeTokenizer.GetDetails(pattern, initialPosition)}",
+                    $"Unmatched opening bracket '{{'.{_errorIndexHelper.GetDetails(pattern, initialPosition)}",
                     pattern
                 );
             }
@@ -642,7 +655,7 @@ public sealed class LoopBasedRegexPatternTokenizer : IPatternTokenizer
             if (!int.TryParse(nStr, out var n))
             {
                 throw new RegexPatternTokenizationException(
-                    $"Expected an integer parameter.{CSharpCodeTokenizer.GetDetails(pattern, initialPosition + 1)}",
+                    $"Expected an integer parameter.{_errorIndexHelper.GetDetails(pattern, initialPosition + 1)}",
                     pattern
                 );
             }
@@ -663,7 +676,7 @@ public sealed class LoopBasedRegexPatternTokenizer : IPatternTokenizer
                 {
                     throw new RegexPatternTokenizationException(
                         $"Expected an integer parameter." +
-                        $"{CSharpCodeTokenizer.GetDetails(pattern, initialPosition + 1)}",
+                        $"{_errorIndexHelper.GetDetails(pattern, initialPosition + 1)}",
                         pattern
                     );
                 }
@@ -674,13 +687,13 @@ public sealed class LoopBasedRegexPatternTokenizer : IPatternTokenizer
             return ConstructExactQuantifier(n, pattern, initialPosition);
         }
 
-        private static QuantifierToken ConstructRangeQuantifier(int n, int m, string pattern, int position)
+        private QuantifierToken ConstructRangeQuantifier(int n, int m, string pattern, int position)
         {
             if (n < 0)
             {
                 throw new RegexPatternTokenizationException(
                     $"Cannot create a quantifier {{{n},{m}}} with n < 0." +
-                    $"{CSharpCodeTokenizer.GetDetails(pattern, position)}",
+                    $"{_errorIndexHelper.GetDetails(pattern, position)}",
                     pattern
                 );
             }
@@ -689,7 +702,7 @@ public sealed class LoopBasedRegexPatternTokenizer : IPatternTokenizer
             {
                 throw new RegexPatternTokenizationException(
                     $"Cannot create a quantifier {{{n},{m}}} with n > m." +
-                    $"{CSharpCodeTokenizer.GetDetails(pattern, position)}",
+                    $"{_errorIndexHelper.GetDetails(pattern, position)}",
                     pattern
                 );
             }
@@ -697,13 +710,13 @@ public sealed class LoopBasedRegexPatternTokenizer : IPatternTokenizer
             return new QuantifierToken(n, m);
         }
 
-        private static QuantifierToken ConstructExactQuantifier(int n, string pattern, int position)
+        private QuantifierToken ConstructExactQuantifier(int n, string pattern, int position)
         {
             if (n < 1)
             {
                 throw new RegexPatternTokenizationException(
                     $"Cannot create a quantifier {{{n}}} with n < 1." +
-                    $"{CSharpCodeTokenizer.GetDetails(pattern, position)}",
+                    $"{_errorIndexHelper.GetDetails(pattern, position)}",
                     pattern
                 );
             }
@@ -711,13 +724,13 @@ public sealed class LoopBasedRegexPatternTokenizer : IPatternTokenizer
             return new QuantifierToken(n, n);
         }
 
-        private static QuantifierToken ConstructNonLessThanQuantifier(int n, string pattern, int position)
+        private QuantifierToken ConstructNonLessThanQuantifier(int n, string pattern, int position)
         {
             if (n < 0)
             {
                 throw new RegexPatternTokenizationException(
                     $"Cannot create a quantifier {{{n},}} with n < 0." +
-                    $"{CSharpCodeTokenizer.GetDetails(pattern, position)}",
+                    $"{_errorIndexHelper.GetDetails(pattern, position)}",
                     pattern
                 );
             }
@@ -726,24 +739,31 @@ public sealed class LoopBasedRegexPatternTokenizer : IPatternTokenizer
         }
     }
 
-    private static class NerReader
+    private sealed class NerReader
     {
         private static readonly System.Text.RegularExpressions.Regex GeneralNerRegex = new(@"<\s*(?:(?<var>[a-zA-Z_][a-zA-Z_0-9]*)\s*=\s*)?(?<call>[a-zA-Z_][a-zA-Z_0-9]*(?:\.[a-zA-Z_][a-zA-Z_0-9]*)*)(?:\s*\(\s*(?:(?<arg>(?:default|[a-zA-Z_][a-zA-Z_0-9]*(?:\.[a-zA-Z_][a-zA-Z_0-9]*)*))(?:\s*,\s*(?<arg>(?:default|[a-zA-Z_][a-zA-Z_0-9]*(?:\.[a-zA-Z_][a-zA-Z_0-9]*)*)))*)?\s*\))?\s*>", RegexOptions.Compiled);
 
-        public static (RuleReferenceToken Reference, string? VariableName) ReadNerDeclaration(string pattern, ref int position, string? @namespace)
+        private readonly ErrorIndexHelper _errorIndexHelper;
+
+        public NerReader(ErrorIndexHelper errorIndexHelper)
+        {
+            _errorIndexHelper = errorIndexHelper;
+        }
+
+        public (RuleReferenceToken Reference, string? VariableName) ReadNerDeclaration(string pattern, ref int position, string? @namespace)
         {
             var match = GeneralNerRegex.Match(pattern, position);
             if (!match.Success)
             {
                 throw new RegexPatternTokenizationException(
-                    $"Failed to parse NER inclusion at all.{CSharpCodeTokenizer.GetDetails(pattern, position)}",
+                    $"Failed to parse NER inclusion at all.{_errorIndexHelper.GetDetails(pattern, position)}",
                     pattern
                 );
             }
             if (match.Index != position)
             {
                 throw new RegexPatternTokenizationException(
-                    $"Failed to parse NER inclusion.{CSharpCodeTokenizer.GetDetails(pattern, position)}",
+                    $"Failed to parse NER inclusion.{_errorIndexHelper.GetDetails(pattern, position)}",
                     pattern
                 );
             }

@@ -13,6 +13,24 @@ public class ErrorIndexHelper
         _lineEnding = lineEnding;
     }
 
+    public string GetDetails(string pattern, int position)
+    {
+        var errorContext = FindContext(pattern, position, 10);
+
+        var details = string.Empty;
+
+        if (errorContext.Highlighter != null)
+        {
+            return $" " +
+                   $"Absolute position: {position}. " +
+                   $"Line: {errorContext.LineIndex}; position in line: {errorContext.PositionInLine}. " +
+                   $"Near character: '{errorContext.Highlighter.ErrorCharacter}'. " +
+                   $"Context: '{errorContext.Highlighter.StringAroundError}'.";
+        }
+
+        return details;
+    }
+
     public void FillExceptionData(IDictionary data, string source, string? error = null, int? errorIndex = null)
     {
         data["source"] = source;

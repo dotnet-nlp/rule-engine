@@ -1,8 +1,10 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using RuleEngine.Core.Build.Tokenization.Tokens;
 using RuleEngine.Core.Exceptions;
 using RuleEngine.Core.Lib.CodeAnalysis.Tokenization;
+using RuleEngine.Core.Lib.Common.Helpers;
 
 namespace RuleEngine.Core.Build.Tokenization;
 
@@ -10,12 +12,14 @@ namespace RuleEngine.Core.Build.Tokenization;
 internal sealed class LoopBasedRuleSetTokenizer : IRuleSetTokenizer
 {
     private readonly IReadOnlyDictionary<string, IPatternTokenizer> _patternTokenizers;
+    private readonly ErrorIndexHelper _errorIndexHelper;
     private readonly CSharpCodeTokenizer _cSharpCodeTokenizer;
 
     public LoopBasedRuleSetTokenizer(IReadOnlyDictionary<string, IPatternTokenizer> patternTokenizers)
     {
         _patternTokenizers = patternTokenizers;
-        _cSharpCodeTokenizer = new CSharpCodeTokenizer();
+        _errorIndexHelper = new ErrorIndexHelper(Environment.NewLine);
+        _cSharpCodeTokenizer = new CSharpCodeTokenizer(_errorIndexHelper);
     }
 
     public RuleSetToken Tokenize(string ruleSet, string? @namespace, bool caseSensitive)
@@ -55,7 +59,7 @@ internal sealed class LoopBasedRuleSetTokenizer : IRuleSetTokenizer
 
             _cSharpCodeTokenizer.ConsumeWhitespaces(ruleSet, chars, ref i, "after rule result type", true);
 
-            var ruleName = CSharpCodeTokenizer.ParseIdentifier(ruleSet, ref i, "rule name");
+            var ruleName = _cSharpCodeTokenizer.ParseIdentifier(ruleSet, ref i, "rule name");
 
             if (!usedRuleNames.Add(ruleName))
             {
@@ -70,14 +74,14 @@ internal sealed class LoopBasedRuleSetTokenizer : IRuleSetTokenizer
 
             if (i >= ruleSet.Length || ruleSet[i] != '=')
             {
-                throw new RuleEngineTokenizationException($"Unmatched character '='.{CSharpCodeTokenizer.GetDetails(ruleSet, i)}", ruleSet);
+                throw new RuleEngineTokenizationException($"Unmatched character '='.{_errorIndexHelper.GetDetails(ruleSet, i)}", ruleSet);
             }
 
             i++;
 
             _cSharpCodeTokenizer.ConsumeWhitespaces(ruleSet, chars, ref i, "after '=' sign");
 
-            var patternKey = CSharpCodeTokenizer.ParseIdentifier(ruleSet, ref i, "pattern key");
+            var patternKey = _cSharpCodeTokenizer.ParseIdentifier(ruleSet, ref i, "pattern key");
 
             _cSharpCodeTokenizer.ConsumeWhitespaces(ruleSet, chars, ref i, "after pattern key");
 
@@ -101,7 +105,7 @@ internal sealed class LoopBasedRuleSetTokenizer : IRuleSetTokenizer
         {
             if (index >= ruleSet.Length || ruleSet[index] != '#')
             {
-                throw new RuleEngineTokenizationException($"Unmatched pattern start.{CSharpCodeTokenizer.GetDetails(ruleSet, index)}", ruleSet);
+                throw new RuleEngineTokenizationException($"Unmatched pattern start.{_errorIndexHelper.GetDetails(ruleSet, index)}", ruleSet);
             }
 
             index++;
@@ -115,7 +119,7 @@ internal sealed class LoopBasedRuleSetTokenizer : IRuleSetTokenizer
                 }
                 else
                 {
-                    throw new RuleEngineTokenizationException($"Unmatched pattern end.{CSharpCodeTokenizer.GetDetails(ruleSet, index + 1)}", ruleSet);
+                    throw new RuleEngineTokenizationException($"Unmatched pattern end.{_errorIndexHelper.GetDetails(ruleSet, index + 1)}", ruleSet);
                 }
             }
             var length = index - startIndex;

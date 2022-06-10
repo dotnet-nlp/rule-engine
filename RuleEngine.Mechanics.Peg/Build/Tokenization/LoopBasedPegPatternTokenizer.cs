@@ -7,7 +7,6 @@ using System.Text.RegularExpressions;
 using RuleEngine.Core.Build.Tokenization;
 using RuleEngine.Core.Build.Tokenization.Tokens;
 using RuleEngine.Core.Build.Tokenization.Tokens.Arguments;
-using RuleEngine.Core.Lib.CodeAnalysis.Tokenization;
 using RuleEngine.Core.Lib.Common;
 using RuleEngine.Core.Lib.Common.Helpers;
 using RuleEngine.Mechanics.Peg.Build.Tokenization.Tokens;
@@ -18,10 +17,16 @@ namespace RuleEngine.Mechanics.Peg.Build.Tokenization;
 public class LoopBasedPegPatternTokenizer : IPatternTokenizer
 {
     private readonly StringInterner _stringInterner;
+    private readonly ErrorIndexHelper _errorIndexHelper;
+    private readonly QuantifierReader _quantifierReader;
+    private readonly RuleReferenceReader _ruleReferenceReader;
 
     public LoopBasedPegPatternTokenizer(StringInterner stringInterner)
     {
         _stringInterner = stringInterner;
+        _errorIndexHelper = new ErrorIndexHelper(Environment.NewLine);
+        _quantifierReader = new QuantifierReader(_errorIndexHelper);
+        _ruleReferenceReader = new RuleReferenceReader(_errorIndexHelper);
     }
 
     public IPatternToken Tokenize(string pattern, string? @namespace, bool caseSensitive)
@@ -71,7 +76,7 @@ public class LoopBasedPegPatternTokenizer : IPatternTokenizer
                     if (groups.Count < 1)
                     {
                         throw new PegPatternTokenizationException(
-                            $"Too many closing brackets.{CSharpCodeTokenizer.GetDetails(pattern, i)}",
+                            $"Too many closing brackets.{_errorIndexHelper.GetDetails(pattern, i)}",
                             pattern
                         );
                     }
@@ -112,7 +117,7 @@ public class LoopBasedPegPatternTokenizer : IPatternTokenizer
                 {
                     i--;
                     var firstQuantifierCharIndex = i;
-                    QuantifyLastBranchItem(QuantifierReader.ReadQuantifier(pattern, ref i), firstQuantifierCharIndex);
+                    QuantifyLastBranchItem(_quantifierReader.ReadQuantifier(pattern, ref i), firstQuantifierCharIndex);
 
                     lastReadTokenIsQuantifier = true;
 
@@ -140,7 +145,7 @@ public class LoopBasedPegPatternTokenizer : IPatternTokenizer
                 case '$':
                 {
                     i--;
-                    var ruleReference = RuleReferenceReader.ReadRuleReferenceDeclaration(pattern, ref i, @namespace);
+                    var ruleReference = _ruleReferenceReader.ReadRuleReferenceDeclaration(pattern, ref i, @namespace);
 
                     AddItemToCurrentBranch(ruleReference);
 
@@ -163,7 +168,7 @@ public class LoopBasedPegPatternTokenizer : IPatternTokenizer
                     if (pendingLookahead is not null)
                     {
                         throw new PegPatternTokenizationException(
-                            $"Wrong lookahead position.{CSharpCodeTokenizer.GetDetails(pattern, i)}",
+                            $"Wrong lookahead position.{_errorIndexHelper.GetDetails(pattern, i)}",
                             pattern
                         );
                     }
@@ -179,7 +184,7 @@ public class LoopBasedPegPatternTokenizer : IPatternTokenizer
                     if (pendingLookahead is not null)
                     {
                         throw new PegPatternTokenizationException(
-                            $"Wrong lookahead position.{CSharpCodeTokenizer.GetDetails(pattern, i)}",
+                            $"Wrong lookahead position.{_errorIndexHelper.GetDetails(pattern, i)}",
                             pattern
                         );
                     }
@@ -235,7 +240,7 @@ public class LoopBasedPegPatternTokenizer : IPatternTokenizer
                     else
                     {
                         throw new PegPatternTokenizationException(
-                            $"Unexpected char.{CSharpCodeTokenizer.GetDetails(pattern, i - 1)}",
+                            $"Unexpected char.{_errorIndexHelper.GetDetails(pattern, i - 1)}",
                             pattern
                         );
                     }
@@ -315,14 +320,14 @@ public class LoopBasedPegPatternTokenizer : IPatternTokenizer
         }
     }
 
-    private static string ParseVariableName(string pattern, ref int i)
+    private string ParseVariableName(string pattern, ref int i)
     {
         var startIndex = i;
 
         if (i >= pattern.Length)
         {
             throw new PegPatternTokenizationException(
-                $"No variable name.{CSharpCodeTokenizer.GetDetails(pattern, i)}",
+                $"No variable name.{_errorIndexHelper.GetDetails(pattern, i)}",
                 pattern
             );
         }
@@ -335,7 +340,7 @@ public class LoopBasedPegPatternTokenizer : IPatternTokenizer
                 if (IsCharRussian(pattern[i]) || IsCharDigit(pattern[i]))
                 {
                     throw new PegPatternTokenizationException(
-                        $"Invalid variable name.{CSharpCodeTokenizer.GetDetails(pattern, i)}",
+                        $"Invalid variable name.{_errorIndexHelper.GetDetails(pattern, i)}",
                         pattern
                     );
                 }
@@ -352,7 +357,7 @@ public class LoopBasedPegPatternTokenizer : IPatternTokenizer
         if (variableName.Length == 0)
         {
             throw new PegPatternTokenizationException(
-                $"Empty variable name.{CSharpCodeTokenizer.GetDetails(pattern, startIndex)}",
+                $"Empty variable name.{_errorIndexHelper.GetDetails(pattern, startIndex)}",
                 pattern
             );
         }
@@ -370,12 +375,12 @@ public class LoopBasedPegPatternTokenizer : IPatternTokenizer
         }
     }
 
-    private static void ThrowIfBranchIsEmpty(ICollection currentBranchItems, string pattern, int i)
+    private void ThrowIfBranchIsEmpty(ICollection currentBranchItems, string pattern, int i)
     {
         if (currentBranchItems.Count == 0)
         {
             throw new PegPatternTokenizationException(
-                $"Empty branches are not allowed.{CSharpCodeTokenizer.GetDetails(pattern, i)}",
+                $"Empty branches are not allowed.{_errorIndexHelper.GetDetails(pattern, i)}",
                 pattern
             );
         }
@@ -399,7 +404,7 @@ public class LoopBasedPegPatternTokenizer : IPatternTokenizer
         return new PegGroupToken(branches.Select(branch => new BranchToken(branch.ToArray())).ToArray());
     }
 
-    private static void ThrowIfNotInQuantifierPosition(
+    private void ThrowIfNotInQuantifierPosition(
         string pattern,
         int quantifierFirstCharIndex,
         bool lastReadTokenIsQuantifier
@@ -409,7 +414,7 @@ public class LoopBasedPegPatternTokenizer : IPatternTokenizer
         {
             throw new PegPatternTokenizationException(
                 $"Quantifier is only allowed after quantifiable lexeme." +
-                $"{CSharpCodeTokenizer.GetDetails(pattern, quantifierFirstCharIndex)}",
+                $"{_errorIndexHelper.GetDetails(pattern, quantifierFirstCharIndex)}",
                 pattern
             );
         }
@@ -420,13 +425,13 @@ public class LoopBasedPegPatternTokenizer : IPatternTokenizer
         {
             throw new PegPatternTokenizationException(
                 $"Quantifier must stand right after the lexeme it's quantifying." +
-                $"{CSharpCodeTokenizer.GetDetails(pattern, quantifierFirstCharIndex)}",
+                $"{_errorIndexHelper.GetDetails(pattern, quantifierFirstCharIndex)}",
                 pattern
             );
         }
     }
 
-    private static void ThrowIfCharIsLetter(string pattern, int i)
+    private void ThrowIfCharIsLetter(string pattern, int i)
     {
         if (i >= pattern.Length)
         {
@@ -438,7 +443,7 @@ public class LoopBasedPegPatternTokenizer : IPatternTokenizer
         if (IsCharRussian(c) || IsCharEngOrDigit(c))
         {
             throw new PegPatternTokenizationException(
-                $"Found word start in invalid position.{CSharpCodeTokenizer.GetDetails(pattern, i)}",
+                $"Found word start in invalid position.{_errorIndexHelper.GetDetails(pattern, i)}",
                 pattern
             );
         }
@@ -495,7 +500,7 @@ public class LoopBasedPegPatternTokenizer : IPatternTokenizer
                     if (members.Count == 0)
                     {
                         throw new PegPatternTokenizationException(
-                            $"Empty literal set.{CSharpCodeTokenizer.GetDetails(pattern, i - 1)}",
+                            $"Empty literal set.{_errorIndexHelper.GetDetails(pattern, i - 1)}",
                             pattern
                         );
                     }
@@ -506,7 +511,7 @@ public class LoopBasedPegPatternTokenizer : IPatternTokenizer
                 case '\\':
                 {
                     throw new PegPatternTokenizationException(
-                        $"Unhandled char in literal set.{CSharpCodeTokenizer.GetDetails(pattern, i - 1)}",
+                        $"Unhandled char in literal set.{_errorIndexHelper.GetDetails(pattern, i - 1)}",
                         pattern
                     );
                 }
@@ -553,7 +558,7 @@ public class LoopBasedPegPatternTokenizer : IPatternTokenizer
                     else
                     {
                         throw new PegPatternTokenizationException(
-                            $"Unhandled char in literal set.{CSharpCodeTokenizer.GetDetails(pattern, i - 1)}",
+                            $"Unhandled char in literal set.{_errorIndexHelper.GetDetails(pattern, i - 1)}",
                             pattern
                         );
                     }
@@ -564,7 +569,7 @@ public class LoopBasedPegPatternTokenizer : IPatternTokenizer
         }
 
         throw new PegPatternTokenizationException(
-            $"Unbound character set.{CSharpCodeTokenizer.GetDetails(pattern, startIndex)}",
+            $"Unbound character set.{_errorIndexHelper.GetDetails(pattern, startIndex)}",
             pattern
         );
     }
@@ -574,7 +579,7 @@ public class LoopBasedPegPatternTokenizer : IPatternTokenizer
         if (i >= pattern.Length)
         {
             throw new PegPatternTokenizationException(
-                $"Empty word.{CSharpCodeTokenizer.GetDetails(pattern, i)}",
+                $"Empty word.{_errorIndexHelper.GetDetails(pattern, i)}",
                 pattern
             );
         }
@@ -596,7 +601,7 @@ public class LoopBasedPegPatternTokenizer : IPatternTokenizer
             {
                 throw new PegPatternTokenizationException(
                     $"Unhandled char. Check word for different language usage." +
-                    $"{CSharpCodeTokenizer.GetDetails(pattern, i)}",
+                    $"{_errorIndexHelper.GetDetails(pattern, i)}",
                     pattern
                 );
             }
@@ -614,7 +619,7 @@ public class LoopBasedPegPatternTokenizer : IPatternTokenizer
             {
                 throw new PegPatternTokenizationException(
                     $"Unhandled char. Check word for different language usage." +
-                    $"{CSharpCodeTokenizer.GetDetails(pattern, i)}",
+                    $"{_errorIndexHelper.GetDetails(pattern, i)}",
                     pattern
                 );
             }
@@ -630,7 +635,7 @@ public class LoopBasedPegPatternTokenizer : IPatternTokenizer
         if (word.Length == 0)
         {
             throw new PegPatternTokenizationException(
-                $"Empty word.{CSharpCodeTokenizer.GetDetails(pattern, startIndex)}",
+                $"Empty word.{_errorIndexHelper.GetDetails(pattern, startIndex)}",
                 pattern
             );
         }
@@ -640,15 +645,22 @@ public class LoopBasedPegPatternTokenizer : IPatternTokenizer
         return word;
     }
 
-    private static class QuantifierReader
+    private sealed class QuantifierReader
     {
+        private readonly ErrorIndexHelper _errorIndexHelper;
+
+        public QuantifierReader(ErrorIndexHelper errorIndexHelper)
+        {
+            _errorIndexHelper = errorIndexHelper;
+        }
+
         /// <summary>
         /// This method reads quantifiers {n,m}, {n}, {n,}
         /// </summary>
         /// <param name="pattern">String with regular expression to process</param>
         /// <param name="i">Index of the quantifier opening character "{"</param>
         /// <returns>Quantifier lexeme</returns>
-        public static QuantifierToken ReadQuantifier(string pattern, ref int i)
+        public QuantifierToken ReadQuantifier(string pattern, ref int i)
         {
             var initialPosition = i;
             var nStrBuilder = new StringBuilder();
@@ -689,7 +701,7 @@ public class LoopBasedPegPatternTokenizer : IPatternTokenizer
             if (!reachedClosing)
             {
                 throw new PegPatternTokenizationException(
-                    $"Unmatched opening bracket.{CSharpCodeTokenizer.GetDetails(pattern, initialPosition)}",
+                    $"Unmatched opening bracket.{_errorIndexHelper.GetDetails(pattern, initialPosition)}",
                     pattern
                 );
             }
@@ -699,7 +711,7 @@ public class LoopBasedPegPatternTokenizer : IPatternTokenizer
             {
                 throw new PegPatternTokenizationException(
                     $"Expected an integer parameter at position." +
-                    $"{CSharpCodeTokenizer.GetDetails(pattern, initialPosition + 1)}.",
+                    $"{_errorIndexHelper.GetDetails(pattern, initialPosition + 1)}.",
                     pattern
                 );
             }
@@ -719,7 +731,7 @@ public class LoopBasedPegPatternTokenizer : IPatternTokenizer
                 if (!int.TryParse(mStr, out var m))
                 {
                     throw new PegPatternTokenizationException(
-                        $"Expected an integer parameter.{CSharpCodeTokenizer.GetDetails(pattern, initialPosition + 1)}",
+                        $"Expected an integer parameter.{_errorIndexHelper.GetDetails(pattern, initialPosition + 1)}",
                         pattern
                     );
                 }
@@ -730,12 +742,12 @@ public class LoopBasedPegPatternTokenizer : IPatternTokenizer
             return ConstructExactQuantifier(n, pattern, initialPosition);
         }
 
-        private static QuantifierToken ConstructRangeQuantifier(int n, int m, string pattern, int position)
+        private QuantifierToken ConstructRangeQuantifier(int n, int m, string pattern, int position)
         {
             if (n < 0)
             {
                 throw new PegPatternTokenizationException(
-                    $"Cannot create a quantifier {{{n},{m}}} with n < 0.{CSharpCodeTokenizer.GetDetails(pattern, position)}",
+                    $"Cannot create a quantifier {{{n},{m}}} with n < 0.{_errorIndexHelper.GetDetails(pattern, position)}",
                     pattern
                 );
             }
@@ -743,7 +755,7 @@ public class LoopBasedPegPatternTokenizer : IPatternTokenizer
             if (m < n)
             {
                 throw new PegPatternTokenizationException(
-                    $"Cannot create a quantifier {{{n},{m}}} with n > m.{CSharpCodeTokenizer.GetDetails(pattern, position)}",
+                    $"Cannot create a quantifier {{{n},{m}}} with n > m.{_errorIndexHelper.GetDetails(pattern, position)}",
                     pattern
                 );
             }
@@ -751,12 +763,12 @@ public class LoopBasedPegPatternTokenizer : IPatternTokenizer
             return new QuantifierToken(n, m);
         }
 
-        private static QuantifierToken ConstructExactQuantifier(int n, string pattern, int i)
+        private QuantifierToken ConstructExactQuantifier(int n, string pattern, int i)
         {
             if (n < 1)
             {
                 throw new PegPatternTokenizationException(
-                    $"Cannot create a quantifier {{{n}}} with n < 1.{CSharpCodeTokenizer.GetDetails(pattern, i)}",
+                    $"Cannot create a quantifier {{{n}}} with n < 1.{_errorIndexHelper.GetDetails(pattern, i)}",
                     pattern
                 );
             }
@@ -764,12 +776,12 @@ public class LoopBasedPegPatternTokenizer : IPatternTokenizer
             return new QuantifierToken(n, n);
         }
 
-        private static QuantifierToken ConstructNonLessThanQuantifier(int n, string pattern, int i)
+        private QuantifierToken ConstructNonLessThanQuantifier(int n, string pattern, int i)
         {
             if (n < 0)
             {
                 throw new PegPatternTokenizationException(
-                    $"Cannot create a quantifier {{{n},}} with n < 0.{CSharpCodeTokenizer.GetDetails(pattern, i)}",
+                    $"Cannot create a quantifier {{{n},}} with n < 0.{_errorIndexHelper.GetDetails(pattern, i)}",
                     pattern
                 );
             }
@@ -778,18 +790,25 @@ public class LoopBasedPegPatternTokenizer : IPatternTokenizer
         }
     }
 
-    private static class RuleReferenceReader
+    private sealed class RuleReferenceReader
     {
         private static readonly Regex RuleReferenceRegex = new(@"\$(?<call>[a-zA-Z_][a-zA-Z_0-9]*(?:\.[a-zA-Z_][a-zA-Z_0-9]*)*)(?:\s*\(\s*(?:(?<arg>(?:default|[a-zA-Z_][a-zA-Z_0-9]*(?:\.[a-zA-Z_][a-zA-Z_0-9]*)*))(?:\s*,\s*(?<arg>(?:default|[a-zA-Z_][a-zA-Z_0-9]*(?:\.[a-zA-Z_][a-zA-Z_0-9]*)*)))*)?\s*\))?\s*", RegexOptions.Compiled);
 
-        public static RuleReferenceToken ReadRuleReferenceDeclaration(string pattern, ref int position, string? @namespace)
+        private readonly ErrorIndexHelper _errorIndexHelper;
+
+        public RuleReferenceReader(ErrorIndexHelper errorIndexHelper)
+        {
+            _errorIndexHelper = errorIndexHelper;
+        }
+
+        public RuleReferenceToken ReadRuleReferenceDeclaration(string pattern, ref int position, string? @namespace)
         {
             var match = RuleReferenceRegex.Match(pattern, position);
 
             if (!match.Success)
             {
                 throw new PegPatternTokenizationException(
-                    $"Failed to parse rule reference at all.{CSharpCodeTokenizer.GetDetails(pattern, position)}",
+                    $"Failed to parse rule reference at all.{_errorIndexHelper.GetDetails(pattern, position)}",
                     pattern
                 );
             }
@@ -797,7 +816,7 @@ public class LoopBasedPegPatternTokenizer : IPatternTokenizer
             if (match.Index != position)
             {
                 throw new PegPatternTokenizationException(
-                    $"Failed to parse rule reference.{CSharpCodeTokenizer.GetDetails(pattern, position)}",
+                    $"Failed to parse rule reference.{_errorIndexHelper.GetDetails(pattern, position)}",
                     pattern
                 );
             }
