@@ -5,6 +5,8 @@ namespace RuleEngine.Core.Exceptions;
 
 public class RuleEngineTokenizationException : RuleEngineException
 {
+    private static readonly ErrorIndexHelper ErrorIndexHelper = new ErrorIndexHelper(Environment.NewLine);
+
     public RuleEngineTokenizationException(string message, Exception innerException, string source) : base(message, innerException)
     {
         ErrorIndexHelper.FillExceptionData(Data, source);

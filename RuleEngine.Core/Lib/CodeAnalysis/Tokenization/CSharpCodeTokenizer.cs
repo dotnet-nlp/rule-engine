@@ -15,6 +15,8 @@ namespace RuleEngine.Core.Lib.CodeAnalysis.Tokenization;
 // todo [non-realtime performance] get rid of chars (now it's needed to speed-up IronMeta)
 public sealed class CSharpCodeTokenizer
 {
+    private static readonly ErrorIndexHelper ErrorIndexHelper = new ErrorIndexHelper(Environment.NewLine);
+
     private const string IdentifierPattern = "[a-zA-Z_][a-zA-Z0-9_]*";
     private static readonly Regex IdentifierRegex = new($"{IdentifierPattern}", RegexOptions.Compiled);
     private static readonly Regex NamespaceRegex = new($"{IdentifierPattern}(?:\\.{IdentifierPattern})*", RegexOptions.Compiled);

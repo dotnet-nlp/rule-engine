@@ -4,9 +4,16 @@ using System.Linq;
 
 namespace RuleEngine.Core.Lib.Common.Helpers;
 
-public static class ErrorIndexHelper
+public class ErrorIndexHelper
 {
-    public static void FillExceptionData(IDictionary data, string source, string? error = null, int? errorIndex = null)
+    private readonly string _lineEnding;
+
+    public ErrorIndexHelper(string lineEnding)
+    {
+        _lineEnding = lineEnding;
+    }
+
+    public void FillExceptionData(IDictionary data, string source, string? error = null, int? errorIndex = null)
     {
         data["source"] = source;
         data["error"] = error;
@@ -15,7 +22,7 @@ public static class ErrorIndexHelper
         {
             data["error_index"] = errorIndex.Value;
 
-            var context = FindContext(source.ReplaceLineEndings(), errorIndex.Value);
+            var context = FindContext(source, errorIndex.Value);
 
             data["error_line_index"] = context.LineIndex;
             data["error_position_in_line"] = context.PositionInLine;
@@ -28,16 +35,16 @@ public static class ErrorIndexHelper
         }
     }
 
-    public static ErrorContext FindContext(string source, int errorIndex, int contextSize = 5)
+    public ErrorContext FindContext(string source, int errorIndex, int contextSize = 5)
     {
-        var lines = source.Split(Environment.NewLine);
+        var lines = source.Split(_lineEnding);
 
         var accumulatedLength = 0;
         for (var lineIndex = 0; lineIndex < lines.Length; lineIndex++)
         {
             var line = lines[lineIndex];
 
-            if (line.Length + Environment.NewLine.Length + accumulatedLength > errorIndex)
+            if (line.Length + _lineEnding.Length + accumulatedLength > errorIndex)
             {
                 var positionInLine = errorIndex - accumulatedLength;
 
@@ -51,7 +58,7 @@ public static class ErrorIndexHelper
                 return new ErrorContext(lineIndex, positionInLine, highlighter);
             }
 
-            accumulatedLength += line.Length + Environment.NewLine.Length;
+            accumulatedLength += line.Length + _lineEnding.Length;
         }
 
         throw new ArgumentOutOfRangeException(nameof(errorIndex), errorIndex, "Error index exceeds source length");
