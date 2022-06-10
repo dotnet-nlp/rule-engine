@@ -1,8 +1,10 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using RuleEngine.Mechanics.Regex.Build.Tokenization;
 using BenchmarkDotNet.Attributes;
 using BenchmarkDotNet.Engines;
 using RuleEngine.Core.Lib.Common;
+using RuleEngine.Core.Lib.Common.Helpers;
 
 namespace RuleEngine.Mechanics.Regex.Benchmarking.Benchmarks;
 
@@ -20,7 +22,7 @@ public class RegexPatternTokenizerBenchmarks
         _cases_classic = DataProvider.Classic.Select(TransformCase).ToArray();
         _cases_real = DataProvider.Real.Select(TransformCase).ToArray();
 
-        _regexPatternTokenizer = new LoopBasedRegexPatternTokenizer(new StringInterner());
+        _regexPatternTokenizer = new LoopBasedRegexPatternTokenizer(new StringInterner(), new ErrorIndexHelper(Environment.NewLine));
 
         string TransformCase((string Regex, string[] Phrases) @case)
         {

@@ -8,6 +8,7 @@ using RuleEngine.Core.Evaluation.Rule;
 using RuleEngine.Core.Evaluation.Rule.Result.SelectionStrategy;
 using RuleEngine.Core.Lib.CodeAnalysis.Assemblies;
 using RuleEngine.Core.Lib.Common;
+using RuleEngine.Core.Lib.Common.Helpers;
 using RuleEngine.Mechanics.Peg.Build.InputProcessing;
 using RuleEngine.Mechanics.Peg.Build.Tokenization;
 using RuleEngine.Mechanics.Peg.Build.Tokenization.Tokens;
@@ -65,7 +66,7 @@ public class RuleSpaceFactoryBenchmarks
                     ),
                     new MechanicsBundle(
                         "regex",
-                        new LoopBasedRegexPatternTokenizer(stringInterner),
+                        new LoopBasedRegexPatternTokenizer(stringInterner, new ErrorIndexHelper(Environment.NewLine)),
                         new RegexProcessorFactory(OptimizationLevel.Max),
                         typeof(RegexGroupToken)
                     ),

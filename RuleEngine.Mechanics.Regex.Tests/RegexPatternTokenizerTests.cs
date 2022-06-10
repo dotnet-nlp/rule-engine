@@ -6,13 +6,14 @@ using RuleEngine.Mechanics.Regex.Exceptions;
 using NUnit.Framework;
 using RuleEngine.Core.Build.Tokenization.Tokens.Arguments;
 using RuleEngine.Core.Lib.Common;
+using RuleEngine.Core.Lib.Common.Helpers;
 
 namespace RuleEngine.Mechanics.Regex.Tests;
 
 [TestFixture(TestOf = typeof(LoopBasedRegexPatternTokenizer))]
 internal sealed class RegexPatternTokenizerTests
 {
-    private readonly LoopBasedRegexPatternTokenizer _tokenizer = new(new StringInterner());
+    private readonly LoopBasedRegexPatternTokenizer _tokenizer = new(new StringInterner(), new ErrorIndexHelper("\r\n"));
 
     [Test]
     [TestCaseSource(nameof(Marker))]

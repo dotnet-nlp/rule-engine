@@ -8,6 +8,7 @@ using RuleEngine.Core.Evaluation;
 using RuleEngine.Core.Evaluation.InputProcessing;
 using RuleEngine.Core.Evaluation.Rule.Result.SelectionStrategy;
 using RuleEngine.Core.Lib.Common;
+using RuleEngine.Core.Lib.Common.Helpers;
 using RuleEngine.Core.Tests.Helpers.Dummy;
 using RuleEngine.Mechanics.Peg.Build.InputProcessing;
 using RuleEngine.Mechanics.Peg.Build.Tokenization;
@@ -24,6 +25,7 @@ public static class NerEnvironment
     public static class Mechanics
     {
         private static readonly StringInterner StringInterner = new();
+        private static readonly ErrorIndexHelper ErrorIndexHelper = new("\r\n");
 
         public static readonly MechanicsBundle Peg = new(
             "peg",
@@ -42,7 +44,7 @@ public static class NerEnvironment
 
         public static readonly MechanicsBundle Regex = new(
             "regex",
-            new LoopBasedRegexPatternTokenizer(StringInterner),
+            new LoopBasedRegexPatternTokenizer(StringInterner, ErrorIndexHelper),
             new RegexProcessorFactory(OptimizationLevel.Max),
             typeof(RegexGroupToken)
         );

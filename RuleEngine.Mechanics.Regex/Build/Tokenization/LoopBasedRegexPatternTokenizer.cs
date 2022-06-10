@@ -22,10 +22,10 @@ public sealed class LoopBasedRegexPatternTokenizer : IPatternTokenizer
     private readonly QuantifierReader _quantifierReader;
     private readonly NerReader _nerReader;
 
-    public LoopBasedRegexPatternTokenizer(StringInterner stringInterner)
+    public LoopBasedRegexPatternTokenizer(StringInterner stringInterner, ErrorIndexHelper errorIndexHelper)
     {
         _stringInterner = stringInterner;
-        _errorIndexHelper = new ErrorIndexHelper(Environment.NewLine);
+        _errorIndexHelper = errorIndexHelper;
         _quantifierReader = new QuantifierReader(_errorIndexHelper);
         _nerReader = new NerReader(_errorIndexHelper);
     }

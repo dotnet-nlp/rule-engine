@@ -17,6 +17,7 @@ using RuleEngine.Core.Evaluation.Rule.Projection.Arguments;
 using RuleEngine.Core.Lib.CodeAnalysis.Assemblies;
 using RuleEngine.Core.Lib.CodeAnalysis.Tokenization.Tokens;
 using RuleEngine.Core.Lib.Common;
+using RuleEngine.Core.Lib.Common.Helpers;
 
 namespace RuleEngine.Mechanics.Regex.Benchmarking.Benchmarks;
 
@@ -45,7 +46,7 @@ public class RegexInputProcessorBenchmarks
                     {
                         new MechanicsBundle(
                             "regex",
-                            new LoopBasedRegexPatternTokenizer(stringInterner),
+                            new LoopBasedRegexPatternTokenizer(stringInterner, new ErrorIndexHelper(Environment.NewLine)),
                             new RegexProcessorFactory(OptimizationLevel.Max),
                             typeof(RegexGroupToken)
                         ),

@@ -78,7 +78,7 @@ internal sealed class IntegrationTests
             new []
             {
                 new MechanicsBundle("peg", new LoopBasedPegPatternTokenizer(stringInterner), new PegProcessorFactory(_bestReferenceSelectionStrategy), typeof(PegGroupToken)),
-                new MechanicsBundle("regex", new LoopBasedRegexPatternTokenizer(stringInterner), new RegexProcessorFactory(OptimizationLevel.Max), typeof(RegexGroupToken)),
+                new MechanicsBundle("regex", new LoopBasedRegexPatternTokenizer(stringInterner, new ErrorIndexHelper(Environment.NewLine)), new RegexProcessorFactory(OptimizationLevel.Max), typeof(RegexGroupToken)),
             }
         );
 

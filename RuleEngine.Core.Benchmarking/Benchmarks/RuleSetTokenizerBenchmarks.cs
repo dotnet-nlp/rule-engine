@@ -1,7 +1,9 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using BenchmarkDotNet.Attributes;
 using RuleEngine.Core.Build.Tokenization;
 using RuleEngine.Core.Lib.Common;
+using RuleEngine.Core.Lib.Common.Helpers;
 using RuleEngine.Mechanics.Peg.Build.Tokenization;
 using RuleEngine.Mechanics.Regex.Build.Tokenization;
 
@@ -19,7 +21,7 @@ public class RuleSetTokenizerBenchmarks
             new Dictionary<string, IPatternTokenizer>
             {
                 {"peg", new LoopBasedPegPatternTokenizer(stringInterner)},
-                {"regex", new LoopBasedRegexPatternTokenizer(stringInterner)},
+                {"regex", new LoopBasedRegexPatternTokenizer(stringInterner, new ErrorIndexHelper(Environment.NewLine))},
             }
         );
     }
