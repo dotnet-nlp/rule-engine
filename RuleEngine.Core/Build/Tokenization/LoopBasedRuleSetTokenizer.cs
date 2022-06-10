@@ -26,9 +26,8 @@ internal sealed class LoopBasedRuleSetTokenizer : IRuleSetTokenizer
 
     public RuleSetToken Tokenize(string ruleSet, string? @namespace, bool caseSensitive)
     {
-        ruleSet = ruleSet.ReplaceLineEndings();
-
         var i = 0;
+
         // todo [non-realtime performance] get rid of this (now it's needed to speed-up IronMeta)
         var chars = ruleSet.ToList();
         var usings = ParseUsings(ruleSet, chars, ref i);
