@@ -7,7 +7,6 @@ using System.Text.RegularExpressions;
 using RuleEngine.Core.Build.Tokenization;
 using RuleEngine.Core.Build.Tokenization.Tokens;
 using RuleEngine.Core.Build.Tokenization.Tokens.Arguments;
-using RuleEngine.Core.Lib.CodeAnalysis.Tokenization;
 using RuleEngine.Core.Lib.Common;
 using RuleEngine.Core.Lib.Common.Helpers;
 using RuleEngine.Mechanics.Regex.Build.Tokenization.Tokens;
@@ -32,8 +31,6 @@ public sealed class LoopBasedRegexPatternTokenizer : IPatternTokenizer
 
     public IPatternToken Tokenize(string pattern, string? @namespace, bool caseSensitive)
     {
-        pattern = pattern.ReplaceLineEndings();
-
         var usedMarkers = new HashSet<string>();
 
         var groups = new Stack<List<List<IBranchItemToken>>>();
