@@ -37,4 +37,4 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SERVER_URL: https://nuget.pkg.github.com/dotnet-nlp/index.json
           REPOSITORY_URL: ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}
-          MSBUILD_PROPERTIES: /p:Version=${VERSION} /p:RepositoryUrl=${REPOSITORY_URL} /p:PublishRepositoryUrl=true
+          MSBUILD_PROPERTIES: /p:Version=${VERSION} /p:RepositoryUrl=${REPOSITORY_URL} /p:RepositoryType=git /p:PublishRepositoryUrl=true
