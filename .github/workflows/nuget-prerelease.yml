@@ -10,6 +10,7 @@ env:
 
 jobs:
   get-next-version:
+    name: Draft new Pre-Release version
     runs-on: ubuntu-latest
     outputs:
       major: ${{ steps.semvers.outputs.major }}
@@ -41,7 +42,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - name: Set VERSION variable
-        run: echo "VERSION=${{ needs.analyze-tags.outputs.previous-tag }}" >> $GITHUB_ENV
+        run: echo "VERSION=${{ needs.get-next-version.outputs.preview }}" >> $GITHUB_ENV
       - uses: actions/setup-dotnet@v2
         with:
           dotnet-version: 6.0.x
