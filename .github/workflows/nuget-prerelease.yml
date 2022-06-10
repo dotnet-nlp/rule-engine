@@ -6,7 +6,7 @@ on:
       - main
 
 env:
-  MSBUILD_PROPERTIES: /p:RepositoryUrl=${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY} /p:PublishRepositoryUrl=true
+  MSBUILD_PROPERTIES: /p:RepositoryUrl=${{ env.GITHUB_SERVER_URL }}/${{ env.GITHUB_REPOSITORY }} /p:PublishRepositoryUrl=true
 
 jobs:
   get-next-version:
@@ -61,5 +61,5 @@ jobs:
           dotnet nuget push RuleEngine.Mechanics.Regex.${VERSION}.nupkg --source ${SERVER_URL} --api-key ${GITHUB_TOKEN}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          SERVER_URL: https://nuget.pkg.github.com/${GITHUB_REPOSITORY_OWNER}/index.json
+          SERVER_URL: https://nuget.pkg.github.com/${{ env.GITHUB_REPOSITORY_OWNER }}/index.json
 
