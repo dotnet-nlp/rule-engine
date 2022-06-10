@@ -60,5 +60,5 @@ jobs:
           dotnet nuget push RuleEngine.Mechanics.Regex.${VERSION}.nupkg --source ${SERVER_URL} --api-key ${GITHUB_TOKEN}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          SERVER_URL: https://nuget.pkg.github.com/${{ env.GITHUB_REPOSITORY_OWNER }}/index.json
+          SERVER_URL: https://nuget.pkg.github.com/${{ github.repository_owner }}/index.json
 
