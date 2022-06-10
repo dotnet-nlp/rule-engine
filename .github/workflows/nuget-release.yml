@@ -20,7 +20,7 @@ jobs:
       - name: Set VERSION variable from tag
         run: echo "VERSION=${GITHUB_REF/refs\/tags\/v/}" >> $GITHUB_ENV
       - name: Set MSBUILD_PROPERTIES variable
-          run: echo "MSBUILD_PROPERTIES=/p:Version=${VERSION} /p:RepositoryUrl=${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY} /p:PublishRepositoryUrl=true
+          run: echo "MSBUILD_PROPERTIES=/p:Version=${VERSION} /p:RepositoryUrl=${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY} /p:PublishRepositoryUrl=true" >> $GITHUB_ENV
       - uses: actions/setup-dotnet@v2
         with:
           dotnet-version: 6.0.x
