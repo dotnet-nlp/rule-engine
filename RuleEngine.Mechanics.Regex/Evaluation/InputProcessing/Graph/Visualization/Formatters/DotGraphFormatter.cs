@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using RuleEngine.Core.Lib.Common.Helpers;
 using RuleEngine.Mechanics.Regex.Evaluation.InputProcessing.Graph.Visualization.Models;
@@ -20,7 +21,7 @@ internal sealed class DotGraphFormatter : IGraphFormatter<string>
     /// <returns>DOT graph representation.</returns>
     public string Format(GraphModel graph)
     {
-        return $"digraph {graph.Name} {{\r\n{FormatAllPieces().ToArray().JoinToString("\r\n")}\r\n}}";
+        return $"digraph {graph.Name} {{\r\n{FormatAllPieces().ToArray().JoinToString(Environment.NewLine)}\r\n}}";
 
         IEnumerable<string> FormatAllPieces()
         {

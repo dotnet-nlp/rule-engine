@@ -13,7 +13,7 @@ ironmeta PegSyntaxMatcher<char, IToken> : Matcher<char, IToken>
     // constants
     SPACING = EOL | WHITESPACE | COMMENT;
     WHITESPACE = [' ' '\t'];
-    EOL = "\r\n";
+    EOL = "\r\n" | "\r" | "\n";
     EOF = ~.;
     COMMENT = _cSharpSyntaxMatcher.CSharpComment;
 

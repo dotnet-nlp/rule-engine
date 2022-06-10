@@ -30,7 +30,7 @@ public static class ErrorIndexHelper
 
     public static ErrorContext FindContext(string source, int errorIndex, int contextSize = 5)
     {
-        var lines = source.ReplaceLineEndings().Split(Environment.NewLine);
+        var lines = source.Split(Environment.NewLine);
 
         var accumulatedLength = 0;
         for (var lineIndex = 0; lineIndex < lines.Length; lineIndex++)

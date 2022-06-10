@@ -1,5 +1,5 @@
 //
-// IronMeta RuleSetSyntaxMatcher Parser; Generated 2022-06-09 23:03:58Z UTC
+// IronMeta RuleSetSyntaxMatcher Parser; Generated 2022-06-10 00:36:43Z UTC
 //
 
 using System;
@@ -145,14 +145,6 @@ namespace RuleEngine.Core.Build.Tokenization.Grammar
 
             // LITERAL "\n"
             _ParseLiteralString(_memo, ref _index, "\n");
-
-            // ACT
-            var _r4 = _memo.Results.Peek();
-            if (_r4 != null)
-            {
-                _memo.Results.Pop();
-                _memo.Results.Push( new _RuleSetSyntaxMatcher_Item(_r4.StartIndex, _r4.NextIndex, _memo.InputEnumerable, _Thunk(_IM_Result => { return new ContainerToken<string>(Environment.NewLine); }, _r4), true) );
-            }
 
         label0: // OR
             int _dummy_i0 = _index; // no-op for label

@@ -1,5 +1,5 @@
 //
-// IronMeta CSharpSyntaxMatcher Parser; Generated 2022-06-09 23:03:58Z UTC
+// IronMeta CSharpSyntaxMatcher Parser; Generated 2022-06-10 00:36:43Z UTC
 //
 
 using System;
@@ -125,8 +125,32 @@ namespace RuleEngine.Core.Lib.CodeAnalysis.Tokenization.Grammar
             int _arg_index = 0;
             int _arg_input_index = 0;
 
+            // OR 0
+            int _start_i0 = _index;
+
+            // OR 1
+            int _start_i1 = _index;
+
             // LITERAL "\r\n"
             _ParseLiteralString(_memo, ref _index, "\r\n");
+
+            // OR shortcut
+            if (_memo.Results.Peek() == null) { _memo.Results.Pop(); _index = _start_i1; } else goto label1;
+
+            // LITERAL "\r"
+            _ParseLiteralString(_memo, ref _index, "\r");
+
+        label1: // OR
+            int _dummy_i1 = _index; // no-op for label
+
+            // OR shortcut
+            if (_memo.Results.Peek() == null) { _memo.Results.Pop(); _index = _start_i0; } else goto label0;
+
+            // LITERAL "\n"
+            _ParseLiteralString(_memo, ref _index, "\n");
+
+        label0: // OR
+            int _dummy_i0 = _index; // no-op for label
 
         }
 

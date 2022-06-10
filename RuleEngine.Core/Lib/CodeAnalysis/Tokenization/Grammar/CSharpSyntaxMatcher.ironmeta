@@ -9,7 +9,7 @@ ironmeta CSharpSyntaxMatcher<char, IToken> : Matcher<char, IToken>
 {
     SPACING = EOL | WHITESPACE | CSharpComment;
     WHITESPACE = [' ' '\t'];
-    EOL = "\r\n";
+    EOL = "\r\n" | "\r" | "\n";
 
     // c# code
     CSharpIdentifier = (LatinLetterOrUnderscore (LatinLetterOrUnderscore | ['0'-'9'])*):value -> {
