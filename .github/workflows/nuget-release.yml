@@ -5,6 +5,7 @@ on:
       - v*
 jobs:
   release-nuget-packages:
+    name: Release NuGet packages
     runs-on: ubuntu-latest
     permissions:
       packages: write
@@ -35,5 +36,4 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SERVER_URL: https://nuget.pkg.github.com/dotnet-nlp/index.json
-          REPOSITORY_URL: foo
-
+          REPOSITORY_URL: ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}
