@@ -74,10 +74,12 @@ internal sealed class IntegrationTests
         );
 
         var stringInterner = new StringInterner();
+        var errorIndexHelper = new ErrorIndexHelper(Environment.NewLine);
+
         var factory = new RuleSpaceFactory(
             new []
             {
-                new MechanicsBundle("peg", new LoopBasedPegPatternTokenizer(stringInterner), new PegProcessorFactory(_bestReferenceSelectionStrategy), typeof(PegGroupToken)),
+                new MechanicsBundle("peg", new LoopBasedPegPatternTokenizer(stringInterner, errorIndexHelper), new PegProcessorFactory(_bestReferenceSelectionStrategy), typeof(PegGroupToken)),
                 new MechanicsBundle("regex", new LoopBasedRegexPatternTokenizer(stringInterner, new ErrorIndexHelper(Environment.NewLine)), new RegexProcessorFactory(OptimizationLevel.Max), typeof(RegexGroupToken)),
             }
         );

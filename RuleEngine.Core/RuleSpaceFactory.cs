@@ -40,7 +40,7 @@ public sealed class RuleSpaceFactory
     public IReadOnlyDictionary<string, IPatternTokenizer> PatternTokenizers { get; }
     public IRuleSetTokenizer RuleSetTokenizer { get; }
 
-    public RuleSpaceFactory(IReadOnlyCollection<MechanicsBundle> mechanicsCollection)
+    public RuleSpaceFactory(IReadOnlyCollection<MechanicsBundle> mechanicsCollection, string lineEnding = "\r\n")
     {
         _projectionCompiler = new ProjectionCompiler(
             new CachedTypeFormatter(new TypeFormatter()),
@@ -57,7 +57,7 @@ public sealed class RuleSpaceFactory
             .ToDictionaryWithKnownCapacity(mechanicsCollection.Count);
         StaticRuleFactory = new StaticRuleFactory(this);
         PatternTokenizers = mechanicsCollection.ToDictionary(mechanics => mechanics.Key, mechanics => mechanics.Tokenizer);
-        RuleSetTokenizer = new LoopBasedRuleSetTokenizer(PatternTokenizers);
+        RuleSetTokenizer = new LoopBasedRuleSetTokenizer(PatternTokenizers, new ErrorIndexHelper(lineEnding));
     }
 
     /// <summary>

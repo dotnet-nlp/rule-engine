@@ -16,13 +16,14 @@ public class RuleSetTokenizerBenchmarks
     public RuleSetTokenizerBenchmarks()
     {
         var stringInterner = new StringInterner();
-
+        var errorIndexHelper = new ErrorIndexHelper(Environment.NewLine);
         _ruleSetTokenizer = new LoopBasedRuleSetTokenizer(
             new Dictionary<string, IPatternTokenizer>
             {
-                {"peg", new LoopBasedPegPatternTokenizer(stringInterner)},
+                {"peg", new LoopBasedPegPatternTokenizer(stringInterner, errorIndexHelper)},
                 {"regex", new LoopBasedRegexPatternTokenizer(stringInterner, new ErrorIndexHelper(Environment.NewLine))},
-            }
+            },
+            errorIndexHelper
         );
     }
 

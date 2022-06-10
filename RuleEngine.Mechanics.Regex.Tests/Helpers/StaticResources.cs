@@ -1,5 +1,4 @@
-﻿using System;
-using RuleEngine.Core;
+﻿using RuleEngine.Core;
 using RuleEngine.Core.Build.Tokenization;
 using RuleEngine.Core.Evaluation.Rule.Result.SelectionStrategy;
 using RuleEngine.Core.Lib.Common;
@@ -14,7 +13,7 @@ namespace RuleEngine.Mechanics.Regex.Tests.Helpers;
 internal static class StaticResources
 {
     public static readonly StringInterner StringInterner = new();
-    public static readonly ErrorIndexHelper ErrorIndexHelper = new ErrorIndexHelper(Environment.NewLine);
+    public static readonly ErrorIndexHelper ErrorIndexHelper = new ErrorIndexHelper("\r\n");
     public static readonly IPatternTokenizer Tokenizer = new LoopBasedRegexPatternTokenizer(StringInterner, ErrorIndexHelper);
     public static readonly IResultSelectionStrategy ResultSelectionStrategy = new CombinedStrategy(
         new IResultSelectionStrategy[]

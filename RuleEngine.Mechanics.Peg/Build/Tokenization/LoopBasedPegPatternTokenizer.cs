@@ -21,10 +21,10 @@ public class LoopBasedPegPatternTokenizer : IPatternTokenizer
     private readonly QuantifierReader _quantifierReader;
     private readonly RuleReferenceReader _ruleReferenceReader;
 
-    public LoopBasedPegPatternTokenizer(StringInterner stringInterner)
+    public LoopBasedPegPatternTokenizer(StringInterner stringInterner, ErrorIndexHelper errorIndexHelper)
     {
         _stringInterner = stringInterner;
-        _errorIndexHelper = new ErrorIndexHelper(Environment.NewLine);
+        _errorIndexHelper = errorIndexHelper;
         _quantifierReader = new QuantifierReader(_errorIndexHelper);
         _ruleReferenceReader = new RuleReferenceReader(_errorIndexHelper);
     }

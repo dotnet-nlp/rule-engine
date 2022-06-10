@@ -45,7 +45,7 @@ public class RuleMatcherBenchmarks
                 {
                     new MechanicsBundle(
                         "peg",
-                        new LoopBasedPegPatternTokenizer(stringInterner),
+                        new LoopBasedPegPatternTokenizer(stringInterner, new ErrorIndexHelper(Environment.NewLine)),
                         new PegProcessorFactory(
                             new CombinedStrategy(
                                 new IResultSelectionStrategy[]

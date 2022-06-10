@@ -23,7 +23,7 @@ internal sealed class RuleSpaceSource
         {
             new MechanicsBundle(
                 "peg",
-                new LoopBasedPegPatternTokenizer(new StringInterner()),
+                new LoopBasedPegPatternTokenizer(new StringInterner(), new ErrorIndexHelper("\r\n")),
                 new PegProcessorFactory(
                     new CombinedStrategy(
                         new IResultSelectionStrategy[]

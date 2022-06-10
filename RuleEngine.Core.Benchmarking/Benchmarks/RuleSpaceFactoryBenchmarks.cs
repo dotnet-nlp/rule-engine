@@ -46,13 +46,14 @@ public class RuleSpaceFactoryBenchmarks
         RuleSpaceFactory CreateFactory()
         {
             var stringInterner = new StringInterner();
+            var errorIndexHelper = new ErrorIndexHelper(Environment.NewLine);
 
             return new RuleSpaceFactory(
                 new[]
                 {
                     new MechanicsBundle(
                         "peg",
-                        new LoopBasedPegPatternTokenizer(stringInterner),
+                        new LoopBasedPegPatternTokenizer(stringInterner, errorIndexHelper),
                         new PegProcessorFactory(
                             new CombinedStrategy(
                                 new IResultSelectionStrategy[]

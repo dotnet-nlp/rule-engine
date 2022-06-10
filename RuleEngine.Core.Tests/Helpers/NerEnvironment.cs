@@ -22,14 +22,15 @@ namespace RuleEngine.Core.Tests.Helpers;
 
 public static class NerEnvironment
 {
+    public static readonly ErrorIndexHelper ErrorIndexHelper = new("\r\n");
+
     public static class Mechanics
     {
         private static readonly StringInterner StringInterner = new();
-        private static readonly ErrorIndexHelper ErrorIndexHelper = new("\r\n");
 
         public static readonly MechanicsBundle Peg = new(
             "peg",
-            new LoopBasedPegPatternTokenizer(StringInterner),
+            new LoopBasedPegPatternTokenizer(StringInterner, ErrorIndexHelper),
             new PegProcessorFactory(
                 new CombinedStrategy(
                     new IResultSelectionStrategy[]

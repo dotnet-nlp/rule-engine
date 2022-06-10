@@ -24,7 +24,8 @@ internal sealed class RuleSetTokenizerTests
         new Dictionary<string, IPatternTokenizer>
         {
             {NerEnvironment.Mechanics.Dummy.Key, NerEnvironment.Mechanics.Dummy.Tokenizer},
-        }
+        },
+        NerEnvironment.ErrorIndexHelper
     );
 
     private readonly LoopBasedRuleSetTokenizer _realTokenizer = new(
@@ -32,7 +33,8 @@ internal sealed class RuleSetTokenizerTests
         {
             {NerEnvironment.Mechanics.Peg.Key, NerEnvironment.Mechanics.Peg.Tokenizer},
             {NerEnvironment.Mechanics.Regex.Key, NerEnvironment.Mechanics.Regex.Tokenizer},
-        }
+        },
+        NerEnvironment.ErrorIndexHelper
     );
 
     private static readonly IReadOnlyDictionary<string, RuleSetContainer> RuleSetsByKey = new Dictionary<string, RuleSetContainer>

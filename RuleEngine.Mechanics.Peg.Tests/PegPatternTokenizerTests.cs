@@ -5,13 +5,14 @@ using RuleEngine.Mechanics.Peg.Exceptions;
 using NUnit.Framework;
 using RuleEngine.Core.Build.Tokenization.Tokens.Arguments;
 using RuleEngine.Core.Lib.Common;
+using RuleEngine.Core.Lib.Common.Helpers;
 
 namespace RuleEngine.Mechanics.Peg.Tests;
 
 [TestFixture(TestOf = typeof(LoopBasedPegPatternTokenizer))]
 internal sealed class PegPatternTokenizerTests
 {
-    private readonly LoopBasedPegPatternTokenizer _tokenizer = new(new StringInterner());
+    private readonly LoopBasedPegPatternTokenizer _tokenizer = new(new StringInterner(), new ErrorIndexHelper("\r\n"));
 
     [Test]
     [TestCaseSource(nameof(Tokenizes_RuleArguments))]

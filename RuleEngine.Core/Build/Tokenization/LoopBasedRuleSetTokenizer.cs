@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using RuleEngine.Core.Build.Tokenization.Tokens;
 using RuleEngine.Core.Exceptions;
@@ -15,10 +14,13 @@ internal sealed class LoopBasedRuleSetTokenizer : IRuleSetTokenizer
     private readonly ErrorIndexHelper _errorIndexHelper;
     private readonly CSharpCodeTokenizer _cSharpCodeTokenizer;
 
-    public LoopBasedRuleSetTokenizer(IReadOnlyDictionary<string, IPatternTokenizer> patternTokenizers)
+    public LoopBasedRuleSetTokenizer(
+        IReadOnlyDictionary<string, IPatternTokenizer> patternTokenizers,
+        ErrorIndexHelper errorIndexHelper
+    )
     {
         _patternTokenizers = patternTokenizers;
-        _errorIndexHelper = new ErrorIndexHelper(Environment.NewLine);
+        _errorIndexHelper = errorIndexHelper;
         _cSharpCodeTokenizer = new CSharpCodeTokenizer(_errorIndexHelper);
     }
 
