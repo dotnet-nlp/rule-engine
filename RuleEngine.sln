@@ -39,7 +39,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Core", "Core", "{5F43473F-8
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".ci", ".ci", "{07954184-E0D7-4A3C-9270-F1152BAD8154}"
 	ProjectSection(SolutionItems) = preProject
-		.github\workflows\nuget.yml = .github\workflows\nuget.yml
+		.github\workflows\nuget-release.yml = .github\workflows\nuget-release.yml
 	EndProjectSection
 EndProject
 Global
