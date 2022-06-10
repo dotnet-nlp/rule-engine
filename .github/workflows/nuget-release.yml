@@ -6,11 +6,10 @@ on:
 jobs:
   release-nuget-packages:
     runs-on: ubuntu-latest
+    permissions:
+      packages: write
     steps:
       - uses: actions/checkout@v3
-      - uses: actions/setup-dotnet@v2
-        with:
-          dotnet-version: 6.0.x
       - name: Verify commit exists in origin/main
         run: |
           git fetch --no-tags --prune --depth=1 origin +refs/heads/*:refs/remotes/origin/*
@@ -18,6 +17,8 @@ jobs:
       - name: Set VERSION variable from tag
         run: echo "VERSION=${GITHUB_REF/refs\/tags\/v/}" >> $GITHUB_ENV
       - uses: actions/setup-dotnet@v2
+        with:
+          dotnet-version: 6.0.x
       - name: Restore dependencies
         run: dotnet restore
       - name: Build
