@@ -1,9 +1,9 @@
-name: Release NuGet packages on version tag created
+name: Pre-Release NuGet packages on push to main branch
 
 on:
-  create:
-    tags:
-      - v*
+  push:
+    branches:
+      - main
 
 env:
   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -11,19 +11,39 @@ env:
   MSBUILD_PROPERTIES: /p:RepositoryUrl=${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY} /p:PublishRepositoryUrl=true
 
 jobs:
-  release-nuget-packages:
-    name: Release NuGet packages
+  get-next-version:
     runs-on: ubuntu-latest
-    permissions:
-      packages: write
+    outputs:
+      major: ${{ steps.semvers.outputs.major }}
+      minor: ${{ steps.semvers.outputs.minor }}
+      patch: ${{ steps.semvers.outputs.patch }}
+      preview: ${{ steps.semvers.outputs.patch }}-preview.${{ steps.current_timestamp.outputs.current_timestamp }}
     steps:
       - uses: actions/checkout@v3
-      - name: Verify commit exists in origin/main
-        run: |
-          git fetch --no-tags --prune --depth=1 origin +refs/heads/*:refs/remotes/origin/*
-          git branch --remote --contains | grep origin/main
-      - name: Set VERSION variable from tag
-        run: echo "VERSION=${GITHUB_REF/refs\/tags\/v/}" >> $GITHUB_ENV
+        with:
+          fetch-depth: 0
+      - name: Get last tag on the branch
+        id: last-tag
+        uses: WyriHaximus/github-action-get-previous-tag@v1
+        with:
+          fallback: 1.0.0
+      - name: Get semantic versioning information
+        id: semvers
+        uses: WyriHaximus/github-action-next-semvers@v1
+        with:
+          version: ${{ steps.last-tag.outputs.previous-tag }}
+      - name: Get current timestamp
+        id: current_timestamp
+        run: echo "::set-output name=current_timestamp::$(date +%s)"
+
+  release-nuget-packages:
+    name: Pre-Release NuGet packages
+    runs-on: ubuntu-latest
+    needs: [get-next-version]
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set VERSION variable
+        run: echo "VERSION=${{ needs.analyze-tags.outputs.previous-tag }}" >> $GITHUB_ENV
       - uses: actions/setup-dotnet@v2
         with:
           dotnet-version: 6.0.x
@@ -40,3 +60,4 @@ jobs:
           dotnet nuget push RuleEngine.Core.${VERSION}.nupkg --source ${SERVER_URL} --api-key ${GITHUB_TOKEN}
           dotnet nuget push RuleEngine.Mechanics.Peg.${VERSION}.nupkg --source ${SERVER_URL} --api-key ${GITHUB_TOKEN}
           dotnet nuget push RuleEngine.Mechanics.Regex.${VERSION}.nupkg --source ${SERVER_URL} --api-key ${GITHUB_TOKEN}
+
