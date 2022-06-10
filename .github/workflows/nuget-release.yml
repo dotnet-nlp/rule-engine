@@ -28,9 +28,9 @@ jobs:
         run: dotnet pack --no-build --configuration Release /p:Version=${VERSION} --output .
       - name: Push
         run: |
-          dotnet nuget push RuleEngine.Core.${VERSION}.nupkg --source https://nuget.pkg.github.com/acraven/index.json --api-key ${GITHUB_TOKEN}
-          dotnet nuget push RuleEngine.Mechanics.Peg.${VERSION}.nupkg --source https://nuget.pkg.github.com/acraven/index.json --api-key ${GITHUB_TOKEN}
-          dotnet nuget push RuleEngine.Mechanics.Regex.${VERSION}.nupkg --source https://nuget.pkg.github.com/acraven/index.json --api-key ${GITHUB_TOKEN}
+          dotnet nuget push RuleEngine.Core.${VERSION}.nupkg --source https://nuget.pkg.github.com/dotnet-nlp/index.json --api-key ${GITHUB_TOKEN}
+          dotnet nuget push RuleEngine.Mechanics.Peg.${VERSION}.nupkg --source https://nuget.pkg.github.com/dotnet-nlp/index.json --api-key ${GITHUB_TOKEN}
+          dotnet nuget push RuleEngine.Mechanics.Regex.${VERSION}.nupkg --source https://nuget.pkg.github.com/dotnet-nlp/index.json --api-key ${GITHUB_TOKEN}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
