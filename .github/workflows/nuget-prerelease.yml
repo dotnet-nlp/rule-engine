@@ -6,8 +6,6 @@ on:
       - main
 
 env:
-  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-  SERVER_URL: https://nuget.pkg.github.com/${GITHUB_REPOSITORY_OWNER}/index.json
   MSBUILD_PROPERTIES: /p:RepositoryUrl=${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY} /p:PublishRepositoryUrl=true
 
 jobs:
@@ -17,7 +15,7 @@ jobs:
       major: ${{ steps.semvers.outputs.major }}
       minor: ${{ steps.semvers.outputs.minor }}
       patch: ${{ steps.semvers.outputs.patch }}
-      preview: ${{ steps.semvers.outputs.patch }}-preview.${{ steps.current_timestamp.outputs.current_timestamp }}
+      preview: ${{ steps.semvers.outputs.patch }}-preview.${{ steps.current-timestamp.outputs.timestamp }}
     steps:
       - uses: actions/checkout@v3
         with:
@@ -31,10 +29,10 @@ jobs:
         id: semvers
         uses: WyriHaximus/github-action-next-semvers@v1
         with:
-          version: ${{ steps.last-tag.outputs.previous-tag }}
+          version: ${{ steps.last-tag.outputs.tag }}
       - name: Get current timestamp
-        id: current_timestamp
-        run: echo "::set-output name=current_timestamp::$(date +%s)"
+        id: current-timestamp
+        run: echo "::set-output name=timestamp::$(date +%s)"
 
   release-nuget-packages:
     name: Pre-Release NuGet packages
@@ -60,4 +58,7 @@ jobs:
           dotnet nuget push RuleEngine.Core.${VERSION}.nupkg --source ${SERVER_URL} --api-key ${GITHUB_TOKEN}
           dotnet nuget push RuleEngine.Mechanics.Peg.${VERSION}.nupkg --source ${SERVER_URL} --api-key ${GITHUB_TOKEN}
           dotnet nuget push RuleEngine.Mechanics.Regex.${VERSION}.nupkg --source ${SERVER_URL} --api-key ${GITHUB_TOKEN}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SERVER_URL: https://nuget.pkg.github.com/${GITHUB_REPOSITORY_OWNER}/index.json
 

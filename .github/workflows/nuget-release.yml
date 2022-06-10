@@ -6,8 +6,6 @@ on:
       - v*
 
 env:
-  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-  SERVER_URL: https://nuget.pkg.github.com/${GITHUB_REPOSITORY_OWNER}/index.json
   MSBUILD_PROPERTIES: /p:RepositoryUrl=${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY} /p:PublishRepositoryUrl=true
 
 jobs:
@@ -40,3 +38,6 @@ jobs:
           dotnet nuget push RuleEngine.Core.${VERSION}.nupkg --source ${SERVER_URL} --api-key ${GITHUB_TOKEN}
           dotnet nuget push RuleEngine.Mechanics.Peg.${VERSION}.nupkg --source ${SERVER_URL} --api-key ${GITHUB_TOKEN}
           dotnet nuget push RuleEngine.Mechanics.Regex.${VERSION}.nupkg --source ${SERVER_URL} --api-key ${GITHUB_TOKEN}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SERVER_URL: https://nuget.pkg.github.com/${GITHUB_REPOSITORY_OWNER}/index.json
