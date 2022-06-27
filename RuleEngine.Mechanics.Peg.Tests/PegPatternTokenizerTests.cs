@@ -21,6 +21,7 @@ internal sealed class PegPatternTokenizerTests
     [TestCaseSource(nameof(Tokenizes_CapturedPieces))]
     [TestCaseSource(nameof(Tokenizes_NestedGroups))]
     [TestCaseSource(nameof(Tokenizes_NonRussian))]
+    [TestCaseSource(nameof(Tokenizes_WithComments))]
     public void Tokenizes(string pattern, PegGroupToken expectedPatternToken)
     {
         var patternToken = (PegGroupToken) _tokenizer.Tokenize(pattern, null, true);
@@ -506,6 +507,141 @@ internal sealed class PegPatternTokenizerTests
                                         new LiteralToken("foo"),
                                     }
                                 ),
+                                new QuantifierToken(1, 1),
+                                null,
+                                null
+                            ),
+                        }
+                    ),
+                }
+            ),
+        },
+    };
+
+    public static object?[][] Tokenizes_WithComments =
+    {
+        new object?[]
+        {
+            "(/*1*/2)",
+            new PegGroupToken(
+                new []
+                {
+                    new BranchToken(
+                        new []
+                        {
+                            new BranchItemToken(
+                                new LiteralToken("2"),
+                                new QuantifierToken(1, 1),
+                                null,
+                                null
+                            ),
+                        }
+                    ),
+                }
+            ),
+        },
+        new object?[]
+        {
+            "(/*1*/2~?)",
+            new PegGroupToken(
+                new []
+                {
+                    new BranchToken(
+                        new []
+                        {
+                            new BranchItemToken(
+                                new PrefixToken("2"),
+                                new QuantifierToken(0, 1),
+                                null,
+                                null
+                            ),
+                        }
+                    ),
+                }
+            ),
+        },
+        new object?[]
+        {
+            "(~3~/*+*/)",
+            new PegGroupToken(
+                new []
+                {
+                    new BranchToken(
+                        new []
+                        {
+                            new BranchItemToken(
+                                new InfixToken("3"),
+                                new QuantifierToken(1, 1),
+                                null,
+                                null
+                            ),
+                        }
+                    ),
+                }
+            ),
+        },
+        new object?[]
+        {
+            "(/*~*/4*)",
+            new PegGroupToken(
+                new []
+                {
+                    new BranchToken(
+                        new []
+                        {
+                            new BranchItemToken(
+                                new LiteralToken("4"),
+                                new QuantifierToken(0, null),
+                                null,
+                                null
+                            ),
+                        }
+                    ),
+                }
+            ),
+        },
+        new object?[]
+        {
+            "(~4/***/)",
+            new PegGroupToken(
+                new []
+                {
+                    new BranchToken(
+                        new []
+                        {
+                            new BranchItemToken(
+                                new SuffixToken("4"),
+                                new QuantifierToken(1, 1),
+                                null,
+                                null
+                            ),
+                        }
+                    ),
+                }
+            ),
+        },
+        new object?[]
+        {
+            "(a/*|b*/|c)",
+            new PegGroupToken(
+                new []
+                {
+                    new BranchToken(
+                        new []
+                        {
+                            new BranchItemToken(
+                                new LiteralToken("a"),
+                                new QuantifierToken(1, 1),
+                                null,
+                                null
+                            ),
+                        }
+                    ),
+                    new BranchToken(
+                        new []
+                        {
+                            new BranchItemToken(
+                                new LiteralToken("c"),
                                 new QuantifierToken(1, 1),
                                 null,
                                 null

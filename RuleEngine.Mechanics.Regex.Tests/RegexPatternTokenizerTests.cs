@@ -16,22 +16,23 @@ internal sealed class RegexPatternTokenizerTests
     private readonly LoopBasedRegexPatternTokenizer _tokenizer = new(new StringInterner(), new ErrorIndexHelper("\r\n"));
 
     [Test]
-    [TestCaseSource(nameof(Marker))]
-    [TestCaseSource(nameof(Group))]
-    [TestCaseSource(nameof(Literal))]
-    [TestCaseSource(nameof(Prefix))]
-    [TestCaseSource(nameof(Infix))]
-    [TestCaseSource(nameof(Suffix))]
-    [TestCaseSource(nameof(ManyLiteralLikePieces))]
-    [TestCaseSource(nameof(ManyBranches))]
-    [TestCaseSource(nameof(LiteralSet))]
-    [TestCaseSource(nameof(Ner))]
-    [TestCaseSource(nameof(QuantifierPlus))]
-    [TestCaseSource(nameof(QuantifierQuestion))]
-    [TestCaseSource(nameof(QuantifierStar))]
-    [TestCaseSource(nameof(QuantifierExplicit))]
-    [TestCaseSource(nameof(ComplexCases))]
-    [TestCaseSource(nameof(EmptyLiteralSet))]
+    [TestCaseSource(nameof(Tokenizes_Literal))]
+    [TestCaseSource(nameof(Tokenizes_Prefix))]
+    [TestCaseSource(nameof(Tokenizes_Infix))]
+    [TestCaseSource(nameof(Tokenizes_Suffix))]
+    [TestCaseSource(nameof(Tokenizes_ManyLiteralLikePieces))]
+    [TestCaseSource(nameof(Tokenizes_ManyBranches))]
+    [TestCaseSource(nameof(Tokenizes_Marker))]
+    [TestCaseSource(nameof(Tokenizes_Group))]
+    [TestCaseSource(nameof(Tokenizes_ComplexCases))]
+    [TestCaseSource(nameof(Tokenizes_LiteralSet))]
+    [TestCaseSource(nameof(Tokenizes_Ner))]
+    [TestCaseSource(nameof(Tokenizes_QuantifierPlus))]
+    [TestCaseSource(nameof(Tokenizes_QuantifierQuestion))]
+    [TestCaseSource(nameof(Tokenizes_QuantifierStar))]
+    [TestCaseSource(nameof(Tokenizes_QuantifierExplicit))]
+    [TestCaseSource(nameof(Tokenizes_EmptyLiteralSet))]
+    [TestCaseSource(nameof(Tokenizes_WithComments))]
     public void Tokenizes(string pattern, RegexGroupToken expectedPatternToken)
     {
         var patternToken = (RegexGroupToken) _tokenizer.Tokenize(pattern, null, false);
@@ -160,7 +161,7 @@ internal sealed class RegexPatternTokenizerTests
 
     #region Sources_Tokenizes
 
-    public static object?[][] Literal =
+    public static object?[][] Tokenizes_Literal =
     {
         new object?[]
         {
@@ -194,7 +195,7 @@ internal sealed class RegexPatternTokenizerTests
         },
     };
 
-    public static object?[][] Prefix =
+    public static object?[][] Tokenizes_Prefix =
     {
         new object?[]
         {
@@ -228,7 +229,7 @@ internal sealed class RegexPatternTokenizerTests
         },
     };
 
-    public static object?[][] Infix =
+    public static object?[][] Tokenizes_Infix =
     {
         new object?[]
         {
@@ -262,7 +263,7 @@ internal sealed class RegexPatternTokenizerTests
         },
     };
 
-    public static object?[][] Suffix =
+    public static object?[][] Tokenizes_Suffix =
     {
         new object?[]
         {
@@ -296,7 +297,7 @@ internal sealed class RegexPatternTokenizerTests
         },
     };
 
-    public static object?[][] ManyLiteralLikePieces =
+    public static object?[][] Tokenizes_ManyLiteralLikePieces =
     {
         new object?[]
         {
@@ -368,7 +369,7 @@ internal sealed class RegexPatternTokenizerTests
         },
     };
 
-    public static object?[][] ManyBranches =
+    public static object?[][] Tokenizes_ManyBranches =
     {
         new object?[]
         {
@@ -420,7 +421,7 @@ internal sealed class RegexPatternTokenizerTests
         },
     };
 
-    public static object?[][] Marker =
+    public static object?[][] Tokenizes_Marker =
     {
         new object?[]
         {
@@ -641,7 +642,7 @@ internal sealed class RegexPatternTokenizerTests
         },
     };
 
-    public static object?[][] Group =
+    public static object?[][] Tokenizes_Group =
     {
         new object?[]
         {
@@ -708,7 +709,7 @@ internal sealed class RegexPatternTokenizerTests
         },
     };
 
-    public static object?[][] ComplexCases =
+    public static object?[][] Tokenizes_ComplexCases =
     {
         new object?[]
         {
@@ -891,7 +892,7 @@ internal sealed class RegexPatternTokenizerTests
         },
     };
 
-    public static object?[][] LiteralSet =
+    public static object?[][] Tokenizes_LiteralSet =
     {
         new object?[]
         {
@@ -1015,7 +1016,7 @@ internal sealed class RegexPatternTokenizerTests
         },
     };
 
-    public static object?[][] Ner =
+    public static object?[][] Tokenizes_Ner =
     {
         new object?[]
         {
@@ -1152,7 +1153,7 @@ internal sealed class RegexPatternTokenizerTests
         },
     };
 
-    public static object?[][] QuantifierPlus =
+    public static object?[][] Tokenizes_QuantifierPlus =
     {
         new object?[]
         {
@@ -1274,7 +1275,7 @@ internal sealed class RegexPatternTokenizerTests
         },
     };
 
-    public static object?[][] QuantifierQuestion =
+    public static object?[][] Tokenizes_QuantifierQuestion =
     {
         new object?[]
         {
@@ -1396,7 +1397,7 @@ internal sealed class RegexPatternTokenizerTests
         },
     };
 
-    public static object?[][] QuantifierStar =
+    public static object?[][] Tokenizes_QuantifierStar =
     {
         new object?[]
         {
@@ -1518,7 +1519,7 @@ internal sealed class RegexPatternTokenizerTests
         },
     };
 
-    public static object?[][] QuantifierExplicit =
+    public static object?[][] Tokenizes_QuantifierExplicit =
     {
         new object?[]
         {
@@ -1685,7 +1686,7 @@ internal sealed class RegexPatternTokenizerTests
         },
     };
 
-    public static object?[][] EmptyLiteralSet =
+    public static object?[][] Tokenizes_EmptyLiteralSet =
     {
         new object?[]
         {
@@ -1717,6 +1718,134 @@ internal sealed class RegexPatternTokenizerTests
                         {
                             new QuantifiableBranchItemToken(
                                 new LiteralSetToken(true, Array.Empty<ILiteralSetMemberToken>()),
+                                new QuantifierToken(1, 1),
+                                null
+                            ),
+                        }
+                    ),
+                }
+            ),
+        },
+    };
+
+    public static object?[][] Tokenizes_WithComments =
+    {
+        new object?[]
+        {
+            "(/*1*/2)",
+            new RegexGroupToken(
+                new []
+                {
+                    new BranchToken(
+                        new IBranchItemToken[]
+                        {
+                            new QuantifiableBranchItemToken(
+                                new LiteralToken("2"),
+                                new QuantifierToken(1, 1),
+                                null
+                            ),
+                        }
+                    ),
+                }
+            ),
+        },
+        new object?[]
+        {
+            "(/*1*/2~?)",
+            new RegexGroupToken(
+                new []
+                {
+                    new BranchToken(
+                        new IBranchItemToken[]
+                        {
+                            new QuantifiableBranchItemToken(
+                                new PrefixToken("2"),
+                                new QuantifierToken(0, 1),
+                                null
+                            ),
+                        }
+                    ),
+                }
+            ),
+        },
+        new object?[]
+        {
+            "(~3~/*+*/)",
+            new RegexGroupToken(
+                new []
+                {
+                    new BranchToken(
+                        new IBranchItemToken[]
+                        {
+                            new QuantifiableBranchItemToken(
+                                new InfixToken("3"),
+                                new QuantifierToken(1, 1),
+                                null
+                            ),
+                        }
+                    ),
+                }
+            ),
+        },
+        new object?[]
+        {
+            "(/*~*/4*)",
+            new RegexGroupToken(
+                new []
+                {
+                    new BranchToken(
+                        new IBranchItemToken[]
+                        {
+                            new QuantifiableBranchItemToken(
+                                new LiteralToken("4"),
+                                new QuantifierToken(0, null),
+                                null
+                            ),
+                        }
+                    ),
+                }
+            ),
+        },
+        new object?[]
+        {
+            "(~4/***/)",
+            new RegexGroupToken(
+                new []
+                {
+                    new BranchToken(
+                        new IBranchItemToken[]
+                        {
+                            new QuantifiableBranchItemToken(
+                                new SuffixToken("4"),
+                                new QuantifierToken(1, 1),
+                                null
+                            ),
+                        }
+                    ),
+                }
+            ),
+        },
+        new object?[]
+        {
+            "(a/*|b*/|c)",
+            new RegexGroupToken(
+                new []
+                {
+                    new BranchToken(
+                        new IBranchItemToken[]
+                        {
+                            new QuantifiableBranchItemToken(
+                                new LiteralToken("a"),
+                                new QuantifierToken(1, 1),
+                                null
+                            ),
+                        }
+                    ),
+                    new BranchToken(
+                        new IBranchItemToken[]
+                        {
+                            new QuantifiableBranchItemToken(
+                                new LiteralToken("c"),
                                 new QuantifierToken(1, 1),
                                 null
                             ),

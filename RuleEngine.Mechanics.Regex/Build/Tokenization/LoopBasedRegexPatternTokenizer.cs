@@ -206,6 +206,19 @@ public sealed class LoopBasedRegexPatternTokenizer : IPatternTokenizer
                             AddItemToCurrentBranch(new LiteralToken(word));
                         }
                     }
+                    else if (c == '/' && pattern[i] == '*')
+                    {
+                        i++;
+
+                        while (++i < pattern.Length)
+                        {
+                            if (pattern[i - 1] == '*' && pattern[i] == '/')
+                            {
+                                i++;
+                                break;
+                            }
+                        }
+                    }
                     else
                     {
                         throw new RegexPatternTokenizationException(
