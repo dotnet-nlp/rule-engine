@@ -6,9 +6,10 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".items", ".items", "{C72CAE10-197E-4B96-B7E8-557844FA538E}"
 ProjectSection(SolutionItems) = preProject
 	.gitignore = .gitignore
-	RuleEngine.sln = RuleEngine.sln
 	README.md = README.md
-	RuleEngine.sln.DotSettings = RuleEngine.sln.DotSettings
+	DotnetNlp.RuleEngine.sln = DotnetNlp.RuleEngine.sln
+	DotnetNlp.RuleEngine.sln.DotSettings = DotnetNlp.RuleEngine.sln.DotSettings
+	LICENCE = LICENCE
 EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DotnetNlp.RuleEngine.Mechanics.Peg.Benchmarking", "DotnetNlp.RuleEngine.Mechanics.Peg.Benchmarking\DotnetNlp.RuleEngine.Mechanics.Peg.Benchmarking.csproj", "{5D0E65E2-300B-439E-9849-B963C1C370BF}"

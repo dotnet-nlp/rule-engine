@@ -31,43 +31,43 @@ Please note, that the classic applications of PEG and Regex assume that the inpu
 ## Library structure
 
 This repository contains three packages:
-- `RuleEngine.Core` - core library, which is responsible for all the abstractions such as rule space, rule, rule matcher, etc.
-  - unit test for this package can be found here: `RuleEngine.Tests`
-- `RuleEngine.Mechanics.Peg` - implementation of PEG mechanics
-  - unit test for this package can be found here: `RuleEngine.Mechanics.Peg.Tests`
-- `RuleEngine.Mechanics.Regex` - implementation of PEG mechanics
-  - unit test for this package can be found here: `RuleEngine.Mechanics.Regex.Tests`
+- `DotnetNlp.RuleEngine.Core` - core library, which is responsible for all the abstractions such as rule space, rule, rule matcher, etc.
+  - unit test for this package can be found here: `DotnetNlp.RuleEngine.Tests`
+- `DotnetNlp.RuleEngine.Mechanics.Peg` - implementation of PEG mechanics
+  - unit test for this package can be found here: `DotnetNlp.RuleEngine.Mechanics.Peg.Tests`
+- `DotnetNlp.RuleEngine.Mechanics.Regex` - implementation of PEG mechanics
+  - unit test for this package can be found here: `DotnetNlp.RuleEngine.Mechanics.Regex.Tests`
 
 ## Benchmarking
 
 For each of the library components there are benchmarks written with `BenchmarkDotNet`:
-- `RuleEngine.Core.Benchmarking`
-- `RuleEngine.Mechanics.Peg.Benchmarking`
-- `RuleEngine.Mechanics.Regex.Benchmarking`
+- `DotnetNlp.RuleEngine.Core.Benchmarking`
+- `DotnetNlp.RuleEngine.Mechanics.Peg.Benchmarking`
+- `DotnetNlp.RuleEngine.Mechanics.Regex.Benchmarking`
 
 ## Usage examples
 
 ```csharp
 using System;
 using System.Collections.Immutable;
-using RuleEngine.Core;
-using RuleEngine.Core.Build.Tokenization.Tokens;
-using RuleEngine.Core.Evaluation;
-using RuleEngine.Core.Evaluation.Cache;
-using RuleEngine.Core.Evaluation.Rule;
-using RuleEngine.Core.Evaluation.Rule.Input;
-using RuleEngine.Core.Evaluation.Rule.Projection.Arguments;
-using RuleEngine.Core.Evaluation.Rule.Result;
-using RuleEngine.Core.Evaluation.Rule.Result.SelectionStrategy;
-using RuleEngine.Core.Lib.CodeAnalysis.Assemblies;
-using RuleEngine.Core.Lib.CodeAnalysis.Tokenization.Tokens;
-using RuleEngine.Core.Lib.Common;
-using RuleEngine.Mechanics.Peg.Build.InputProcessing;
-using RuleEngine.Mechanics.Peg.Build.Tokenization;
-using RuleEngine.Mechanics.Regex.Build.InputProcessing;
-using RuleEngine.Mechanics.Regex.Build.InputProcessing.Automaton.Optimization;
-using RuleEngine.Mechanics.Regex.Build.Tokenization;
-using RuleEngine.Mechanics.Regex.Build.Tokenization.Tokens;
+using DotnetNlp.RuleEngine.Core;
+using DotnetNlp.RuleEngine.Core.Build.Tokenization.Tokens;
+using DotnetNlp.RuleEngine.Core.Evaluation;
+using DotnetNlp.RuleEngine.Core.Evaluation.Cache;
+using DotnetNlp.RuleEngine.Core.Evaluation.Rule;
+using DotnetNlp.RuleEngine.Core.Evaluation.Rule.Input;
+using DotnetNlp.RuleEngine.Core.Evaluation.Rule.Projection.Arguments;
+using DotnetNlp.RuleEngine.Core.Evaluation.Rule.Result;
+using DotnetNlp.RuleEngine.Core.Evaluation.Rule.Result.SelectionStrategy;
+using DotnetNlp.RuleEngine.Core.Lib.CodeAnalysis.Assemblies;
+using DotnetNlp.RuleEngine.Core.Lib.CodeAnalysis.Tokenization.Tokens;
+using DotnetNlp.RuleEngine.Core.Lib.Common;
+using DotnetNlp.RuleEngine.Mechanics.Peg.Build.InputProcessing;
+using DotnetNlp.RuleEngine.Mechanics.Peg.Build.Tokenization;
+using DotnetNlp.RuleEngine.Mechanics.Regex.Build.InputProcessing;
+using DotnetNlp.RuleEngine.Mechanics.Regex.Build.InputProcessing.Automaton.Optimization;
+using DotnetNlp.RuleEngine.Mechanics.Regex.Build.Tokenization;
+using DotnetNlp.RuleEngine.Mechanics.Regex.Build.Tokenization.Tokens;
 
 // custom implementation of string interner is used to make it possible to "deintern string"
 StringInterner stringInterner = new StringInterner();
@@ -88,7 +88,7 @@ RuleSpaceFactory ruleSpaceFactory = new RuleSpaceFactory(
                     }
                 )
             ),
-            typeof(RuleEngine.Mechanics.Peg.Build.Tokenization.Tokens.PegGroupToken)
+            typeof(DotnetNlp.RuleEngine.Mechanics.Peg.Build.Tokenization.Tokens.PegGroupToken)
         ),
         new MechanicsBundle(
             "regex",
