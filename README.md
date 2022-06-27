@@ -1,4 +1,4 @@
-Rule Engine is a pattern matching library, which allows including multiple mechanics to detect if the phrase matches the some specific rule.
+Rule Engine is a pattern matching library, which allows including multiple mechanics to detect if the phrase matches some specific rule.
 
 ## Basic terms
 
