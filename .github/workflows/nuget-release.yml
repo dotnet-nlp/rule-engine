@@ -34,9 +34,9 @@ jobs:
         run: dotnet pack /p:Version=${VERSION} ${MSBUILD_PROPERTIES} --configuration Release --no-restore --no-build --include-source --include-symbols --output . 
       - name: Push
         run: |
-          dotnet nuget push RuleEngine.Core.${VERSION}.nupkg --source ${SERVER_URL} --api-key ${GITHUB_TOKEN}
-          dotnet nuget push RuleEngine.Mechanics.Peg.${VERSION}.nupkg --source ${SERVER_URL} --api-key ${GITHUB_TOKEN}
-          dotnet nuget push RuleEngine.Mechanics.Regex.${VERSION}.nupkg --source ${SERVER_URL} --api-key ${GITHUB_TOKEN}
+          dotnet nuget push DotnetNlp.RuleEngine.Core.${VERSION}.nupkg --source ${SERVER_URL} --api-key ${GITHUB_TOKEN}
+          dotnet nuget push DotnetNlp.RuleEngine.Mechanics.Peg.${VERSION}.nupkg --source ${SERVER_URL} --api-key ${GITHUB_TOKEN}
+          dotnet nuget push DotnetNlp.RuleEngine.Mechanics.Regex.${VERSION}.nupkg --source ${SERVER_URL} --api-key ${GITHUB_TOKEN}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SERVER_URL: https://nuget.pkg.github.com/${{ github.repository_owner }}/index.json

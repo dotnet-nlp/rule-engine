@@ -1,0 +1,37 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net6.0</TargetFramework>
+    <LangVersion>latest</LangVersion>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\DotnetNlp.RuleEngine.Core\DotnetNlp.RuleEngine.Core.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="IronMeta" Version="4.5.0" />
+  </ItemGroup>
+
+  <!-- uncomment this section to enable build-time RegexSyntaxMatcher generation by IronMeta -->
+<!--  <Target Name="Generate_RegexSyntaxMatcher" BeforeTargets="BeforeBuild">-->
+<!--    <Exec Command="$(NuGetPackageRoot)ironmeta\4.5.0\tools\net5.0\IronMeta.App.exe -f -n DotnetNlp.RuleEngine.Mechanics.Regex.Build.Tokenization.Grammar $(ProjectDir)Build\Tokenization\Grammar\RegexSyntaxMatcher.ironmeta" />-->
+<!--    <ItemGroup>-->
+<!--      <Compile Include="$(ProjectDir)Construction\Tokenization\Grammar\*$(DefaultLanguageSourceExtension)" Exclude="$(DefaultItemExcludes);$(DefaultExcludesInProjectFolder);$(BaseIntermediateOutputPath)**;$(BaseOutputPath)**;@(Compile)" />-->
+<!--    </ItemGroup>-->
+<!--  </Target>-->
+
+  <ItemGroup>
+    <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleTo">
+      <_Parameter1>DotnetNlp.RuleEngine.Core.Tests</_Parameter1>
+    </AssemblyAttribute>
+    <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleTo">
+      <_Parameter1>DotnetNlp.RuleEngine.Mechanics.Regex.Tests</_Parameter1>
+    </AssemblyAttribute>
+    <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleTo">
+      <_Parameter1>DotnetNlp.RuleEngine.Mechanics.Regex.Benchmarking</_Parameter1>
+    </AssemblyAttribute>
+  </ItemGroup>
+
+</Project>

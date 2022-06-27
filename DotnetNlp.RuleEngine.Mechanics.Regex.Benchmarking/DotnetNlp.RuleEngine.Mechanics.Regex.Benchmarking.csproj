@@ -1,0 +1,21 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <IsPackable>false</IsPackable>
+    <TargetFramework>net6.0</TargetFramework>
+    <LangVersion>latest</LangVersion>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="BenchmarkDotNet" Version="0.13.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\DotnetNlp.RuleEngine.Mechanics.Regex\DotnetNlp.RuleEngine.Mechanics.Regex.csproj" />
+    <ProjectReference Include="..\DotnetNlp.RuleEngine.Core\DotnetNlp.RuleEngine.Core.csproj" />
+    <ProjectReference Include="..\DotnetNlp.Tools.Benchmarking\DotnetNlp.Tools.Benchmarking.csproj" />
+  </ItemGroup>
+
+</Project>
