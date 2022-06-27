@@ -18,7 +18,7 @@ public static class CodeHighlightHelper
 
     private static string HighlightLineWithError(string code, int lineIndex, string message, int linesRange = 5)
     {
-        var lines = code.ReplaceLineEndings().Split(Environment.NewLine);
+        var lines = code.Split(Environment.NewLine);
 
         if (lineIndex < lines.Length)
         {

@@ -32,7 +32,7 @@ internal sealed class GrammarBasedRuleSetTokenizer : IRuleSetTokenizer
 
         try
         {
-            result = matcher.GetMatch(ruleSet.ReplaceLineEndings().ToList(), matcher.RuleSet);
+            result = matcher.GetMatch(ruleSet.ToList(), matcher.RuleSet);
         }
         catch (RuleEngineTokenizationException)
         {

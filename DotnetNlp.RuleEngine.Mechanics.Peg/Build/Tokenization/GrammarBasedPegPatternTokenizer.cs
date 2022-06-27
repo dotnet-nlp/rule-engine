@@ -22,7 +22,7 @@ public sealed class GrammarBasedPegPatternTokenizer : IPatternTokenizer
         }
 
         var matcher = new PegSyntaxMatcher(@namespace, new CSharpSyntaxMatcher());
-        MatchResult<char, IToken> result = matcher.GetMatch(pattern.ReplaceLineEndings().ToList(), matcher.Pattern);
+        MatchResult<char, IToken> result = matcher.GetMatch(pattern.ToList(), matcher.Pattern);
 
         if (!result.Success)
         {
