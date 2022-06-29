@@ -1,9 +1,8 @@
 name: Release NuGet packages on version tag created
 
 on:
-  create:
-    tags:
-      - v*
+  release:
+    types: [created]
 
 jobs:
   release-nuget-packages:
