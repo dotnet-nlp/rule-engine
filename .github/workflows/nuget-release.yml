@@ -1,4 +1,4 @@
-name: Release NuGet packages on version tag created
+name: Release NuGet packages on release created
 
 on:
   release:
