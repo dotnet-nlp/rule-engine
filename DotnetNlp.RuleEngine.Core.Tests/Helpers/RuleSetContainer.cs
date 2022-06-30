@@ -12,20 +12,20 @@ internal sealed class RuleSetContainer
 {
     public string Definition { get; }
     public RuleSetToken Token { get; }
-    public IReadOnlyCollection<MechanicsBundle> MechanicsCollection { get; }
+    public IReadOnlyCollection<MechanicsDescription> MechanicsCollection { get; }
 
     private IRuleSpace? _ruleSpace;
     public IRuleSpace RuleSpace
     {
         get
         {
-            return _ruleSpace ??= new RuleSpaceFactory(MechanicsCollection).CreateWithAliases(
+            return _ruleSpace ??= new RuleSpaceFactory(MechanicsCollection).Create(
                 new[] { Token },
                 Array.Empty<RuleToken>(),
                 ImmutableDictionary<string, IRuleMatcher>.Empty,
                 ImmutableDictionary<string, IRuleSpace>.Empty,
                 ImmutableDictionary<string, Type>.Empty,
-                new LoadedAssembliesProvider()
+                LoadedAssembliesProvider.Instance
             );
         }
     }
@@ -33,7 +33,7 @@ internal sealed class RuleSetContainer
     public RuleSetContainer(
         string definition,
         RuleSetToken token,
-        IReadOnlyCollection<MechanicsBundle> mechanicsCollection
+        IReadOnlyCollection<MechanicsDescription> mechanicsCollection
     )
     {
         Definition = definition;

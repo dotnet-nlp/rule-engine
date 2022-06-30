@@ -11,8 +11,7 @@ using DotnetNlp.RuleEngine.Core.Lib.Common.Helpers;
 
 namespace DotnetNlp.RuleEngine.Mechanics.Regex.Tests.Helpers;
 
-internal sealed class RuleSpaceSource<TPatternToken>
-    where TPatternToken : IPatternToken
+internal sealed class RuleSpaceSource<TPatternToken> where TPatternToken : IPatternToken
 {
     private readonly RuleSpaceFactory _factory;
     private readonly IReadOnlyDictionary<string, (string Definition, TPatternToken Token)> _rules;
@@ -34,7 +33,7 @@ internal sealed class RuleSpaceSource<TPatternToken>
 
     private IRuleSpace CreateRuleSpace()
     {
-        return _factory.CreateWithAliases(
+        return _factory.Create(
             Array.Empty<RuleSetToken>(),
             _rules
                 .MapValue(
@@ -55,7 +54,7 @@ internal sealed class RuleSpaceSource<TPatternToken>
                 .MergeWithKnownCapacity(_staticRuleContainers.Count),
             ImmutableDictionary<string, IRuleSpace>.Empty,
             ImmutableDictionary<string, Type>.Empty,
-            new LoadedAssembliesProvider()
+            LoadedAssembliesProvider.Instance
         );
     }
 }

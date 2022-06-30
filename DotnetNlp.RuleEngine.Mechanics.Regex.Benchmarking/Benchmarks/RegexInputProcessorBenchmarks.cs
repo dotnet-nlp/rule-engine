@@ -44,7 +44,7 @@ public class RegexInputProcessorBenchmarks
                 var factory = new RuleSpaceFactory(
                     new []
                     {
-                        new MechanicsBundle(
+                        new MechanicsDescription(
                             "regex",
                             new LoopBasedRegexPatternTokenizer(stringInterner, new ErrorIndexHelper(Environment.NewLine)),
                             new RegexProcessorFactory(OptimizationLevel.Max),
@@ -55,7 +55,7 @@ public class RegexInputProcessorBenchmarks
 
                 const string runeName = "foo";
 
-                var ruleSpace = factory.CreateWithAliases(
+                var ruleSpace = factory.Create(
                     Array.Empty<RuleSetToken>(),
                     new []
                     {
@@ -72,7 +72,7 @@ public class RegexInputProcessorBenchmarks
                     ImmutableDictionary<string, IRuleMatcher>.Empty,
                     ImmutableDictionary<string, IRuleSpace>.Empty,
                     ImmutableDictionary<string, Type>.Empty,
-                    new LoadedAssembliesProvider()
+                    LoadedAssembliesProvider.Instance
                 );
 
                 return ruleSpace[runeName];

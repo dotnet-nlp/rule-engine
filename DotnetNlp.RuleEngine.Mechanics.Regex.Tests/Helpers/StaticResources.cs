@@ -23,9 +23,9 @@ internal static class StaticResources
         }
     );
 
-    public static MechanicsBundle RegexMechanics(OptimizationLevel optimizationLevel = OptimizationLevel.Min)
+    public static MechanicsDescription RegexMechanics(OptimizationLevel optimizationLevel = OptimizationLevel.Min)
     {
-        return new MechanicsBundle(
+        return new MechanicsDescription(
             "regex",
             Tokenizer,
             new RegexProcessorFactory(optimizationLevel),

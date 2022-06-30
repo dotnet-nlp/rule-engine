@@ -44,6 +44,12 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".ci", ".ci", "{07954184-E0D
 		.github\workflows\nuget-prerelease.yml = .github\workflows\nuget-prerelease.yml
 	EndProjectSection
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DotnetNlp.RuleEngine.Bundle", "DotnetNlp.RuleEngine.Bundle\DotnetNlp.RuleEngine.Bundle.csproj", "{40ADD670-3E71-403D-B080-0B592EC4EC59}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Bundle", "Bundle", "{A3ED6858-CACD-44B5-99E8-275C3880FAFD}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DotnetNlp.RuleEngine.Bundle.Tests", "DotnetNlp.RuleEngine.Bundle.Tests\DotnetNlp.RuleEngine.Bundle.Tests.csproj", "{3414ACCF-B8FB-4567-882C-C9FC62BD012E}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -90,6 +96,14 @@ Global
 		{F8592159-A2C7-4D97-85B2-300E9B1A0047}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F8592159-A2C7-4D97-85B2-300E9B1A0047}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{F8592159-A2C7-4D97-85B2-300E9B1A0047}.Release|Any CPU.Build.0 = Release|Any CPU
+		{40ADD670-3E71-403D-B080-0B592EC4EC59}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{40ADD670-3E71-403D-B080-0B592EC4EC59}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{40ADD670-3E71-403D-B080-0B592EC4EC59}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{40ADD670-3E71-403D-B080-0B592EC4EC59}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3414ACCF-B8FB-4567-882C-C9FC62BD012E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3414ACCF-B8FB-4567-882C-C9FC62BD012E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3414ACCF-B8FB-4567-882C-C9FC62BD012E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3414ACCF-B8FB-4567-882C-C9FC62BD012E}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{507DB4D9-7580-4CBF-B3F4-D4C3014E32F9} = {D621145D-09E2-4E5A-8002-DBEE9A3B11C5}
@@ -104,5 +118,7 @@ Global
 		{EF994412-2208-4034-AC50-1E0344C756B1} = {5F43473F-8151-42CC-8439-9E36F2F3B918}
 		{DBBF2D01-1C62-42EE-878F-859716D8B947} = {5F43473F-8151-42CC-8439-9E36F2F3B918}
 		{42836A2B-A7B0-4567-A92F-2EE0A528497A} = {5F43473F-8151-42CC-8439-9E36F2F3B918}
+		{40ADD670-3E71-403D-B080-0B592EC4EC59} = {A3ED6858-CACD-44B5-99E8-275C3880FAFD}
+		{3414ACCF-B8FB-4567-882C-C9FC62BD012E} = {A3ED6858-CACD-44B5-99E8-275C3880FAFD}
 	EndGlobalSection
 EndGlobal

@@ -28,7 +28,7 @@ public static class NerEnvironment
     {
         private static readonly StringInterner StringInterner = new();
 
-        public static readonly MechanicsBundle Peg = new(
+        public static readonly MechanicsDescription Peg = new(
             "peg",
             new LoopBasedPegPatternTokenizer(StringInterner, ErrorIndexHelper),
             new PegProcessorFactory(
@@ -43,14 +43,14 @@ public static class NerEnvironment
             typeof(PegGroupToken)
         );
 
-        public static readonly MechanicsBundle Regex = new(
+        public static readonly MechanicsDescription Regex = new(
             "regex",
             new LoopBasedRegexPatternTokenizer(StringInterner, ErrorIndexHelper),
             new RegexProcessorFactory(OptimizationLevel.Max),
             typeof(RegexGroupToken)
         );
 
-        public static MechanicsBundle Dummy { get; } = new(
+        public static MechanicsDescription Dummy { get; } = new(
             "dummy",
             new DummyTokenizer(),
             new DummyProcessorFactory(),

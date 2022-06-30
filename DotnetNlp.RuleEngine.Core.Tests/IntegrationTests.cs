@@ -79,8 +79,8 @@ internal sealed class IntegrationTests
         var factory = new RuleSpaceFactory(
             new []
             {
-                new MechanicsBundle("peg", new LoopBasedPegPatternTokenizer(stringInterner, errorIndexHelper), new PegProcessorFactory(_bestReferenceSelectionStrategy), typeof(PegGroupToken)),
-                new MechanicsBundle("regex", new LoopBasedRegexPatternTokenizer(stringInterner, new ErrorIndexHelper(Environment.NewLine)), new RegexProcessorFactory(OptimizationLevel.Max), typeof(RegexGroupToken)),
+                new MechanicsDescription("peg", new LoopBasedPegPatternTokenizer(stringInterner, errorIndexHelper), new PegProcessorFactory(_bestReferenceSelectionStrategy), typeof(PegGroupToken)),
+                new MechanicsDescription("regex", new LoopBasedRegexPatternTokenizer(stringInterner, new ErrorIndexHelper(Environment.NewLine)), new RegexProcessorFactory(OptimizationLevel.Max), typeof(RegexGroupToken)),
             }
         );
 
@@ -338,7 +338,7 @@ int Foo = peg#($ner.number_line:number)#
             .SelectValues()
             .ToArray();
 
-        _ruleSpace = factory.CreateWithAliases(
+        _ruleSpace = factory.Create(
             sdnRuleSetsByName,
             rulesByName,
             new [] { typeof(DummyStaticNerContainer) }
@@ -346,7 +346,7 @@ int Foo = peg#($ner.number_line:number)#
                 .Merge(),
             new Dictionary<string, IRuleSpace>(),
             _ruleSpaceArguments.Values.MapValue(argument => argument!.GetType()).ToDictionary(),
-            new LoadedAssembliesProvider()
+            LoadedAssembliesProvider.Instance
         );
     }
 

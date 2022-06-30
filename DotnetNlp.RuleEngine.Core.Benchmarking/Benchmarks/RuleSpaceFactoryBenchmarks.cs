@@ -51,7 +51,7 @@ public class RuleSpaceFactoryBenchmarks
             return new RuleSpaceFactory(
                 new[]
                 {
-                    new MechanicsBundle(
+                    new MechanicsDescription(
                         "peg",
                         new LoopBasedPegPatternTokenizer(stringInterner, errorIndexHelper),
                         new PegProcessorFactory(
@@ -65,7 +65,7 @@ public class RuleSpaceFactoryBenchmarks
                         ),
                         typeof(PegGroupToken)
                     ),
-                    new MechanicsBundle(
+                    new MechanicsDescription(
                         "regex",
                         new LoopBasedRegexPatternTokenizer(stringInterner, new ErrorIndexHelper(Environment.NewLine)),
                         new RegexProcessorFactory(OptimizationLevel.Max),
@@ -82,13 +82,13 @@ public class RuleSpaceFactoryBenchmarks
         foreach (var (ruleSets, rules) in _cases)
         {
             _consumer.Consume(
-                _ruleSpaceFactory.CreateWithAliases(
+                _ruleSpaceFactory.Create(
                     ruleSets,
                     rules,
                     ImmutableDictionary<string, IRuleMatcher>.Empty,
                     ImmutableDictionary<string, IRuleSpace>.Empty,
                     ImmutableDictionary<string, Type>.Empty,
-                    new LoadedAssembliesProvider()
+                    LoadedAssembliesProvider.Instance
                 )
             );
         }

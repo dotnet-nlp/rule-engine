@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Linq;
 using DotnetNlp.RuleEngine.Core;
 using DotnetNlp.RuleEngine.Core.Build.Tokenization.Tokens;
@@ -21,7 +22,7 @@ internal sealed class RuleSpaceSource
     private static readonly RuleSpaceFactory Factory = new(
         new[]
         {
-            new MechanicsBundle(
+            new MechanicsDescription(
                 "peg",
                 new LoopBasedPegPatternTokenizer(new StringInterner(), new ErrorIndexHelper("\r\n")),
                 new PegProcessorFactory(
@@ -50,7 +51,7 @@ internal sealed class RuleSpaceSource
 
     private IRuleSpace CreateRuleSpace()
     {
-        return Factory.CreateWithAliases(
+        return Factory.Create(
             Array.Empty<RuleSetToken>(),
             _rules
                 .MapValue(
@@ -66,10 +67,10 @@ internal sealed class RuleSpaceSource
                 )
                 .SelectValues()
                 .ToArray(),
-            new Dictionary<string, IRuleMatcher>(),
-            new Dictionary<string, IRuleSpace>(),
-            new Dictionary<string, Type>(),
-            new LoadedAssembliesProvider()
+            ImmutableDictionary<string, IRuleMatcher>.Empty,
+            ImmutableDictionary<string, IRuleSpace>.Empty,
+            ImmutableDictionary<string, Type>.Empty,
+            LoadedAssembliesProvider.Instance
         );
     }
 }

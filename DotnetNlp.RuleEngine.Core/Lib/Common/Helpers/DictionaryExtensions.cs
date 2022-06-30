@@ -123,6 +123,7 @@ public static class DictionaryExtensions
         return dictionaries.MergeWithKnownCapacity(0, ignoreDuplicates);
     }
 
+    // todo check if those kind of methods are still needed in net6.0+
     public static Dictionary<TKey, TValue> ToDictionaryWithKnownCapacity<TKey, TValue>(
         this IEnumerable<KeyValuePair<TKey, TValue>> dictionary,
         int capacity,

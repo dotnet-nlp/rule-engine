@@ -36,6 +36,7 @@ jobs:
           dotnet nuget push DotnetNlp.RuleEngine.Core.${VERSION}.nupkg --source ${SERVER_URL} --api-key ${GITHUB_TOKEN}
           dotnet nuget push DotnetNlp.RuleEngine.Mechanics.Peg.${VERSION}.nupkg --source ${SERVER_URL} --api-key ${GITHUB_TOKEN}
           dotnet nuget push DotnetNlp.RuleEngine.Mechanics.Regex.${VERSION}.nupkg --source ${SERVER_URL} --api-key ${GITHUB_TOKEN}
+          dotnet nuget push DotnetNlp.RuleEngine.Bundle.${VERSION}.nupkg --source ${SERVER_URL} --api-key ${GITHUB_TOKEN}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SERVER_URL: https://nuget.pkg.github.com/${{ github.repository_owner }}/index.json

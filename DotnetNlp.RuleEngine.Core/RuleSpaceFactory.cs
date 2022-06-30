@@ -40,7 +40,7 @@ public sealed class RuleSpaceFactory
     public IReadOnlyDictionary<string, IPatternTokenizer> PatternTokenizers { get; }
     public IRuleSetTokenizer RuleSetTokenizer { get; }
 
-    public RuleSpaceFactory(IReadOnlyCollection<MechanicsBundle> mechanicsCollection, string lineEnding = "\r\n")
+    public RuleSpaceFactory(IReadOnlyCollection<MechanicsDescription> mechanicsCollection, string lineEnding = "\r\n")
     {
         _projectionCompiler = new ProjectionCompiler(
             new CachedTypeFormatter(new TypeFormatter()),
@@ -92,7 +92,7 @@ public sealed class RuleSpaceFactory
     /// Root rule (if exists) is invoked when the rule set is referenced "as whole" (by it's namespace).
     /// </param>
     /// <returns>Compiled rule space.</returns>
-    public IRuleSpace CreateWithAliases(
+    public IRuleSpace Create(
         IReadOnlyCollection<RuleSetToken> ruleSets,
         IReadOnlyCollection<IRuleToken> rulesByName,
         IReadOnlyDictionary<string, IRuleMatcher> standaloneMatchersByName,

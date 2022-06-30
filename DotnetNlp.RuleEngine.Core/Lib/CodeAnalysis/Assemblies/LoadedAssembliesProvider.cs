@@ -8,6 +8,12 @@ namespace DotnetNlp.RuleEngine.Core.Lib.CodeAnalysis.Assemblies;
 
 public sealed class LoadedAssembliesProvider : IAssembliesProvider
 {
+    public static readonly LoadedAssembliesProvider Instance = new LoadedAssembliesProvider();
+
+    private LoadedAssembliesProvider()
+    {
+    }
+
     public IEnumerable<Assembly> GetAssemblies()
     {
         return GetAssembliesData().Select(data => data.Assembly);

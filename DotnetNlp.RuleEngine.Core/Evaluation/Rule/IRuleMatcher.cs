@@ -24,6 +24,11 @@ public interface IRuleMatcher : IUsedWordsProvider
 
 public static class RuleMatcherExtensions
 {
+    public static bool HasMatch(this IRuleMatcher matcher, RuleInput input, int firstSymbolIndex, IRuleSpaceCache cache)
+    {
+        return matcher.Match(input, firstSymbolIndex, cache).Count > 0;
+    }
+
     public static RuleMatchResultCollection MatchAll(
         this IRuleMatcher matcher,
         RuleInput input,

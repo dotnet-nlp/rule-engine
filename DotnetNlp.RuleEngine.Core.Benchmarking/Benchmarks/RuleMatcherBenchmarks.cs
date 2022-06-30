@@ -43,7 +43,7 @@ public class RuleMatcherBenchmarks
             var factory = new RuleSpaceFactory(
                 new []
                 {
-                    new MechanicsBundle(
+                    new MechanicsDescription(
                         "peg",
                         new LoopBasedPegPatternTokenizer(stringInterner, new ErrorIndexHelper(Environment.NewLine)),
                         new PegProcessorFactory(
@@ -57,7 +57,7 @@ public class RuleMatcherBenchmarks
                         ),
                         typeof(PegGroupToken)
                     ),
-                    new MechanicsBundle(
+                    new MechanicsDescription(
                         "regex",
                         new LoopBasedRegexPatternTokenizer(stringInterner, new ErrorIndexHelper(Environment.NewLine)),
                         new RegexProcessorFactory(OptimizationLevel.Max),
@@ -66,7 +66,7 @@ public class RuleMatcherBenchmarks
                 }
             );
 
-            return factory.CreateWithAliases(
+            return factory.Create(
                 new []
                 {
                     factory.RuleSetTokenizer.Tokenize(DataProvider.MatcherCases.RuleSets["ner.time"], "ner.time", true),
@@ -76,7 +76,7 @@ public class RuleMatcherBenchmarks
                 ImmutableDictionary<string, IRuleMatcher>.Empty,
                 ImmutableDictionary<string, IRuleSpace>.Empty,
                 ImmutableDictionary<string, Type>.Empty,
-                new LoadedAssembliesProvider()
+                LoadedAssembliesProvider.Instance
             );
         }
     }

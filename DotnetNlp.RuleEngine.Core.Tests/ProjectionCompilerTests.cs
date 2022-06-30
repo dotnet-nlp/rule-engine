@@ -42,7 +42,7 @@ internal sealed class ProjectionCompilerTests
             {
                 {key, data},
             },
-            new LoadedAssembliesProvider()
+            LoadedAssembliesProvider.Instance
         );
 
         Assert.IsTrue(projections.ContainsKey(key));
@@ -79,7 +79,7 @@ internal sealed class ProjectionCompilerTests
             {
                 {key, data},
             },
-            new LoadedAssembliesProvider()
+            LoadedAssembliesProvider.Instance
         );
 
         Assert.IsTrue(projections.ContainsKey(key));

@@ -160,13 +160,13 @@ internal sealed class RuleMatcherTests
                 {
                     NerEnvironment.Mechanics.Peg,
                 }
-            ).CreateWithAliases(
+            ).Create(
                 new[] { ruleSetToken },
                 Array.Empty<RuleToken>(),
                 ImmutableDictionary<string, IRuleMatcher>.Empty,
                 ImmutableDictionary<string, IRuleSpace>.Empty,
                 ImmutableDictionary<string, Type>.Empty,
-                new LoadedAssembliesProvider()
+                LoadedAssembliesProvider.Instance
             )
         );
 

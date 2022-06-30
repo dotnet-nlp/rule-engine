@@ -26,9 +26,15 @@ internal sealed class LoopBasedRuleSetTokenizer : IRuleSetTokenizer
 
     public RuleSetToken Tokenize(string ruleSet, string? @namespace, bool caseSensitive)
     {
+        if (ruleSet.Length == 0)
+        {
+            throw new RuleEngineTokenizationException("Unable to parse empty rule set.", ruleSet);
+        }
+
         var i = 0;
 
-        // todo [non-realtime performance] get rid of this (now it's needed to speed-up IronMeta)
+        // todo [non-realtime performance] get rid of this
+        // (check if it's needed now it's needed to speed-up IronMeta in net6.0+)
         var chars = ruleSet.ToList();
         var usings = ParseUsings(ruleSet, chars, ref i);
         var rules = ParseRules(ruleSet, chars, @namespace, caseSensitive, ref i);

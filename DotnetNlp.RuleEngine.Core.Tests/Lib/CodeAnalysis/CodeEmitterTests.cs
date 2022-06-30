@@ -38,7 +38,7 @@ internal sealed class CodeEmitterTests
                 parameters,
                 body
             ),
-            new LoadedAssembliesProvider()
+            LoadedAssembliesProvider.Instance
         );
 
         var result = function.Invoke(arguments);

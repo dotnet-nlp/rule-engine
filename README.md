@@ -30,13 +30,14 @@ Please note, that the classic applications of PEG and Regex assume that the inpu
 
 ## Library structure
 
-This repository contains three packages:
+This repository CI produces following packages:
 - `DotnetNlp.RuleEngine.Core` - core library, which is responsible for all the abstractions such as rule space, rule, rule matcher, etc.
   - unit test for this package can be found here: `DotnetNlp.RuleEngine.Tests`
-- `DotnetNlp.RuleEngine.Mechanics.Peg` - implementation of PEG mechanics
+- `DotnetNlp.RuleEngine.Mechanics.Peg` - implementation of Peg mechanics.
   - unit test for this package can be found here: `DotnetNlp.RuleEngine.Mechanics.Peg.Tests`
-- `DotnetNlp.RuleEngine.Mechanics.Regex` - implementation of PEG mechanics
+- `DotnetNlp.RuleEngine.Mechanics.Regex` - implementation of Regex mechanics.
   - unit test for this package can be found here: `DotnetNlp.RuleEngine.Mechanics.Regex.Tests`
+- `DotnetNlp.RuleEngine.Bundle` - contains Core library, and both Peg and Regex mechanics, as well as the short syntax for their usage.
 
 ## Benchmarking
 
@@ -48,192 +49,81 @@ For each of the library components there are benchmarks written with `BenchmarkD
 ## Usage examples
 
 ```csharp
-using System;
-using System.Collections.Immutable;
-using DotnetNlp.RuleEngine.Core;
-using DotnetNlp.RuleEngine.Core.Build.Tokenization.Tokens;
-using DotnetNlp.RuleEngine.Core.Evaluation;
+using System.Collections.Generic;
+using DotnetNlp.RuleEngine.Bundle;
 using DotnetNlp.RuleEngine.Core.Evaluation.Cache;
 using DotnetNlp.RuleEngine.Core.Evaluation.Rule;
 using DotnetNlp.RuleEngine.Core.Evaluation.Rule.Input;
 using DotnetNlp.RuleEngine.Core.Evaluation.Rule.Projection.Arguments;
-using DotnetNlp.RuleEngine.Core.Evaluation.Rule.Result;
-using DotnetNlp.RuleEngine.Core.Evaluation.Rule.Result.SelectionStrategy;
-using DotnetNlp.RuleEngine.Core.Lib.CodeAnalysis.Assemblies;
-using DotnetNlp.RuleEngine.Core.Lib.CodeAnalysis.Tokenization.Tokens;
-using DotnetNlp.RuleEngine.Core.Lib.Common;
-using DotnetNlp.RuleEngine.Mechanics.Peg.Build.InputProcessing;
-using DotnetNlp.RuleEngine.Mechanics.Peg.Build.Tokenization;
-using DotnetNlp.RuleEngine.Mechanics.Regex.Build.InputProcessing;
-using DotnetNlp.RuleEngine.Mechanics.Regex.Build.InputProcessing.Automaton.Optimization;
-using DotnetNlp.RuleEngine.Mechanics.Regex.Build.Tokenization;
-using DotnetNlp.RuleEngine.Mechanics.Regex.Build.Tokenization.Tokens;
 
-// custom implementation of string interner is used to make it possible to "deintern string"
-StringInterner stringInterner = new StringInterner();
-
-// creating rule space factory with two mechanics - "peg" and "regex"
-RuleSpaceFactory ruleSpaceFactory = new RuleSpaceFactory(
-    new[]
-    {
-        new MechanicsBundle(
-            "peg",
-            new LoopBasedPegPatternTokenizer(stringInterner),
-            new PegProcessorFactory(
-                new CombinedStrategy(
-                    new IResultSelectionStrategy[]
-                    {
-                        new MaxExplicitSymbolsStrategy(),
-                        new MaxProgressStrategy(),
-                    }
-                )
-            ),
-            typeof(DotnetNlp.RuleEngine.Mechanics.Peg.Build.Tokenization.Tokens.PegGroupToken)
-        ),
-        new MechanicsBundle(
-            "regex",
-            new LoopBasedRegexPatternTokenizer(stringInterner),
-            new RegexProcessorFactory(OptimizationLevel.Max),
-            typeof(RegexGroupToken)
-        )
-    }
-);
-
-// creating rule space from rules
-IRuleSpace ruleSpace = ruleSpaceFactory.CreateWithAliases(
-    Array.Empty<RuleSetToken>(),
-    new []
-    {
-        // pattern token for this rule is created manually
-        new RuleToken(
-            null,
-            VoidProjectionToken.ReturnType,
-            "is_greeting",
-            Array.Empty<CSharpParameterToken>(),
-            "regex",
-            // this token represents the regex which has string representation "(hello|good morning)" and can be tokenized from that string
-            new RegexGroupToken(
-                new []
-                {
-                    new BranchToken(
-                        new IBranchItemToken[]
-                        {
-                            new QuantifiableBranchItemToken(new LiteralToken("hello"), new QuantifierToken(1, 1), null),
-                        }
-                    ),
-                    new BranchToken(
-                        new IBranchItemToken[]
-                        {
-                            new QuantifiableBranchItemToken(new LiteralToken("good"), new QuantifierToken(1, 1), null),
-                            new QuantifiableBranchItemToken(new LiteralToken("morning"), new QuantifierToken(1, 1), null),
-                        }
-                    ),
-                }
-            ),
-            VoidProjectionToken.Instance
-        ),
-        // pattern token for this rule is created with tokenization procedure from raw string
-        new RuleToken(
-            null,
-            VoidProjectionToken.ReturnType,
-            "is_farewell",
-            Array.Empty<CSharpParameterToken>(),
-            "regex",
-            ruleSpaceFactory.PatternTokenizers["regex"].Tokenize("(good? bye|farewell)", null, false),
-            VoidProjectionToken.Instance
-        )
-    },
-    ImmutableDictionary<string, IRuleMatcher>.Empty,
-    ImmutableDictionary<string, IRuleSpace>.Empty,
-    ImmutableDictionary<string, Type>.Empty,
-    new LoadedAssembliesProvider()
-);
-
-// setting up transient variables
-RuleSpaceArguments ruleSpaceArguments = new RuleSpaceArguments(ImmutableDictionary<string, object?>.Empty);
-RuleSpaceCache ruleSpaceCache = new RuleSpaceCache();
-
-// testing matchers
-
-// greeting matcher
+var ruleSets = new Dictionary<string, string>()
 {
-    // getting rule matcher from rule space
-    IRuleMatcher greetingMatcher = ruleSpace["is_greeting"];
+    {
+        "number",
+        @"
+using DotnetNlp.RuleEngine.Bundle;
 
-    // "success1" variable will contain single result
-    RuleMatchResultCollection success1 = greetingMatcher.Match(
+int Root = peg#($Number:n)# { return n; }
+int Number = peg#($Number_0:n_0|$Number_1:n_1|$Number_2:n_2|$Number_3:n_3|$Number_4:n_4|$Number_5:n_5|$Number_6:n_6|$Number_7:n_7|$Number_8:n_8|$Number_9:n_9)# { return Pick.OneOf(n_0, n_1, n_2, n_3, n_4, n_5, n_6, n_7, n_8, n_9); }
+int Number_0 = peg#(ноль)# => 0
+int Number_1 = peg#(один)# => 1
+int Number_2 = peg#(два)# => 2
+int Number_3 = peg#(три)# => 3
+int Number_4 = peg#(четыре)# => 4
+int Number_5 = peg#(пять)# => 5
+int Number_6 = peg#(шесть)# => 6
+int Number_7 = peg#(семь)# => 7
+int Number_8 = peg#(восемь)# => 8
+int Number_9 = peg#(девять)# => 9"
+    },
+};
+
+var rules = new Dictionary<string, string>()
+{
+    {
+        "hi",
+        "([привет~ здравствуй~]|[добрый доброе доброй доброго] [день дня вечер вечера утро утра ночь ночи])"
+    },
+};
+
+var ruleSpace = Factory.Create(
+    ruleSets: ruleSets,
+    rules: rules
+);
+
+// testing matcher (with object value extraction)
+{
+    // the same matcher is available under the keys: "number", "number.Number", "number.Root"
+    var numberMatcher = ruleSpace["number"];
+
+    // using MatchAndProject method to get the resulting number
+    var results = numberMatcher.MatchAndProject(
         new RuleInput(
-            new [] {"hello"},
-            ruleSpaceArguments
+            new [] {"пять"},
+            RuleSpaceArguments.Empty
         ),
         0,
-        ruleSpaceCache
+        RuleArguments.Empty,
+        new RuleSpaceCache()
     );
 
-    // "success2" variable will contain single result
-    RuleMatchResultCollection success2 = greetingMatcher.Match(
-        new RuleInput(
-            new [] {"good", "morning"},
-            ruleSpaceArguments
-        ),
-        0,
-        ruleSpaceCache
-    );
-
-    // "fail" variable will contain no results
-    RuleMatchResultCollection fail = greetingMatcher.Match(
-        new RuleInput(
-            new [] {"good", "bye"},
-            ruleSpaceArguments
-        ),
-        0,
-        ruleSpaceCache
-    );
+    // results.Single().Result.Value == 5
 }
 
-// farewell matcher
+// testing rule matcher (with boolean result)
 {
-    // getting rule matcher from rule space
-    IRuleMatcher farewellMatcher = ruleSpace["is_farewell"];
+    var hiMatcher = ruleSpace["hi"];
 
-    // "success1" variable will contain single result
-    RuleMatchResultCollection success1 = farewellMatcher.Match(
+    // using HasMatch method to determine if the match was successful
+    var hasMatch = hiMatcher.HasMatch(
         new RuleInput(
-            new [] {"bye"},
-            ruleSpaceArguments
+            new [] {"доброго вечера"},
+            RuleSpaceArguments.Empty
         ),
         0,
-        ruleSpaceCache
+        new RuleSpaceCache()
     );
 
-    // "success2" variable will contain single result
-    RuleMatchResultCollection success2 = farewellMatcher.Match(
-        new RuleInput(
-            new [] {"good", "bye"},
-            ruleSpaceArguments
-        ),
-        0,
-        ruleSpaceCache
-    );
-
-    // "success3" variable will contain single result
-    RuleMatchResultCollection success3 = farewellMatcher.Match(
-        new RuleInput(
-            new [] {"farewell"},
-            ruleSpaceArguments
-        ),
-        0,
-        ruleSpaceCache
-    );
-
-    // "fail" variable will contain no results
-    RuleMatchResultCollection fail = farewellMatcher.Match(
-        new RuleInput(
-            new [] {"hello"},
-            ruleSpaceArguments
-        ),
-        0,
-        ruleSpaceCache
-    );
+    // hasMatch == true
 }
 ```

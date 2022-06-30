@@ -1,0 +1,15 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net6.0</TargetFramework>
+    <LangVersion>latest</LangVersion>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\DotnetNlp.RuleEngine.Core\DotnetNlp.RuleEngine.Core.csproj" />
+    <ProjectReference Include="..\DotnetNlp.RuleEngine.Mechanics.Peg\DotnetNlp.RuleEngine.Mechanics.Peg.csproj" />
+    <ProjectReference Include="..\DotnetNlp.RuleEngine.Mechanics.Regex\DotnetNlp.RuleEngine.Mechanics.Regex.csproj" />
+  </ItemGroup>
+
+</Project>

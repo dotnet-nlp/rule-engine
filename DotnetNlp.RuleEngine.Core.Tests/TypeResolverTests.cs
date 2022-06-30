@@ -18,7 +18,7 @@ internal sealed class TypeResolverTests
     {
         var typeResolver = new TypeResolver();
 
-        var result = typeResolver.Resolve(typeToken, usingNamespaces, new LoadedAssembliesProvider());
+        var result = typeResolver.Resolve(typeToken, usingNamespaces, LoadedAssembliesProvider.Instance);
 
         Assert.AreEqual(expectedResult, result);
     }
