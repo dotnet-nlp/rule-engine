@@ -30,13 +30,10 @@ Please note, that the classic applications of PEG and Regex assume that the inpu
 
 ## Library structure
 
-This repository CI produces following packages:
+This repository CI produces the following packages:
 - `DotnetNlp.RuleEngine.Core` - core library, which is responsible for all the abstractions such as rule space, rule, rule matcher, etc.
-  - unit test for this package can be found here: `DotnetNlp.RuleEngine.Tests`
 - `DotnetNlp.RuleEngine.Mechanics.Peg` - implementation of Peg mechanics.
-  - unit test for this package can be found here: `DotnetNlp.RuleEngine.Mechanics.Peg.Tests`
 - `DotnetNlp.RuleEngine.Mechanics.Regex` - implementation of Regex mechanics.
-  - unit test for this package can be found here: `DotnetNlp.RuleEngine.Mechanics.Regex.Tests`
 - `DotnetNlp.RuleEngine.Bundle` - contains Core library, and both Peg and Regex mechanics, as well as the short syntax for their usage.
 
 ## Benchmarking
