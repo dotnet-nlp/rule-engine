@@ -4,10 +4,9 @@ using DotnetNlp.RuleEngine.Core.Evaluation.Rule;
 
 namespace DotnetNlp.RuleEngine.Core.Evaluation;
 
-public interface IRuleSpace
+public interface IRuleSpace : IDictionary<string, IRuleMatcher>
 {
     IReadOnlyDictionary<string, Type> RuleSpaceParameterTypesByName { get; }
     IReadOnlyDictionary<string, Type> RuleResultTypesByName { get; }
     IReadOnlyDictionary<string, IRuleMatcher> RuleMatchersByName { get; }
-    IRuleMatcher this[string ruleName] { get; set; }
 }
