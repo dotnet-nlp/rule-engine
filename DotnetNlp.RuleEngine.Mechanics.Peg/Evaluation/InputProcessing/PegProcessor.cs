@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using DotnetNlp.RuleEngine.Core.Evaluation.Cache;
 using DotnetNlp.RuleEngine.Core.Evaluation.InputProcessing;
-using DotnetNlp.RuleEngine.Core.Evaluation.Rule.Input;
+using DotnetNlp.RuleEngine.Core.Evaluation.Rule.Projection.Arguments;
 using DotnetNlp.RuleEngine.Core.Evaluation.Rule.Result;
 using DotnetNlp.RuleEngine.Mechanics.Peg.Evaluation.InputProcessing.Composers;
 using DotnetNlp.RuleEngine.Mechanics.Peg.Evaluation.InputProcessing.Models;
@@ -17,13 +17,18 @@ internal sealed class PegProcessor : IInputProcessor
         _root = root;
     }
 
-    public RuleMatchResultCollection Match(RuleInput ruleInput, int firstSymbolIndex, IRuleSpaceCache cache)
+    public RuleMatchResultCollection Match(
+        string[] sequence,
+        int firstSymbolIndex = 0,
+        RuleSpaceArguments? ruleSpaceArguments = null,
+        IRuleSpaceCache? cache = null
+    )
     {
         var dataCollector = new PegInputProcessorDataCollector();
 
         var nextSymbolIndex = firstSymbolIndex;
 
-        var isMatched = _root.Match(ruleInput, ref nextSymbolIndex, dataCollector, cache);
+        var isMatched = _root.Match(sequence, ref nextSymbolIndex, dataCollector, ruleSpaceArguments, cache);
 
         if (isMatched)
         {
@@ -31,7 +36,7 @@ internal sealed class PegProcessor : IInputProcessor
                 new []
                 {
                     new RuleMatchResult(
-                        ruleInput.Sequence,
+                        sequence,
                         firstSymbolIndex,
                         nextSymbolIndex - 1,
                         dataCollector.CapturedVariables,

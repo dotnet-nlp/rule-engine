@@ -6,7 +6,7 @@ using DotnetNlp.RuleEngine.Core.Evaluation;
 using DotnetNlp.RuleEngine.Core.Evaluation.ArgumentsBinding;
 using DotnetNlp.RuleEngine.Core.Evaluation.Cache;
 using DotnetNlp.RuleEngine.Core.Evaluation.Rule;
-using DotnetNlp.RuleEngine.Core.Evaluation.Rule.Input;
+using DotnetNlp.RuleEngine.Core.Evaluation.Rule.Projection.Arguments;
 using DotnetNlp.RuleEngine.Core.Evaluation.Rule.Result.SelectionStrategy;
 
 namespace DotnetNlp.RuleEngine.Mechanics.Peg.Evaluation.InputProcessing.Parsers;
@@ -36,21 +36,23 @@ internal sealed class RuleReferenceParser : IQuantifiableParser
     }
 
     public bool TryParse(
-        RuleInput input,
-        IRuleSpaceCache cache,
+        string[] sequence,
         ref int index,
         out int explicitlyMatchedSymbolsCount,
-        out object? result
+        out object? result,
+        RuleSpaceArguments? ruleSpaceArguments = null,
+        IRuleSpaceCache? cache = null
     )
     {
         var matchResult = Matcher
             .MatchAndProject(
-                input,
+                sequence,
                 index,
+                ruleSpaceArguments,
                 ArgumentsBinder.BindRuleArguments(
                     Matcher.Parameters,
-                    input.RuleSpaceArguments,
-                    _ruleReferenceToken.Arguments.ToArray()
+                    _ruleReferenceToken.Arguments.ToArray(),
+                    ruleSpaceArguments
                 ),
                 cache
             )

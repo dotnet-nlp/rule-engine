@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using DotnetNlp.RuleEngine.Core.Evaluation.Cache;
-using DotnetNlp.RuleEngine.Core.Evaluation.Rule.Input;
+using DotnetNlp.RuleEngine.Core.Evaluation.Rule.Projection.Arguments;
 using DotnetNlp.RuleEngine.Mechanics.Peg.Evaluation.InputProcessing.Composers;
 using DotnetNlp.RuleEngine.Mechanics.Peg.Evaluation.InputProcessing.Models;
 
@@ -19,18 +19,19 @@ internal sealed class GroupParser : IQuantifiableParser
     }
 
     public bool TryParse(
-        RuleInput input,
-        IRuleSpaceCache cache,
+        string[] sequence,
         ref int index,
         out int explicitlyMatchedSymbolsCount,
-        out object? result
+        out object? result,
+        RuleSpaceArguments? ruleSpaceArguments,
+        IRuleSpaceCache? cache
     )
     {
         result = null;
 
         var dataCollector = new PegInputProcessorDataCollector();
 
-        var isMatched = _composer.Match(input, ref index, dataCollector, cache);
+        var isMatched = _composer.Match(sequence, ref index, dataCollector, ruleSpaceArguments, cache);
 
         explicitlyMatchedSymbolsCount = dataCollector.ExplicitlyMatchedSymbolsCount;
 

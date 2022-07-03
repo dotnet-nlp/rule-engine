@@ -4,10 +4,7 @@ using System.Collections.Immutable;
 using System.Linq;
 using DotnetNlp.RuleEngine.Core;
 using DotnetNlp.RuleEngine.Core.Evaluation;
-using DotnetNlp.RuleEngine.Core.Evaluation.Cache;
 using DotnetNlp.RuleEngine.Core.Evaluation.Rule;
-using DotnetNlp.RuleEngine.Core.Evaluation.Rule.Input;
-using DotnetNlp.RuleEngine.Core.Evaluation.Rule.Projection.Arguments;
 using DotnetNlp.RuleEngine.Core.Evaluation.Rule.Result;
 using DotnetNlp.RuleEngine.Core.Lib.Common.Helpers;
 using DotnetNlp.RuleEngine.Mechanics.Regex.Build.InputProcessing.Automaton.Optimization;
@@ -83,14 +80,9 @@ internal sealed class RegexInputProcessorTests
     {
         const bool caseSensitive = false;
 
-        var ruleInput = CreateRuleInput(phrase, caseSensitive);
+        var sequence = CreateSequence(phrase, caseSensitive);
 
-        var results = CreateSingleMatcher(regex, caseSensitive).MatchAndProject(
-            ruleInput,
-            0,
-            new RuleArguments(ImmutableDictionary<string, object?>.Empty),
-            new RuleSpaceCache()
-        );
+        var results = CreateSingleMatcher(regex, caseSensitive).MatchAndProject(sequence);
 
         Assert.Greater(results.Count, 0);
 
@@ -98,7 +90,7 @@ internal sealed class RegexInputProcessorTests
 
         foreach (var result in fullMatches)
         {
-            Assert.AreEqual(ruleInput.Sequence.Length, result.LastUsedSymbolIndex + 1);
+            Assert.AreEqual(sequence.Length, result.LastUsedSymbolIndex + 1);
 
             Assert.AreEqual(expectedMarker, result.Marker);
         }
@@ -149,14 +141,9 @@ internal sealed class RegexInputProcessorTests
     {
         const bool caseSensitive = false;
 
-        var ruleInput = CreateRuleInput(phrase, caseSensitive);
+        var sequence = CreateSequence(phrase, caseSensitive);
 
-        var results = CreateSingleMatcher(regex, caseSensitive).MatchAndProject(
-            ruleInput,
-            firstSymbolIndex,
-            new RuleArguments(ImmutableDictionary<string, object?>.Empty),
-            new RuleSpaceCache()
-        );
+        var results = CreateSingleMatcher(regex, caseSensitive).MatchAndProject(sequence, firstSymbolIndex);
 
         var isMatched = results.Count > 0;
 
@@ -166,7 +153,7 @@ internal sealed class RegexInputProcessorTests
         {
             var result = results.Best(StaticResources.ResultSelectionStrategy)!;
 
-            Assert.AreEqual(expectedEndIndex ?? ruleInput.Sequence.Length, result.LastUsedSymbolIndex + 1);
+            Assert.AreEqual(expectedEndIndex ?? sequence.Length, result.LastUsedSymbolIndex + 1);
 
             if (expectedExplicitlyMatchedSymbolsCount is not null)
             {
@@ -181,20 +168,15 @@ internal sealed class RegexInputProcessorTests
     {
         const bool caseSensitive = false;
 
-        var ruleInput = CreateRuleInput(phrase, caseSensitive);
+        var sequence = CreateSequence(phrase, caseSensitive);
 
-        var results = CreateSingleMatcher(regex, caseSensitive).MatchAndProject(
-            ruleInput,
-            0,
-            new RuleArguments(ImmutableDictionary<string, object?>.Empty),
-            new RuleSpaceCache()
-        );
+        var results = CreateSingleMatcher(regex, caseSensitive).MatchAndProject(sequence);
 
         Assert.IsTrue(results.Count == 1);
 
         var result = results.Single();
 
-        Assert.AreEqual(ruleInput.Sequence.Length, result.LastUsedSymbolIndex + 1);
+        Assert.AreEqual(sequence.Length, result.LastUsedSymbolIndex + 1);
 
         CollectionAssert.AreEquivalent(expectedVariables, result.CapturedVariables);
     }
@@ -209,20 +191,15 @@ internal sealed class RegexInputProcessorTests
     {
         const bool caseSensitive = false;
 
-        var ruleInput = CreateRuleInput(phrase, caseSensitive);
+        var sequence = CreateSequence(phrase, caseSensitive);
 
-        var results = CreateSingleMatcher(regex, caseSensitive).MatchAndProject(
-            ruleInput,
-            0,
-            new RuleArguments(ImmutableDictionary<string, object?>.Empty),
-            new RuleSpaceCache()
-        );
+        var results = CreateSingleMatcher(regex, caseSensitive).MatchAndProject(sequence);
 
         Assert.IsTrue(results.Count > 1);
 
         foreach (var result in results)
         {
-            Assert.AreEqual(ruleInput.Sequence.Length - 1, result.LastUsedSymbolIndex);
+            Assert.AreEqual(sequence.Length - 1, result.LastUsedSymbolIndex);
         }
 
         CollectionAssert.AreEquivalent(
@@ -242,22 +219,17 @@ internal sealed class RegexInputProcessorTests
     {
         const bool caseSensitive = false;
 
-        var ruleInput = CreateRuleInput(phrase, caseSensitive);
+        var sequence = CreateSequence(phrase, caseSensitive);
 
         var ruleSpace = CreateRuleSpace(rules, caseSensitive, OptimizationLevel.Min);
 
-        var results = ruleSpace[ruleKey].MatchAndProject(
-            ruleInput,
-            0,
-            new RuleArguments(ImmutableDictionary<string, object?>.Empty),
-            new RuleSpaceCache()
-        );
+        var results = ruleSpace[ruleKey].MatchAndProject(sequence);
 
         Assert.AreEqual(1, results.Count);
 
         var result = results.Single();
 
-        Assert.AreEqual(ruleInput.Sequence.Length, result.LastUsedSymbolIndex + 1);
+        Assert.AreEqual(sequence.Length, result.LastUsedSymbolIndex + 1);
 
         CollectionAssert.AreEquivalent(expectedVariables, result.CapturedVariables);
     }
@@ -325,17 +297,14 @@ internal sealed class RegexInputProcessorTests
         return ruleSpaceSource.RuleSpace[ruleName];
     }
 
-    private static RuleInput CreateRuleInput(string phrase, bool caseSensitive)
+    private static string[] CreateSequence(string phrase, bool caseSensitive)
     {
         if (!caseSensitive)
         {
             phrase = phrase.ToLowerFastRusEng();
         }
 
-        return new RuleInput(
-            phrase.Split(' ', StringSplitOptions.RemoveEmptyEntries),
-            new RuleSpaceArguments(ImmutableDictionary<string, object?>.Empty)
-        );
+        return phrase.Split(' ', StringSplitOptions.RemoveEmptyEntries);
     }
 
     #region Sources

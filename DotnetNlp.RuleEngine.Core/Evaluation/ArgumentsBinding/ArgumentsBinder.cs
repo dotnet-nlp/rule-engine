@@ -12,8 +12,8 @@ public static class ArgumentsBinder
 {
     public static RuleArguments BindRuleArguments(
         RuleParameters ruleParameters,
-        RuleSpaceArguments ruleSpaceArguments,
-        IRuleArgumentToken[] argumentBindings
+        IRuleArgumentToken[] argumentBindings,
+        RuleSpaceArguments? ruleSpaceArguments
     )
     {
         return new RuleArguments(
@@ -46,12 +46,15 @@ public static class ArgumentsBinder
         return type.IsValueType ? Activator.CreateInstance(type) : null;
     }
 
-    private static object? GetFromRuleSpace(RuleChainedMemberAccessArgumentToken binding, RuleSpaceArguments ruleSpaceArguments)
+    private static object? GetFromRuleSpace(
+        RuleChainedMemberAccessArgumentToken binding,
+        RuleSpaceArguments? ruleSpaceArguments
+    )
     {
         var formattedCallChain = binding.CallChain.JoinToString(".");
 
         var rootObjectName = binding.CallChain.First();
-        if (!ruleSpaceArguments.Values.TryGetValue(rootObjectName, out var rootObject))
+        if (!(ruleSpaceArguments?.Values.TryGetValue(rootObjectName, out var rootObject) ?? false))
         {
             throw new RuleMatchException(
                 $"Object '{rootObjectName}' is not part of rule space arguments " +

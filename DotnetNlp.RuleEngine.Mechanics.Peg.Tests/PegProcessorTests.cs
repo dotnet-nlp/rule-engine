@@ -1,10 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Collections.Immutable;
 using System.Linq;
-using DotnetNlp.RuleEngine.Core.Evaluation.Cache;
-using DotnetNlp.RuleEngine.Core.Evaluation.Rule.Input;
-using DotnetNlp.RuleEngine.Core.Evaluation.Rule.Projection.Arguments;
 using DotnetNlp.RuleEngine.Mechanics.Peg.Build.Tokenization.Tokens;
 using DotnetNlp.RuleEngine.Mechanics.Peg.Evaluation.InputProcessing;
 using DotnetNlp.RuleEngine.Mechanics.Peg.Tests.Fixtures;
@@ -49,23 +45,14 @@ internal sealed class PegProcessorTests
     [TestCaseSource(nameof(MatchesAndProjects_RecursionWithRuleRepeatedInDifferentBranches))]
     public void MatchesAndProjects(RuleSpaceSource grammar, string ruleName, string phrase, bool expectedIsMatched, int? expectedEndIndex)
     {
-        const int firstSymbolIndex = 0;
-        var ruleInput = new RuleInput(
-            phrase.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries),
-            new RuleSpaceArguments(ImmutableDictionary<string, object?>.Empty)
-        );
+        var sequence = phrase.Split(' ', StringSplitOptions.RemoveEmptyEntries);
 
-        var results = grammar.RuleSpace[ruleName].MatchAndProject(
-            ruleInput,
-            firstSymbolIndex,
-            new RuleArguments(ImmutableDictionary<string, object?>.Empty),
-            new RuleSpaceCache()
-        );
+        var results = grammar.RuleSpace[ruleName].MatchAndProject(sequence);
 
         Assert.AreEqual(expectedIsMatched, results.Count == 1);
         if (results.Count == 1)
         {
-            Assert.AreEqual(expectedEndIndex ?? ruleInput.Sequence.Length, results.Single().LastUsedSymbolIndex + 1);
+            Assert.AreEqual(expectedEndIndex ?? sequence.Length, results.Single().LastUsedSymbolIndex + 1);
         }
     }
 

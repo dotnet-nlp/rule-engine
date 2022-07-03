@@ -1,8 +1,6 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
-using DotnetNlp.RuleEngine.Core.Evaluation.Cache;
-using DotnetNlp.RuleEngine.Core.Evaluation.Rule.Input;
-using DotnetNlp.RuleEngine.Core.Evaluation.Rule.Projection.Arguments;
 using NUnit.Framework;
 
 namespace DotnetNlp.RuleEngine.Bundle.Tests;
@@ -25,15 +23,9 @@ public class FactoryTests
 
         foreach (var (ruleName, phrase, expectedResult) in ruleSetCases)
         {
-            var cache = new RuleSpaceCache();
-
-            var ruleMatchResultsCollection = ruleSpace[ruleName]
-                .MatchAndProject(
-                    new RuleInput(phrase.Split(' '), RuleSpaceArguments.Empty),
-                    0,
-                    RuleArguments.Empty,
-                    cache
-                );
+            var ruleMatchResultsCollection = ruleSpace[ruleName].MatchAndProject(
+                phrase.Split(' ', StringSplitOptions.RemoveEmptyEntries)
+            );
 
             Assert.That(ruleMatchResultsCollection, Has.Count.EqualTo(1));
 
@@ -44,15 +36,8 @@ public class FactoryTests
 
         foreach (var (ruleName, phrase, expectedSuccess) in ruleCases)
         {
-            var cache = new RuleSpaceCache();
-
             var ruleMatchResultsCollection = ruleSpace[ruleName]
-                .MatchAndProject(
-                    new RuleInput(phrase.Split(' '), RuleSpaceArguments.Empty),
-                    0,
-                    RuleArguments.Empty,
-                    cache
-                );
+                .MatchAndProject(phrase.Split(' ', StringSplitOptions.RemoveEmptyEntries));
 
             Assert.That(ruleMatchResultsCollection, expectedSuccess ? Is.Not.Empty : Is.Empty);
         }

@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
 using DotnetNlp.RuleEngine.Core.Evaluation.Cache;
-using DotnetNlp.RuleEngine.Core.Evaluation.Rule.Input;
 using DotnetNlp.RuleEngine.Core.Evaluation.Rule.Projection.Arguments;
 using DotnetNlp.RuleEngine.Core.Evaluation.Rule.Projection.Parameters;
 using DotnetNlp.RuleEngine.Core.Evaluation.Rule.Result;
@@ -34,27 +33,29 @@ public sealed class StaticRuleMatcher<TResult> : IRuleMatcher
     }
 
     public RuleMatchResultCollection Match(
-        RuleInput input,
-        int firstSymbolIndex,
-        RuleArguments ruleArguments,
+        string[] sequence,
+        int firstSymbolIndex = 0,
+        RuleSpaceArguments? ruleSpaceArguments = null,
+        RuleArguments? ruleArguments = null,
         IRuleSpaceCache? cache = null
     )
     {
-        return MatchAndProject(input, firstSymbolIndex, ruleArguments, cache);
+        return MatchAndProject(sequence, firstSymbolIndex, ruleSpaceArguments, ruleArguments, cache);
     }
 
     public RuleMatchResultCollection MatchAndProject(
-        RuleInput input,
-        int firstSymbolIndex,
-        RuleArguments ruleArguments,
+        string[] sequence,
+        int firstSymbolIndex = 0,
+        RuleSpaceArguments? ruleSpaceArguments = null,
+        RuleArguments? ruleArguments = null,
         IRuleSpaceCache? cache = null
     )
     {
         return new RuleMatchResultCollection(
-            Evaluate(input, firstSymbolIndex, ruleArguments)
+            Evaluate(sequence, firstSymbolIndex, ruleArguments)
                 .Select(
                     evaluationResult => new RuleMatchResult(
-                        input.Sequence,
+                        sequence,
                         firstSymbolIndex,
                         evaluationResult.LastUsedSymbolIndex,
                         null,
@@ -72,20 +73,24 @@ public sealed class StaticRuleMatcher<TResult> : IRuleMatcher
     }
 
     private IEnumerable<(TResult Result, int LastUsedSymbolIndex)> Evaluate(
-        RuleInput input,
+        string[] sequence,
         int firstSymbolIndex,
-        RuleArguments ruleArguments
+        RuleArguments? ruleArguments
     )
     {
-        if (firstSymbolIndex >= input.Sequence.Length)
+        if (firstSymbolIndex >= sequence.Length)
         {
             return Enumerable.Empty<(TResult Result, int LastUsedSymbolIndex)>();
         }
 
         // todo [realtime performance] we can use more efficient way of creating this variable
-        var arguments = new object?[] { input.Sequence, firstSymbolIndex }
-            .Concat(ruleArguments.Values.Values)
-            .ToArray();
+        var arguments = new object?[] { sequence, firstSymbolIndex };
+        if (ruleArguments is not null)
+        {
+            arguments = arguments
+                .Concat(ruleArguments.Values.Values)
+                .ToArray();
+        }
 
         return _ruleEvaluator(arguments);
     }

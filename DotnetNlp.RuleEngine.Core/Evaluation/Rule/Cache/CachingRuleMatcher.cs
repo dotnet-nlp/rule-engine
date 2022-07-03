@@ -1,6 +1,5 @@
 ﻿using System.Collections.Generic;
 using DotnetNlp.RuleEngine.Core.Evaluation.Cache;
-using DotnetNlp.RuleEngine.Core.Evaluation.Rule.Input;
 using DotnetNlp.RuleEngine.Core.Evaluation.Rule.Projection.Arguments;
 using DotnetNlp.RuleEngine.Core.Evaluation.Rule.Projection.Parameters;
 using DotnetNlp.RuleEngine.Core.Evaluation.Rule.Result;
@@ -22,15 +21,16 @@ internal sealed class CachingRuleMatcher : IRuleMatcher
     }
 
     public RuleMatchResultCollection Match(
-        RuleInput input,
-        int firstSymbolIndex,
-        RuleArguments ruleArguments,
+        string[] sequence,
+        int firstSymbolIndex = 0,
+        RuleSpaceArguments? ruleSpaceArguments = null,
+        RuleArguments? ruleArguments = null,
         IRuleSpaceCache? cache = null
     )
     {
         cache ??= new RuleSpaceCache();
 
-        var matchResult = cache.GetResult(_id, input.Sequence, firstSymbolIndex, null);
+        var matchResult = cache.GetResult(_id, sequence, firstSymbolIndex, ruleArguments?.Values);
 
         if (matchResult is not null)
         {
@@ -38,23 +38,24 @@ internal sealed class CachingRuleMatcher : IRuleMatcher
         }
 
         // todo [code quality] separate cache from IRuleMatcher
-        matchResult = _source.Match(input, firstSymbolIndex, ruleArguments, cache);
+        matchResult = _source.Match(sequence, firstSymbolIndex, ruleSpaceArguments, ruleArguments, cache);
 
-        cache.SetResult(_id, input.Sequence, firstSymbolIndex, null, matchResult);
+        cache.SetResult(_id, sequence, firstSymbolIndex, null, matchResult);
 
         return matchResult;
     }
 
     public RuleMatchResultCollection MatchAndProject(
-        RuleInput input,
-        int firstSymbolIndex,
-        RuleArguments ruleArguments,
+        string[] sequence,
+        int firstSymbolIndex = 0,
+        RuleSpaceArguments? ruleSpaceArguments = null,
+        RuleArguments? ruleArguments = null,
         IRuleSpaceCache? cache = null
     )
     {
         cache ??= new RuleSpaceCache();
 
-        var matchResult = cache.GetResult(_id, input.Sequence, firstSymbolIndex, ruleArguments.Values);
+        var matchResult = cache.GetResult(_id, sequence, firstSymbolIndex, ruleArguments?.Values);
 
         if (matchResult is not null)
         {
@@ -62,9 +63,9 @@ internal sealed class CachingRuleMatcher : IRuleMatcher
         }
 
         // todo [code quality] separate cache from IRuleMatcher
-        matchResult = _source.MatchAndProject(input, firstSymbolIndex, ruleArguments, cache);
+        matchResult = _source.MatchAndProject(sequence, firstSymbolIndex, ruleSpaceArguments, ruleArguments, cache);
 
-        cache.SetResult(_id, input.Sequence, firstSymbolIndex, ruleArguments.Values, matchResult);
+        cache.SetResult(_id, sequence, firstSymbolIndex, ruleArguments?.Values, matchResult);
 
         return matchResult;
     }

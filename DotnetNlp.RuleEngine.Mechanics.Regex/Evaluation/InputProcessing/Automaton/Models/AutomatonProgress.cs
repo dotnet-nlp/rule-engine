@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using DotnetNlp.RuleEngine.Core.Evaluation.Rule.Input;
 using DotnetNlp.RuleEngine.Core.Evaluation.Rule.Result;
 using DotnetNlp.RuleEngine.Core.Lib.Common.Helpers;
 using DotnetNlp.RuleEngine.Mechanics.Regex.Evaluation.InputProcessing.Automaton.Models.States;
@@ -61,10 +60,10 @@ internal sealed class AutomatonProgress
         );
     }
 
-    public RuleMatchResult Flush(RuleInput ruleInput, int firstSymbolIndex)
+    public RuleMatchResult Flush(string[] sequence, int firstSymbolIndex)
     {
         return new RuleMatchResult(
-            ruleInput.Sequence,
+            sequence,
             firstSymbolIndex,
             LastUsedSymbolIndex,
             CapturedVariables,

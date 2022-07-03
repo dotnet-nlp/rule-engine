@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 using DotnetNlp.RuleEngine.Core.Evaluation.Cache;
-using DotnetNlp.RuleEngine.Core.Evaluation.Rule.Input;
+using DotnetNlp.RuleEngine.Core.Evaluation.Rule.Projection.Arguments;
 using DotnetNlp.RuleEngine.Mechanics.Regex.Evaluation.InputProcessing.Automaton.Models;
 using DotnetNlp.RuleEngine.Mechanics.Regex.Evaluation.InputProcessing.Automaton.Models.States;
 
@@ -17,7 +17,8 @@ internal sealed class EpsilonPayload : ITransitionPayload
     }
 
     public void Consume(
-        RuleInput input,
+        string[] sequence,
+        RuleSpaceArguments? ruleSpaceArguments,
         RegexAutomatonState targetState,
         AutomatonProgress currentProgress,
         in Stack<AutomatonProgress> progresses,

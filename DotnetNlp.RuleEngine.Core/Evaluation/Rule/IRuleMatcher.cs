@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using DotnetNlp.RuleEngine.Core.Evaluation.Cache;
-using DotnetNlp.RuleEngine.Core.Evaluation.Rule.Input;
 using DotnetNlp.RuleEngine.Core.Evaluation.Rule.Projection.Arguments;
 using DotnetNlp.RuleEngine.Core.Evaluation.Rule.Projection.Parameters;
 using DotnetNlp.RuleEngine.Core.Evaluation.Rule.Result;
@@ -14,81 +13,87 @@ public interface IRuleMatcher : IUsedWordsProvider
     RuleParameters Parameters { get; }
     RuleMatchResultDescription ResultDescription { get; }
     RuleMatchResultCollection Match(
-        RuleInput input,
-        int firstSymbolIndex,
-        RuleArguments ruleArguments,
+        string[] sequence,
+        int firstSymbolIndex = 0,
+        RuleSpaceArguments? ruleSpaceArguments = null,
+        RuleArguments? ruleArguments = null,
         IRuleSpaceCache? cache = null
     );
 
     RuleMatchResultCollection MatchAndProject(
-        RuleInput input,
-        int firstSymbolIndex,
-        RuleArguments ruleArguments,
+        string[] sequence,
+        int firstSymbolIndex = 0,
+        RuleSpaceArguments? ruleSpaceArguments = null,
+        RuleArguments? ruleArguments = null,
         IRuleSpaceCache? cache = null
     );
 
     public bool HasMatch(
-        RuleInput input,
-        int firstSymbolIndex,
-        RuleArguments ruleArguments,
+        string[] sequence,
+        int firstSymbolIndex = 0,
+        RuleSpaceArguments? ruleSpaceArguments = null,
+        RuleArguments? ruleArguments = null,
         IRuleSpaceCache? cache = null
     )
     {
-        return Match(input, firstSymbolIndex, ruleArguments, cache).Count > 0;
+        return Match(sequence, firstSymbolIndex, ruleSpaceArguments, ruleArguments, cache).Count > 0;
     }
 
     public RuleMatchResultCollection MatchAll(
-        RuleInput input,
-        int firstSymbolIndex,
-        RuleArguments ruleArguments,
+        string[] sequence,
+        int firstSymbolIndex = 0,
+        RuleSpaceArguments? ruleSpaceArguments = null,
+        RuleArguments? ruleArguments = null,
         IRuleSpaceCache? cache = null
     )
     {
         return EvaluateAll(
-            startIndex => Match(input, startIndex, ruleArguments, cache),
-            input,
+            startIndex => Match(sequence, startIndex, ruleSpaceArguments, ruleArguments, cache),
+            sequence,
             firstSymbolIndex
         );
     }
 
     public RuleMatchResultCollection MatchAndProjectAll(
-        RuleInput input,
-        int firstSymbolIndex,
-        RuleArguments ruleArguments,
+        string[] sequence,
+        int firstSymbolIndex = 0,
+        RuleSpaceArguments? ruleSpaceArguments = null,
+        RuleArguments? ruleArguments = null,
         IRuleSpaceCache? cache = null
     )
     {
         return EvaluateAll(
-            startIndex => MatchAndProject(input, startIndex, ruleArguments, cache),
-            input,
+            startIndex => MatchAndProject(sequence, startIndex, ruleSpaceArguments, ruleArguments, cache),
+            sequence,
             firstSymbolIndex
         );
     }
 
     public bool HasAnyMatch(
-        RuleInput input,
-        int firstSymbolIndex,
-        RuleArguments ruleArguments,
+        string[] sequence,
+        int firstSymbolIndex = 0,
+        RuleSpaceArguments? ruleSpaceArguments = null,
+        RuleArguments? ruleArguments = null,
         IRuleSpaceCache? cache = null
     )
     {
-        return MatchAll(input, firstSymbolIndex, ruleArguments, cache).Count > 0;
+        return MatchAll(sequence, firstSymbolIndex, ruleSpaceArguments, ruleArguments, cache).Count > 0;
     }
 
     private static RuleMatchResultCollection EvaluateAll(
         Func<int, RuleMatchResultCollection> evaluator,
-        RuleInput input,
+        string[] sequence,
         int firstSymbolIndex
     )
     {
-        if (firstSymbolIndex == input.Sequence.Length)
+        if (firstSymbolIndex == sequence.Length)
         {
             return evaluator(firstSymbolIndex);
         }
 
-        var results = new List<RuleMatchResultCollection>(input.Sequence.Length);
+        var results = new List<RuleMatchResultCollection>(sequence.Length);
 
-        for (var symbolIndex = firstSymbolIndex; symbolIndex < input.Sequence.Length; symbolIndex++)
+        for (var symbolIndex = firstSymbolIndex; symbolIndex < sequence.Length; symbolIndex++)
         {
             results.Add(evaluator(symbolIndex));
         }

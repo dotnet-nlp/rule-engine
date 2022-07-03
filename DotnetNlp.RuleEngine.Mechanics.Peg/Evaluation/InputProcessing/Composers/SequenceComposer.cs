@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using DotnetNlp.RuleEngine.Core.Evaluation.Cache;
-using DotnetNlp.RuleEngine.Core.Evaluation.Rule.Input;
+using DotnetNlp.RuleEngine.Core.Evaluation.Rule.Projection.Arguments;
 using DotnetNlp.RuleEngine.Mechanics.Peg.Evaluation.InputProcessing.Models;
 
 namespace DotnetNlp.RuleEngine.Mechanics.Peg.Evaluation.InputProcessing.Composers;
@@ -16,15 +16,16 @@ internal sealed class SequenceComposer : IComposer
     }
 
     public bool Match(
-        RuleInput input,
+        string[] sequence,
         ref int index,
         in PegInputProcessorDataCollector dataCollector,
-        IRuleSpaceCache cache
+        RuleSpaceArguments? ruleSpaceArguments,
+        IRuleSpaceCache? cache
     )
     {
         foreach (var piece in _pieces)
         {
-            if (!piece.Match(input, ref index, dataCollector, cache))
+            if (!piece.Match(sequence, ref index, dataCollector, ruleSpaceArguments, cache))
             {
                 return false;
             }

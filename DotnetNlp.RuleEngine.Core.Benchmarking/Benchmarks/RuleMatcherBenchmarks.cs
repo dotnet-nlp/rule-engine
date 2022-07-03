@@ -5,10 +5,7 @@ using BenchmarkDotNet.Attributes;
 using BenchmarkDotNet.Engines;
 using DotnetNlp.RuleEngine.Core.Build.Tokenization.Tokens;
 using DotnetNlp.RuleEngine.Core.Evaluation;
-using DotnetNlp.RuleEngine.Core.Evaluation.Cache;
 using DotnetNlp.RuleEngine.Core.Evaluation.Rule;
-using DotnetNlp.RuleEngine.Core.Evaluation.Rule.Input;
-using DotnetNlp.RuleEngine.Core.Evaluation.Rule.Projection.Arguments;
 using DotnetNlp.RuleEngine.Core.Evaluation.Rule.Result.SelectionStrategy;
 using DotnetNlp.RuleEngine.Core.Lib.CodeAnalysis.Assemblies;
 using DotnetNlp.RuleEngine.Core.Lib.Common;
@@ -86,20 +83,7 @@ public class RuleMatcherBenchmarks
     {
         foreach (var (ruleName, phrase) in _phrases)
         {
-            var ruleInput = new RuleInput(
-                phrase,
-                new RuleSpaceArguments(ImmutableDictionary<string, object?>.Empty)
-            );
-
-            _consumer.Consume(
-                _ruleSpace[ruleName]
-                    .MatchAndProject(
-                        ruleInput,
-                        0,
-                        new RuleArguments(ImmutableDictionary<string, object?>.Empty),
-                        new RuleSpaceCache()
-                    )
-            );
+            _consumer.Consume(_ruleSpace[ruleName].MatchAndProject(phrase));
         }
     }
 }

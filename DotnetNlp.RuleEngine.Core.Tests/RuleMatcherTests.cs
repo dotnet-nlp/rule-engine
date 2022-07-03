@@ -4,9 +4,7 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using DotnetNlp.RuleEngine.Core.Build.Tokenization.Tokens;
 using DotnetNlp.RuleEngine.Core.Evaluation;
-using DotnetNlp.RuleEngine.Core.Evaluation.Cache;
 using DotnetNlp.RuleEngine.Core.Evaluation.Rule;
-using DotnetNlp.RuleEngine.Core.Evaluation.Rule.Input;
 using DotnetNlp.RuleEngine.Core.Evaluation.Rule.Projection.Arguments;
 using DotnetNlp.RuleEngine.Core.Evaluation.Rule.Result.SelectionStrategy;
 using DotnetNlp.RuleEngine.Core.Exceptions;
@@ -48,23 +46,15 @@ internal sealed class RuleMatcherTests
         int? expectedLastUsedSymbolIndex
     )
     {
-        var ruleInput = new RuleInput(
-            phrase.Split(' ', StringSplitOptions.RemoveEmptyEntries),
-            new RuleSpaceArguments(ImmutableDictionary<string, object?>.Empty)
-        );
+        var sequence = phrase.Split(' ', StringSplitOptions.RemoveEmptyEntries);
 
-        var matchResults = ruleSet.RuleSpace[ruleName].MatchAndProject(
-            ruleInput,
-            0,
-            new RuleArguments(ImmutableDictionary<string, object?>.Empty),
-            new RuleSpaceCache()
-        );
+        var matchResults = ruleSet.RuleSpace[ruleName].MatchAndProject(sequence);
 
         var matchResult = matchResults.Best(new MaxExplicitSymbolsStrategy());
 
         Assert.IsNotNull(matchResult);
 
-        Assert.AreEqual(expectedLastUsedSymbolIndex ?? ruleInput.Sequence.Length - 1, matchResult!.LastUsedSymbolIndex);
+        Assert.AreEqual(expectedLastUsedSymbolIndex ?? sequence.Length - 1, matchResult!.LastUsedSymbolIndex);
 
         if (expectedResult is IEnumerable expectedEnumerable)
         {
@@ -93,28 +83,25 @@ internal sealed class RuleMatcherTests
         object expectedResult
     )
     {
-        var ruleInput = new RuleInput(
-            phrase.Split(' ', StringSplitOptions.RemoveEmptyEntries),
-            new RuleSpaceArguments(
-                new Dictionary<string, object?>
-                {
-                    {"parameters", new AcceptsRuleArgumentsParameters("фу", 24)},
-                }
-            )
+        var sequence = phrase.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+        var ruleSpaceArguments = new RuleSpaceArguments(
+            new Dictionary<string, object?>
+            {
+                { "parameters", new AcceptsRuleArgumentsParameters("фу", 24) },
+            }
         );
 
         var matchResults = ruleSet.RuleSpace[ruleName].MatchAndProject(
-            ruleInput,
-            0,
-            new RuleArguments(ruleArguments),
-            new RuleSpaceCache()
+            sequence,
+            ruleSpaceArguments: ruleSpaceArguments,
+            ruleArguments: new RuleArguments(ruleArguments)
         );
 
         var matchResult = matchResults.Best(new MaxExplicitSymbolsStrategy());
 
         Assert.True(matchResult is not null);
 
-        Assert.AreEqual(ruleInput.Sequence.Length - 1, matchResult!.LastUsedSymbolIndex);
+        Assert.AreEqual(sequence.Length - 1, matchResult!.LastUsedSymbolIndex);
 
         Assert.AreSame(expectedResult.GetType(), matchResult.Result.Value?.GetType() ?? typeof(object));
         Assert.AreEqual(expectedResult, matchResult.Result.Value);
@@ -129,23 +116,15 @@ internal sealed class RuleMatcherTests
         IReadOnlyDictionary<string, object?> expectedCapturedVariables
     )
     {
-        var ruleInput = new RuleInput(
-            phrase.Split(' '),
-            new RuleSpaceArguments(ImmutableDictionary<string, object?>.Empty)
-        );
+        var sequence = phrase.Split(' ', StringSplitOptions.RemoveEmptyEntries);
 
-        var matchResults = ruleSet.RuleSpace[ruleName].MatchAndProject(
-            ruleInput,
-            0,
-            new RuleArguments(ImmutableDictionary<string, object?>.Empty),
-            new RuleSpaceCache()
-        );
+        var matchResults = ruleSet.RuleSpace[ruleName].MatchAndProject(sequence);
 
         var matchResult = matchResults.Best(new MaxExplicitSymbolsStrategy());
 
         Assert.True(matchResult is not null);
 
-        Assert.AreEqual(ruleInput.Sequence.Length - 1, matchResult!.LastUsedSymbolIndex);
+        Assert.AreEqual(sequence.Length - 1, matchResult!.LastUsedSymbolIndex);
 
         CollectionAssert.AreEquivalent(expectedCapturedVariables, matchResult.CapturedVariables);
     }

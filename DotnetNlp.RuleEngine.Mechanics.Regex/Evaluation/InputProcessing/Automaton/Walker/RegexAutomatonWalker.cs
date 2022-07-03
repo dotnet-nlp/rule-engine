@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 using DotnetNlp.RuleEngine.Core.Evaluation.Cache;
-using DotnetNlp.RuleEngine.Core.Evaluation.Rule.Input;
+using DotnetNlp.RuleEngine.Core.Evaluation.Rule.Projection.Arguments;
 using DotnetNlp.RuleEngine.Core.Evaluation.Rule.Result;
 using DotnetNlp.RuleEngine.Mechanics.Regex.Evaluation.InputProcessing.Automaton.Models;
 
@@ -12,8 +12,10 @@ internal sealed class RegexAutomatonWalker : IRegexAutomatonWalker<RegexAutomato
 
     public RuleMatchResultCollection Walk(
         RegexAutomaton automaton,
-        RuleInput ruleInput,
-        int firstSymbolIndex,
+        string[] sequence,
+        int firstSymbolIndex = 0,
+        // todo [code quality] make a wrapper over RegexAutomaton to completely separate automaton walker from rule space
+        RuleSpaceArguments? ruleSpaceArguments = null,
         IRuleSpaceCache? cache = null
     )
     {
@@ -36,13 +38,13 @@ internal sealed class RegexAutomatonWalker : IRegexAutomatonWalker<RegexAutomato
         {
             if (progress.State.Id == automaton.EndState.Id)
             {
-                results.Add(progress.Flush(ruleInput, firstSymbolIndex));
+                results.Add(progress.Flush(sequence, firstSymbolIndex));
                 continue;
             }
 
             foreach (var transition in progress.State.OutgoingTransitions)
             {
-                transition.Payload.Consume(ruleInput, transition.TargetState, progress, progresses, cache);
+                transition.Payload.Consume(sequence, ruleSpaceArguments, transition.TargetState, progress, progresses, cache);
             }
         }
 

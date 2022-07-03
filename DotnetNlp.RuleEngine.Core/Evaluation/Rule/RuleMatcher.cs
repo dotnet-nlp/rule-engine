@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using DotnetNlp.RuleEngine.Core.Evaluation.Cache;
 using DotnetNlp.RuleEngine.Core.Evaluation.InputProcessing;
-using DotnetNlp.RuleEngine.Core.Evaluation.Rule.Input;
 using DotnetNlp.RuleEngine.Core.Evaluation.Rule.Projection;
 using DotnetNlp.RuleEngine.Core.Evaluation.Rule.Projection.Arguments;
 using DotnetNlp.RuleEngine.Core.Evaluation.Rule.Projection.Parameters;
@@ -36,25 +35,27 @@ internal sealed class RuleMatcher : IRuleMatcher
     }
 
     public RuleMatchResultCollection Match(
-        RuleInput input,
-        int firstSymbolIndex,
-        RuleArguments ruleArguments,
+        string[] sequence,
+        int firstSymbolIndex = 0,
+        RuleSpaceArguments? ruleSpaceArguments = null,
+        RuleArguments? ruleArguments = null,
         IRuleSpaceCache? cache = null
     )
     {
         cache ??= new RuleSpaceCache();
 
-        return _inputProcessor.Match(input, firstSymbolIndex, cache);
+        return _inputProcessor.Match(sequence, firstSymbolIndex, ruleSpaceArguments, cache);
     }
 
     public RuleMatchResultCollection MatchAndProject(
-        RuleInput input,
-        int firstSymbolIndex,
-        RuleArguments ruleArguments,
+        string[] sequence,
+        int firstSymbolIndex = 0,
+        RuleSpaceArguments? ruleSpaceArguments = null,
+        RuleArguments? ruleArguments = null,
         IRuleSpaceCache? cache = null
     )
     {
-        var inputProcessorResult = Match(input, firstSymbolIndex, ruleArguments, cache);
+        var inputProcessorResult = Match(sequence, firstSymbolIndex, ruleSpaceArguments, ruleArguments, cache);
 
         return new RuleMatchResultCollection(
             inputProcessorResult
@@ -70,10 +71,11 @@ internal sealed class RuleMatcher : IRuleMatcher
                             () => ProjectionFactory.GetProjectionResult(
                                 result,
                                 _capturedVariablesParameters,
-                                input,
+                                sequence,
+                                _projection,
                                 firstSymbolIndex,
-                                ruleArguments,
-                                _projection
+                                ruleSpaceArguments,
+                                ruleArguments
                             )
                         )
                     )

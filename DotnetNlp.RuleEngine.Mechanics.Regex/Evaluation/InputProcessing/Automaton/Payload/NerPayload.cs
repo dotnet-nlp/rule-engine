@@ -5,7 +5,7 @@ using DotnetNlp.RuleEngine.Core.Evaluation;
 using DotnetNlp.RuleEngine.Core.Evaluation.ArgumentsBinding;
 using DotnetNlp.RuleEngine.Core.Evaluation.Cache;
 using DotnetNlp.RuleEngine.Core.Evaluation.Rule;
-using DotnetNlp.RuleEngine.Core.Evaluation.Rule.Input;
+using DotnetNlp.RuleEngine.Core.Evaluation.Rule.Projection.Arguments;
 using DotnetNlp.RuleEngine.Mechanics.Regex.Evaluation.InputProcessing.Automaton.Models;
 using DotnetNlp.RuleEngine.Mechanics.Regex.Evaluation.InputProcessing.Automaton.Models.States;
 
@@ -29,7 +29,8 @@ internal sealed class NerPayload : IRuleReferencePayload
     }
 
     public void Consume(
-        RuleInput input,
+        string[] sequence,
+        RuleSpaceArguments? ruleSpaceArguments,
         RegexAutomatonState targetState,
         AutomatonProgress currentProgress,
         in Stack<AutomatonProgress> progresses,
@@ -38,12 +39,13 @@ internal sealed class NerPayload : IRuleReferencePayload
     {
         var resultCollection = Matcher
             .MatchAndProject(
-                input,
+                sequence,
                 currentProgress.LastUsedSymbolIndex + 1,
+                ruleSpaceArguments,
                 ArgumentsBinder.BindRuleArguments(
                     Matcher.Parameters,
-                    input.RuleSpaceArguments,
-                    RuleArguments
+                    RuleArguments,
+                    ruleSpaceArguments
                 ),
                 cache
             );

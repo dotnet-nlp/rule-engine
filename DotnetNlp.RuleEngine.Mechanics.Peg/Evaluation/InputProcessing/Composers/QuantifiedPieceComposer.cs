@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using DotnetNlp.RuleEngine.Core.Evaluation.Cache;
-using DotnetNlp.RuleEngine.Core.Evaluation.Rule.Input;
+using DotnetNlp.RuleEngine.Core.Evaluation.Rule.Projection.Arguments;
 using DotnetNlp.RuleEngine.Core.Lib.Common.Helpers;
 using DotnetNlp.RuleEngine.Mechanics.Peg.Build.Tokenization.Tokens;
 using DotnetNlp.RuleEngine.Mechanics.Peg.Evaluation.InputProcessing.Models;
@@ -29,17 +29,18 @@ internal sealed class QuantifiedPieceComposer : IComposer
     }
 
     public bool Match(
-        RuleInput input,
+        string[] sequence,
         ref int index,
         in PegInputProcessorDataCollector dataCollector,
-        IRuleSpaceCache cache
+        RuleSpaceArguments? ruleSpaceArguments,
+        IRuleSpaceCache? cache
     )
     {
         var resultsCollector = _variableName is null
             ? null
             : new QuantifiableResultsCollector(_quantifiable.ResultType, _quantifier.Max);
 
-        if (Quantify(input, ref index, dataCollector, resultsCollector, cache))
+        if (Quantify(sequence, ref index, dataCollector, resultsCollector, ruleSpaceArguments, cache))
         {
             if (resultsCollector is not null)
             {
@@ -60,21 +61,23 @@ internal sealed class QuantifiedPieceComposer : IComposer
     }
 
     private bool Quantify(
-        RuleInput input,
+        string[] sequence,
         ref int index,
         in PegInputProcessorDataCollector dataCollector,
         in QuantifiableResultsCollector? resultsCollector,
-        IRuleSpaceCache cache
+        RuleSpaceArguments? ruleSpaceArguments,
+        IRuleSpaceCache? cache
     )
     {
         for (var i = 0; i < _quantifier.Min; i++)
         {
             var isMatched = _quantifiable.TryParse(
-                input,
-                cache,
+                sequence,
                 ref index,
                 out var explicitlyMatchedSymbolsCount,
-                out var result
+                out var result,
+                ruleSpaceArguments,
+                cache
             );
 
             if (isMatched)
@@ -93,11 +96,12 @@ internal sealed class QuantifiedPieceComposer : IComposer
             for (var i = _quantifier.Min; i < _quantifier.Max.Value; i++)
             {
                 var isMatched = _quantifiable.TryParse(
-                    input,
-                    cache,
+                    sequence,
                     ref index,
                     out var explicitlyMatchedSymbolsCount,
-                    out var result
+                    out var result,
+                    ruleSpaceArguments,
+                    cache
                 );
 
                 if (isMatched)
@@ -114,7 +118,7 @@ internal sealed class QuantifiedPieceComposer : IComposer
             return true;
         }
 
-        while (_quantifiable.TryParse(input, cache, ref index, out var explicitlyMatchedSymbolsCount, out var result))
+        while (_quantifiable.TryParse(sequence, ref index, out var explicitlyMatchedSymbolsCount, out var result, ruleSpaceArguments: ruleSpaceArguments, cache: cache))
         {
             dataCollector.ExplicitlyMatchedSymbolsCount += explicitlyMatchedSymbolsCount;
             resultsCollector?.LocalResults.Add(result);

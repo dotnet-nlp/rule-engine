@@ -1,4 +1,4 @@
-﻿using DotnetNlp.RuleEngine.Core.Evaluation.Rule.Input;
+﻿using DotnetNlp.RuleEngine.Core.Evaluation.Cache;
 using DotnetNlp.RuleEngine.Core.Evaluation.Rule.Projection.Arguments;
 using DotnetNlp.RuleEngine.Core.Evaluation.Rule.Projection.Parameters;
 using DotnetNlp.RuleEngine.Core.Evaluation.Rule.Result;
@@ -11,15 +11,17 @@ internal static class ProjectionFactory
     public static object? GetProjectionResult(
         RuleMatchResult result,
         CapturedVariablesParameters capturedVariablesParameters,
-        RuleInput input,
-        int firstSymbolIndex,
-        RuleArguments ruleArguments,
-        IRuleProjection projection
+        string[] sequence,
+        IRuleProjection projection,
+        int firstSymbolIndex = 0,
+        RuleSpaceArguments? ruleSpaceArguments = null,
+        RuleArguments? ruleArguments = null,
+        IRuleSpaceCache? cache = null
     )
     {
         var arguments = new ProjectionArguments(
             // todo [realtime performance] this must be slow, use Span<> or something
-            input.Sequence[firstSymbolIndex..(result.LastUsedSymbolIndex + 1)],
+            sequence[firstSymbolIndex..(result.LastUsedSymbolIndex + 1)],
             new CapturedVariablesArguments(
                 capturedVariablesParameters
                     .Values
@@ -38,8 +40,8 @@ internal static class ProjectionFactory
                     )
                     .ToDictionaryWithKnownCapacity(capturedVariablesParameters.Values.Count)
             ),
-            ruleArguments,
-            input.RuleSpaceArguments
+            ruleArguments ?? RuleArguments.Empty,
+            ruleSpaceArguments ?? RuleSpaceArguments.Empty
         );
 
         return projection.Invoke(arguments);

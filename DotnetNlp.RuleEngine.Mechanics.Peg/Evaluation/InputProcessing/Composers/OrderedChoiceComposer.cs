@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using DotnetNlp.RuleEngine.Core.Evaluation.Cache;
-using DotnetNlp.RuleEngine.Core.Evaluation.Rule.Input;
+using DotnetNlp.RuleEngine.Core.Evaluation.Rule.Projection.Arguments;
 using DotnetNlp.RuleEngine.Mechanics.Peg.Evaluation.InputProcessing.Models;
 
 namespace DotnetNlp.RuleEngine.Mechanics.Peg.Evaluation.InputProcessing.Composers;
@@ -16,17 +16,18 @@ internal sealed class OrderedChoiceComposer : IComposer
     }
 
     public bool Match(
-        RuleInput input,
+        string[] sequence,
         ref int index,
         in PegInputProcessorDataCollector dataCollector,
-        IRuleSpaceCache cache
+        RuleSpaceArguments? ruleSpaceArguments,
+        IRuleSpaceCache? cache
     )
     {
         foreach (var choice in _choices)
         {
             var choiceBoundIndex = index;
 
-            if (choice.Match(input, ref choiceBoundIndex, dataCollector, cache))
+            if (choice.Match(sequence, ref choiceBoundIndex, dataCollector, ruleSpaceArguments, cache))
             {
                 index = choiceBoundIndex;
                 return true;

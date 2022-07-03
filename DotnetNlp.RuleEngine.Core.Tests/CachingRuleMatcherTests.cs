@@ -1,8 +1,6 @@
-﻿using System.Collections.Immutable;
-using DotnetNlp.RuleEngine.Core.Evaluation.Cache;
+﻿using DotnetNlp.RuleEngine.Core.Evaluation.Cache;
 using DotnetNlp.RuleEngine.Core.Evaluation.Rule;
 using DotnetNlp.RuleEngine.Core.Evaluation.Rule.Cache;
-using DotnetNlp.RuleEngine.Core.Evaluation.Rule.Input;
 using DotnetNlp.RuleEngine.Core.Evaluation.Rule.Projection.Arguments;
 using DotnetNlp.RuleEngine.Core.Evaluation.Rule.Result;
 using Moq;
@@ -18,18 +16,15 @@ internal sealed class CachingRuleMatcherTests
     [TestCase(42, new [] {"foo"}, 300)]
     public void WorksWithEmptyCache(int matcherId, string[] sequence, int firstSymbolIndex)
     {
-        var ruleInput = new RuleInput(
-            sequence,
-            new RuleSpaceArguments(ImmutableDictionary<string, object?>.Empty)
-        );
-        var ruleArguments = new RuleArguments(ImmutableDictionary<string, object?>.Empty);
+        var ruleSpaceArguments = RuleSpaceArguments.Empty;
+        var ruleArguments = RuleArguments.Empty;
         var mockedResults = new RuleMatchResultCollection(0);
 
         var nestedRuleMatcherMock = new Mock<IRuleMatcher>();
         var cacheMock = new Mock<IRuleSpaceCache>();
 
         nestedRuleMatcherMock
-            .Setup(nestedRuleMatcher => nestedRuleMatcher.MatchAndProject(ruleInput, firstSymbolIndex, ruleArguments, cacheMock.Object))
+            .Setup(nestedRuleMatcher => nestedRuleMatcher.MatchAndProject(sequence, firstSymbolIndex, ruleSpaceArguments, ruleArguments, cacheMock.Object))
             .Returns(mockedResults);
 
         var ruleMatcher = new CachingRuleMatcher(
@@ -38,17 +33,21 @@ internal sealed class CachingRuleMatcherTests
         );
 
         var results = ruleMatcher.MatchAndProject(
-            ruleInput,
+            sequence,
             firstSymbolIndex,
-            ruleArguments,
-            cacheMock.Object
+            ruleSpaceArguments: ruleSpaceArguments,
+            ruleArguments: ruleArguments,
+            cache: cacheMock.Object
         );
 
-        nestedRuleMatcherMock.Verify(nestedRuleMatcher => nestedRuleMatcher.MatchAndProject(ruleInput, firstSymbolIndex, ruleArguments, cacheMock.Object), Times.Once);
+        nestedRuleMatcherMock.Verify(
+            nestedRuleMatcher => nestedRuleMatcher.MatchAndProject(sequence, firstSymbolIndex, ruleSpaceArguments, ruleArguments, cacheMock.Object),
+            Times.Once
+        );
         nestedRuleMatcherMock.VerifyNoOtherCalls();
 
-        cacheMock.Verify(cache => cache.GetResult(matcherId, ruleInput.Sequence, firstSymbolIndex, ruleArguments.Values), Times.Once);
-        cacheMock.Verify(cache => cache.SetResult(matcherId, ruleInput.Sequence, firstSymbolIndex, ruleArguments.Values, mockedResults), Times.Once);
+        cacheMock.Verify(cache => cache.GetResult(matcherId, sequence, firstSymbolIndex, ruleArguments.Values), Times.Once);
+        cacheMock.Verify(cache => cache.SetResult(matcherId, sequence, firstSymbolIndex, ruleArguments.Values, mockedResults), Times.Once);
         cacheMock.VerifyNoOtherCalls();
 
         Assert.AreSame(mockedResults, results);
@@ -59,18 +58,15 @@ internal sealed class CachingRuleMatcherTests
     [TestCase(42, new [] {"foo"}, 300)]
     public void WorksWithFilledCache(int matcherId, string[] sequence, int firstSymbolIndex)
     {
-        var ruleInput = new RuleInput(
-            sequence,
-            new RuleSpaceArguments(ImmutableDictionary<string, object?>.Empty)
-        );
-        var ruleArguments = new RuleArguments(ImmutableDictionary<string, object?>.Empty);
+        var ruleSpaceArguments = RuleSpaceArguments.Empty;
+        var ruleArguments = RuleArguments.Empty;
         var mockedResults = new RuleMatchResultCollection(0);
 
         var nestedRuleMatcherMock = new Mock<IRuleMatcher>();
         var cacheMock = new Mock<IRuleSpaceCache>();
 
         cacheMock
-            .Setup(cache => cache.GetResult(matcherId, ruleInput.Sequence, firstSymbolIndex, ruleArguments.Values))
+            .Setup(cache => cache.GetResult(matcherId, sequence, firstSymbolIndex, ruleArguments.Values))
             .Returns(mockedResults);
 
         var ruleMatcher = new CachingRuleMatcher(
@@ -79,15 +75,16 @@ internal sealed class CachingRuleMatcherTests
         );
 
         var results = ruleMatcher.MatchAndProject(
-            ruleInput,
+            sequence,
             firstSymbolIndex,
+            ruleSpaceArguments,
             ruleArguments,
             cacheMock.Object
         );
 
         nestedRuleMatcherMock.VerifyNoOtherCalls();
 
-        cacheMock.Verify(cache => cache.GetResult(matcherId, ruleInput.Sequence, firstSymbolIndex, ruleArguments.Values), Times.Once);
+        cacheMock.Verify(cache => cache.GetResult(matcherId, sequence, firstSymbolIndex, ruleArguments.Values), Times.Once);
         cacheMock.VerifyNoOtherCalls();
 
         Assert.AreSame(mockedResults, results);

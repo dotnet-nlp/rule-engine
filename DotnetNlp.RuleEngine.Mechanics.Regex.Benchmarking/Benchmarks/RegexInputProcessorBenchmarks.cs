@@ -6,10 +6,7 @@ using BenchmarkDotNet.Engines;
 using DotnetNlp.RuleEngine.Core;
 using DotnetNlp.RuleEngine.Core.Build.Tokenization.Tokens;
 using DotnetNlp.RuleEngine.Core.Evaluation;
-using DotnetNlp.RuleEngine.Core.Evaluation.Cache;
 using DotnetNlp.RuleEngine.Core.Evaluation.Rule;
-using DotnetNlp.RuleEngine.Core.Evaluation.Rule.Input;
-using DotnetNlp.RuleEngine.Core.Evaluation.Rule.Projection.Arguments;
 using DotnetNlp.RuleEngine.Core.Lib.CodeAnalysis.Assemblies;
 using DotnetNlp.RuleEngine.Core.Lib.CodeAnalysis.Tokenization.Tokens;
 using DotnetNlp.RuleEngine.Core.Lib.Common;
@@ -100,15 +97,7 @@ public class RegexInputProcessorBenchmarks
             {
                 @case
                     .Matcher
-                    .MatchAndProject(
-                        new RuleInput(
-                            phrase.Split(' ', StringSplitOptions.RemoveEmptyEntries),
-                            new RuleSpaceArguments(ImmutableDictionary<string, object?>.Empty)
-                        ),
-                        0,
-                        new RuleArguments(ImmutableDictionary<string, object?>.Empty),
-                        new RuleSpaceCache()
-                    )
+                    .MatchAndProject(phrase.Split(' ', StringSplitOptions.RemoveEmptyEntries))
                     .Consume(_consumer);
             }
         }

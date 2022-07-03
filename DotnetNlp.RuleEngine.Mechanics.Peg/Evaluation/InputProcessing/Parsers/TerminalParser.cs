@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using DotnetNlp.RuleEngine.Core.Evaluation.Cache;
-using DotnetNlp.RuleEngine.Core.Evaluation.Rule.Input;
+using DotnetNlp.RuleEngine.Core.Evaluation.Rule.Projection.Arguments;
 using DotnetNlp.RuleEngine.Mechanics.Peg.Evaluation.InputProcessing.TerminalDetectors;
 
 namespace DotnetNlp.RuleEngine.Mechanics.Peg.Evaluation.InputProcessing.Parsers;
@@ -18,14 +18,15 @@ internal sealed class TerminalParser : IQuantifiableParser
     }
 
     public bool TryParse(
-        RuleInput input,
-        IRuleSpaceCache cache,
+        string[] sequence,
         ref int index,
         out int explicitlyMatchedSymbolsCount,
-        out object? result
+        out object? result,
+        RuleSpaceArguments? ruleSpaceArguments = null,
+        IRuleSpaceCache? cache = null
     )
     {
-        if (index >= input.Sequence.Length)
+        if (index >= sequence.Length)
         {
             explicitlyMatchedSymbolsCount = 0;
             result = null;
@@ -33,7 +34,7 @@ internal sealed class TerminalParser : IQuantifiableParser
             return false;
         }
 
-        var word = input.Sequence[index];
+        var word = sequence[index];
 
         var isTerminalDetected = _terminalDetector.WordMatches(word);
 

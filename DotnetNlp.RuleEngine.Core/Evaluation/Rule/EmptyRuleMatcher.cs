@@ -1,6 +1,5 @@
 ﻿using System.Collections.Generic;
 using DotnetNlp.RuleEngine.Core.Evaluation.Cache;
-using DotnetNlp.RuleEngine.Core.Evaluation.Rule.Input;
 using DotnetNlp.RuleEngine.Core.Evaluation.Rule.Projection.Arguments;
 using DotnetNlp.RuleEngine.Core.Evaluation.Rule.Projection.Parameters;
 using DotnetNlp.RuleEngine.Core.Evaluation.Rule.Result;
@@ -19,9 +18,10 @@ internal sealed class EmptyRuleMatcher : IRuleMatcher
     }
 
     public RuleMatchResultCollection Match(
-        RuleInput input,
-        int firstSymbolIndex,
-        RuleArguments ruleArguments,
+        string[] sequence,
+        int firstSymbolIndex = 0,
+        RuleSpaceArguments? ruleSpaceArguments = null,
+        RuleArguments? ruleArguments = null,
         IRuleSpaceCache? cache = null
     )
     {
@@ -29,13 +29,14 @@ internal sealed class EmptyRuleMatcher : IRuleMatcher
     }
 
     public RuleMatchResultCollection MatchAndProject(
-        RuleInput input,
-        int firstSymbolIndex,
-        RuleArguments ruleArguments,
+        string[] sequence,
+        int firstSymbolIndex = 0,
+        RuleSpaceArguments? ruleSpaceArguments = null,
+        RuleArguments? ruleArguments = null,
         IRuleSpaceCache? cache = null
     )
     {
-        return Match(input, firstSymbolIndex, ruleArguments, cache);
+        return Match(sequence, firstSymbolIndex, ruleSpaceArguments, ruleArguments, cache);
     }
 
     public IEnumerable<string> GetUsedWords()

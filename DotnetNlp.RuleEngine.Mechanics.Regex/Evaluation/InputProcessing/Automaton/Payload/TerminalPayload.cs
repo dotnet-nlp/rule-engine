@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 using DotnetNlp.RuleEngine.Core.Evaluation.Cache;
-using DotnetNlp.RuleEngine.Core.Evaluation.Rule.Input;
+using DotnetNlp.RuleEngine.Core.Evaluation.Rule.Projection.Arguments;
 using DotnetNlp.RuleEngine.Mechanics.Regex.Evaluation.InputProcessing.Automaton.Models;
 using DotnetNlp.RuleEngine.Mechanics.Regex.Evaluation.InputProcessing.Automaton.Models.States;
 using DotnetNlp.RuleEngine.Mechanics.Regex.Evaluation.InputProcessing.TerminalDetectors;
@@ -23,7 +23,8 @@ internal sealed class TerminalPayload : ITransitionPayload
     }
 
     public void Consume(
-        RuleInput input,
+        string[] sequence,
+        RuleSpaceArguments? ruleSpaceArguments,
         RegexAutomatonState targetState,
         AutomatonProgress currentProgress,
         in Stack<AutomatonProgress> progresses,
@@ -32,9 +33,9 @@ internal sealed class TerminalPayload : ITransitionPayload
     {
         var nextSymbolIndex = currentProgress.LastUsedSymbolIndex + 1;
 
-        if (nextSymbolIndex < input.Sequence.Length)
+        if (nextSymbolIndex < sequence.Length)
         {
-            if (TerminalDetector.WordMatches(input.Sequence[nextSymbolIndex], out var explicitlyMatchedSymbolsCount))
+            if (TerminalDetector.WordMatches(sequence[nextSymbolIndex], out var explicitlyMatchedSymbolsCount))
             {
                 progresses.Push(
                     currentProgress.Clone(

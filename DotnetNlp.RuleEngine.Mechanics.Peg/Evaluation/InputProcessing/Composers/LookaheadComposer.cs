@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 using DotnetNlp.RuleEngine.Core.Evaluation.Cache;
-using DotnetNlp.RuleEngine.Core.Evaluation.Rule.Input;
+using DotnetNlp.RuleEngine.Core.Evaluation.Rule.Projection.Arguments;
 using DotnetNlp.RuleEngine.Mechanics.Peg.Build.Tokenization.Tokens;
 using DotnetNlp.RuleEngine.Mechanics.Peg.Evaluation.InputProcessing.Models;
 
@@ -18,15 +18,16 @@ internal sealed class LookaheadComposer : IComposer
     }
 
     public bool Match(
-        RuleInput input,
+        string[] sequence,
         ref int index,
         in PegInputProcessorDataCollector dataCollector,
-        IRuleSpaceCache cache
+        RuleSpaceArguments? ruleSpaceArguments,
+        IRuleSpaceCache? cache
     )
     {
         var boundIndex = index;
 
-        var result = _child.Match(input, ref boundIndex, dataCollector, cache);
+        var result = _child.Match(sequence, ref boundIndex, dataCollector, ruleSpaceArguments, cache);
 
         return result != _lookaheadToken.IsNegative;
     }

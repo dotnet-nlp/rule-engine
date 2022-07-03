@@ -1,11 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Collections.Immutable;
 using System.Linq;
 using DotnetNlp.RuleEngine.Core.Build.Tokenization.Tokens;
 using DotnetNlp.RuleEngine.Core.Evaluation;
-using DotnetNlp.RuleEngine.Core.Evaluation.Cache;
-using DotnetNlp.RuleEngine.Core.Evaluation.Rule.Input;
 using DotnetNlp.RuleEngine.Core.Evaluation.Rule.Projection.Arguments;
 using DotnetNlp.RuleEngine.Core.Evaluation.Rule.Result.SelectionStrategy;
 using DotnetNlp.RuleEngine.Core.Lib.CodeAnalysis.Assemblies;
@@ -456,17 +453,9 @@ int Foo = peg#($ner.number_line:number)#
         int? expectedLastUsedSymbolIndex = null
     )
     {
-        var input = new RuleInput(
-            phrase.Split(' ', StringSplitOptions.RemoveEmptyEntries),
-            _ruleSpaceArguments!
-        );
+        var sequence = phrase.Split(' ', StringSplitOptions.RemoveEmptyEntries);
 
-        var matchResults = _ruleSpace![ruleKey].MatchAndProject(
-            input,
-            0,
-            new RuleArguments(ImmutableDictionary<string, object?>.Empty),
-            new RuleSpaceCache()
-        );
+        var matchResults = _ruleSpace![ruleKey].MatchAndProject(sequence, ruleSpaceArguments: _ruleSpaceArguments);
 
         var matchResult = matchResults.Best(_bestReferenceSelectionStrategy!);
 
@@ -474,7 +463,7 @@ int Foo = peg#($ner.number_line:number)#
 
         if (matchResult is not null)
         {
-            Assert.AreEqual(expectedLastUsedSymbolIndex ?? (expectedIsMatched ? input.Sequence.Length - 1 : -1), matchResult.LastUsedSymbolIndex);
+            Assert.AreEqual(expectedLastUsedSymbolIndex ?? (expectedIsMatched ? sequence.Length - 1 : -1), matchResult.LastUsedSymbolIndex);
             Assert.AreEqual(expectedExtractedEntity, matchResult.Result.Value);
         }
     }
@@ -486,17 +475,9 @@ int Foo = peg#($ner.number_line:number)#
         IReadOnlyDictionary<string, object?> expectedCapturedVariables
     )
     {
-        var input = new RuleInput(
-            phrase.Split(' ', StringSplitOptions.RemoveEmptyEntries),
-            _ruleSpaceArguments!
-        );
+        var sequence = phrase.Split(' ', StringSplitOptions.RemoveEmptyEntries);
 
-        var matchResults = _ruleSpace![ruleKey].MatchAndProject(
-            input,
-            0,
-            new RuleArguments(ImmutableDictionary<string, object?>.Empty),
-            new RuleSpaceCache()
-        );
+        var matchResults = _ruleSpace![ruleKey].MatchAndProject(sequence, ruleSpaceArguments: _ruleSpaceArguments);
 
         var matchResult = matchResults.Best(_bestReferenceSelectionStrategy!);
 
