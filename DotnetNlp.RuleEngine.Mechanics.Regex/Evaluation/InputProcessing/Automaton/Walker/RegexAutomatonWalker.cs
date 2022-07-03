@@ -14,7 +14,7 @@ internal sealed class RegexAutomatonWalker : IRegexAutomatonWalker<RegexAutomato
         RegexAutomaton automaton,
         RuleInput ruleInput,
         int firstSymbolIndex,
-        IRuleSpaceCache cache
+        IRuleSpaceCache? cache = null
     )
     {
         // todo this is rough estimate, think if we can predict this number more precisely
@@ -42,7 +42,7 @@ internal sealed class RegexAutomatonWalker : IRegexAutomatonWalker<RegexAutomato
 
             foreach (var transition in progress.State.OutgoingTransitions)
             {
-                transition.Payload.Consume(ruleInput, transition.TargetState, progress, cache, progresses);
+                transition.Payload.Consume(ruleInput, transition.TargetState, progress, progresses, cache);
             }
         }
 

@@ -35,8 +35,15 @@ internal sealed class RuleMatcher : IRuleMatcher
         _projection = projection;
     }
 
-    public RuleMatchResultCollection Match(RuleInput input, int firstSymbolIndex, IRuleSpaceCache cache)
+    public RuleMatchResultCollection Match(
+        RuleInput input,
+        int firstSymbolIndex,
+        RuleArguments ruleArguments,
+        IRuleSpaceCache? cache = null
+    )
     {
+        cache ??= new RuleSpaceCache();
+
         return _inputProcessor.Match(input, firstSymbolIndex, cache);
     }
 
@@ -44,10 +51,10 @@ internal sealed class RuleMatcher : IRuleMatcher
         RuleInput input,
         int firstSymbolIndex,
         RuleArguments ruleArguments,
-        IRuleSpaceCache cache
+        IRuleSpaceCache? cache = null
     )
     {
-        var inputProcessorResult = Match(input, firstSymbolIndex, cache);
+        var inputProcessorResult = Match(input, firstSymbolIndex, ruleArguments, cache);
 
         return new RuleMatchResultCollection(
             inputProcessorResult

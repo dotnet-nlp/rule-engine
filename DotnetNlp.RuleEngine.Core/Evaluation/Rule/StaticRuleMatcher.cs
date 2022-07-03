@@ -33,16 +33,21 @@ public sealed class StaticRuleMatcher<TResult> : IRuleMatcher
         );
     }
 
-    public RuleMatchResultCollection Match(RuleInput input, int firstSymbolIndex, IRuleSpaceCache cache)
+    public RuleMatchResultCollection Match(
+        RuleInput input,
+        int firstSymbolIndex,
+        RuleArguments ruleArguments,
+        IRuleSpaceCache? cache = null
+    )
     {
-        return MatchAndProject(input, firstSymbolIndex, RuleArguments.Empty, cache);
+        return MatchAndProject(input, firstSymbolIndex, ruleArguments, cache);
     }
 
     public RuleMatchResultCollection MatchAndProject(
         RuleInput input,
         int firstSymbolIndex,
         RuleArguments ruleArguments,
-        IRuleSpaceCache cache
+        IRuleSpaceCache? cache = null
     )
     {
         return new RuleMatchResultCollection(

@@ -32,8 +32,8 @@ internal sealed class NerPayload : IRuleReferencePayload
         RuleInput input,
         RegexAutomatonState targetState,
         AutomatonProgress currentProgress,
-        IRuleSpaceCache cache,
-        in Stack<AutomatonProgress> progresses
+        in Stack<AutomatonProgress> progresses,
+        IRuleSpaceCache? cache = null
     )
     {
         var resultCollection = Matcher

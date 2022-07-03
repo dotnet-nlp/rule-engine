@@ -26,8 +26,8 @@ internal sealed class TerminalPayload : ITransitionPayload
         RuleInput input,
         RegexAutomatonState targetState,
         AutomatonProgress currentProgress,
-        IRuleSpaceCache cache,
-        in Stack<AutomatonProgress> progresses
+        in Stack<AutomatonProgress> progresses,
+        IRuleSpaceCache? cache = null
     )
     {
         var nextSymbolIndex = currentProgress.LastUsedSymbolIndex + 1;

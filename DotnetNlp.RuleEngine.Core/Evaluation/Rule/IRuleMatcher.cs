@@ -13,49 +13,66 @@ public interface IRuleMatcher : IUsedWordsProvider
 {
     RuleParameters Parameters { get; }
     RuleMatchResultDescription ResultDescription { get; }
-    RuleMatchResultCollection Match(RuleInput input, int firstSymbolIndex, IRuleSpaceCache cache);
+    RuleMatchResultCollection Match(
+        RuleInput input,
+        int firstSymbolIndex,
+        RuleArguments ruleArguments,
+        IRuleSpaceCache? cache = null
+    );
+
     RuleMatchResultCollection MatchAndProject(
         RuleInput input,
         int firstSymbolIndex,
         RuleArguments ruleArguments,
-        IRuleSpaceCache cache
+        IRuleSpaceCache? cache = null
     );
-}
 
-public static class RuleMatcherExtensions
-{
-    public static bool HasMatch(this IRuleMatcher matcher, RuleInput input, int firstSymbolIndex, IRuleSpaceCache cache)
-    {
-        return matcher.Match(input, firstSymbolIndex, cache).Count > 0;
-    }
-
-    public static RuleMatchResultCollection MatchAll(
-        this IRuleMatcher matcher,
-        RuleInput input,
-        int firstSymbolIndex,
-        IRuleSpaceCache cache
-    )
-    {
-        return EvaluateAll(
-            startIndex => matcher.Match(input, startIndex, cache),
-            input,
-            firstSymbolIndex
-        );
-    }
-
-    public static RuleMatchResultCollection MatchAndProjectAll(
-        this IRuleMatcher matcher,
+    public bool HasMatch(
         RuleInput input,
         int firstSymbolIndex,
         RuleArguments ruleArguments,
-        IRuleSpaceCache cache
+        IRuleSpaceCache? cache = null
+    )
+    {
+        return Match(input, firstSymbolIndex, ruleArguments, cache).Count > 0;
+    }
+
+    public RuleMatchResultCollection MatchAll(
+        RuleInput input,
+        int firstSymbolIndex,
+        RuleArguments ruleArguments,
+        IRuleSpaceCache? cache = null
     )
     {
         return EvaluateAll(
-            startIndex => matcher.MatchAndProject(input, startIndex, ruleArguments, cache),
+            startIndex => Match(input, startIndex, ruleArguments, cache),
             input,
             firstSymbolIndex
         );
+    }
+
+    public RuleMatchResultCollection MatchAndProjectAll(
+        RuleInput input,
+        int firstSymbolIndex,
+        RuleArguments ruleArguments,
+        IRuleSpaceCache? cache = null
+    )
+    {
+        return EvaluateAll(
+            startIndex => MatchAndProject(input, startIndex, ruleArguments, cache),
+            input,
+            firstSymbolIndex
+        );
+    }
+
+    public bool HasAnyMatch(
+        RuleInput input,
+        int firstSymbolIndex,
+        RuleArguments ruleArguments,
+        IRuleSpaceCache? cache = null
+    )
+    {
+        return MatchAll(input, firstSymbolIndex, ruleArguments, cache).Count > 0;
     }
 
     private static RuleMatchResultCollection EvaluateAll(

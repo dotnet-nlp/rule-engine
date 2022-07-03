@@ -34,26 +34,29 @@ internal sealed class RuleReferencePayload : IRuleReferencePayload
         RuleInput input,
         RegexAutomatonState targetState,
         AutomatonProgress currentProgress,
-        IRuleSpaceCache cache,
-        in Stack<AutomatonProgress> progresses
+        in Stack<AutomatonProgress> progresses,
+        IRuleSpaceCache? cache = null
     )
     {
+        var arguments = ArgumentsBinder.BindRuleArguments(
+            Matcher.Parameters,
+            input.RuleSpaceArguments,
+            RuleArguments
+        );
+
         var resultCollection = Matcher.Parameters.Values.Count == 0
             ? Matcher
                 .Match(
                     input,
                     currentProgress.LastUsedSymbolIndex + 1,
+                    arguments,
                     cache
                 )
             : Matcher
                 .MatchAndProject(
                     input,
                     currentProgress.LastUsedSymbolIndex + 1,
-                    ArgumentsBinder.BindRuleArguments(
-                        Matcher.Parameters,
-                        input.RuleSpaceArguments,
-                        RuleArguments
-                    ),
+                    arguments,
                     cache
                 );
 

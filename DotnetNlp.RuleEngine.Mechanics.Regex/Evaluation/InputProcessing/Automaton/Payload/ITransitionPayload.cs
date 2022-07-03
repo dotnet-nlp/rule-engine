@@ -14,7 +14,7 @@ internal interface ITransitionPayload : IUsedWordsProvider
         RuleInput input,
         RegexAutomatonState targetState,
         AutomatonProgress currentProgress,
-        IRuleSpaceCache cache,
-        in Stack<AutomatonProgress> progresses
+        in Stack<AutomatonProgress> progresses,
+        IRuleSpaceCache? cache = null
     );
 }

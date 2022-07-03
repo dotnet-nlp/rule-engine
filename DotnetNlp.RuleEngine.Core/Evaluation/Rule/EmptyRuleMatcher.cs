@@ -18,7 +18,12 @@ internal sealed class EmptyRuleMatcher : IRuleMatcher
         ResultDescription = resultDescription;
     }
 
-    public RuleMatchResultCollection Match(RuleInput input, int firstSymbolIndex, IRuleSpaceCache cache)
+    public RuleMatchResultCollection Match(
+        RuleInput input,
+        int firstSymbolIndex,
+        RuleArguments ruleArguments,
+        IRuleSpaceCache? cache = null
+    )
     {
         return new RuleMatchResultCollection(0);
     }
@@ -27,10 +32,10 @@ internal sealed class EmptyRuleMatcher : IRuleMatcher
         RuleInput input,
         int firstSymbolIndex,
         RuleArguments ruleArguments,
-        IRuleSpaceCache cache
+        IRuleSpaceCache? cache = null
     )
     {
-        return Match(input, firstSymbolIndex, cache);
+        return Match(input, firstSymbolIndex, ruleArguments, cache);
     }
 
     public IEnumerable<string> GetUsedWords()

@@ -21,8 +21,15 @@ internal sealed class CachingRuleMatcher : IRuleMatcher
         _source = source;
     }
 
-    public RuleMatchResultCollection Match(RuleInput input, int firstSymbolIndex, IRuleSpaceCache cache)
+    public RuleMatchResultCollection Match(
+        RuleInput input,
+        int firstSymbolIndex,
+        RuleArguments ruleArguments,
+        IRuleSpaceCache? cache = null
+    )
     {
+        cache ??= new RuleSpaceCache();
+
         var matchResult = cache.GetResult(_id, input.Sequence, firstSymbolIndex, null);
 
         if (matchResult is not null)
@@ -31,7 +38,7 @@ internal sealed class CachingRuleMatcher : IRuleMatcher
         }
 
         // todo [code quality] separate cache from IRuleMatcher
-        matchResult = _source.Match(input, firstSymbolIndex, cache);
+        matchResult = _source.Match(input, firstSymbolIndex, ruleArguments, cache);
 
         cache.SetResult(_id, input.Sequence, firstSymbolIndex, null, matchResult);
 
@@ -42,9 +49,11 @@ internal sealed class CachingRuleMatcher : IRuleMatcher
         RuleInput input,
         int firstSymbolIndex,
         RuleArguments ruleArguments,
-        IRuleSpaceCache cache
+        IRuleSpaceCache? cache = null
     )
     {
+        cache ??= new RuleSpaceCache();
+
         var matchResult = cache.GetResult(_id, input.Sequence, firstSymbolIndex, ruleArguments.Values);
 
         if (matchResult is not null)

@@ -25,8 +25,8 @@ internal sealed class MarkerPayload : ITransitionPayload
         RuleInput input,
         RegexAutomatonState targetState,
         AutomatonProgress currentProgress,
-        IRuleSpaceCache cache,
-        in Stack<AutomatonProgress> progresses
+        in Stack<AutomatonProgress> progresses,
+        IRuleSpaceCache? cache = null
     )
     {
         progresses.Push(currentProgress.Clone(targetState, replaceMarker: true, marker: Marker));

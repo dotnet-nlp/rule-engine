@@ -25,8 +25,8 @@ internal sealed class VariableCapturePayload : ITransitionPayload
         RuleInput input,
         RegexAutomatonState targetState,
         AutomatonProgress currentProgress,
-        IRuleSpaceCache cache,
-        in Stack<AutomatonProgress> progresses
+        in Stack<AutomatonProgress> progresses,
+        IRuleSpaceCache? cache = null
     )
     {
         if (currentProgress.CapturedValueFactory is not null)
