@@ -54,7 +54,7 @@ internal sealed class RuleTokenBasedRuleSource : IRuleSource
         catch (Exception exception)
         {
             throw new RuleBuildException(
-                $"Cannot create rule matcher for rule '{_rule.GetFullName()}'.",
+                $"Cannot create rule matcher for rule '{((IRuleToken) _rule).GetFullName()}'.",
                 exception
             );
         }

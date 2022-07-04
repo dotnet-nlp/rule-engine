@@ -351,7 +351,7 @@ public sealed class RuleSpaceFactory
 
         RuleCapturedVariables ExtractOwnCapturedVariables(RuleToken rule)
         {
-            return ExtractVariables(rule.Pattern, rule.GetFullName());
+            return ExtractVariables(rule.Pattern, ((IRuleToken) rule).GetFullName());
         }
 
         RuleCapturedVariables ExtractVariables(IPatternToken pattern, string ruleName)
@@ -586,7 +586,12 @@ public sealed class RuleSpaceFactory
 
                     return ruleSet
                         .Rules
-                        .Select(rule => new KeyValuePair<string, IReadOnlySet<string>>(rule.GetFullName(), usings));
+                        .Select(
+                            rule => new KeyValuePair<string, IReadOnlySet<string>>(
+                                ((IRuleToken) rule).GetFullName(),
+                                usings
+                            )
+                        );
                 }
             )
             .ToDictionaryWithKnownCapacity(capacity)

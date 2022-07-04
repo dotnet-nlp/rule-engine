@@ -4,7 +4,7 @@ using DotnetNlp.RuleEngine.Core.Evaluation.Rule.Result.SelectionStrategy;
 
 namespace DotnetNlp.RuleEngine.Core.Evaluation.Rule.Result;
 
-// todo [realtime performance] figure out how to introduce single instance for emtpy immutable result
+// todo [realtime performance] figure out how to introduce single instance for empty immutable result
 public sealed class RuleMatchResultCollection : HashSet<RuleMatchResult>
 {
     public RuleMatchResultCollection(int capacity) : base(capacity, RuleMatchResultEqualityComparer.Instance)
@@ -25,6 +25,30 @@ public sealed class RuleMatchResultCollection : HashSet<RuleMatchResult>
         return Count == 0
             ? default
             : this.Aggregate((maxItem, nextItem) => strategy.Compare(maxItem, nextItem) < 0 ? nextItem : maxItem);
+    }
+
+    public RuleMatchResultCollection GetFullMatches()
+    {
+        var fullMatches = new RuleMatchResultCollection(
+            this.Where(result => result.LastUsedSymbolIndex == result.Source.Count - 1),
+            Count
+        );
+
+        fullMatches.TrimExcess();
+
+        return fullMatches;
+    }
+
+    public RuleMatchResultCollection ExcludeEmptyMatches()
+    {
+        var notEmptyMatches = new RuleMatchResultCollection(
+            this.Where(result => result.LastUsedSymbolIndex != -1),
+            Count
+        );
+
+        notEmptyMatches.TrimExcess();
+
+        return notEmptyMatches;
     }
 
     private class RuleMatchResultEqualityComparer : IEqualityComparer<RuleMatchResult>
@@ -124,29 +148,5 @@ public static class RuleMatchResultCollectionExtensions
         }
 
         return result;
-    }
-
-    public static RuleMatchResultCollection GetFullMatches(this RuleMatchResultCollection resultCollection)
-    {
-        var fullMatches = new RuleMatchResultCollection(
-            resultCollection.Where(result => result.LastUsedSymbolIndex == result.Source.Count - 1),
-            resultCollection.Count
-        );
-
-        fullMatches.TrimExcess();
-
-        return fullMatches;
-    }
-
-    public static RuleMatchResultCollection ExcludeEmptyMatches(this RuleMatchResultCollection resultCollection)
-    {
-        var notEmptyMatches = new RuleMatchResultCollection(
-            resultCollection.Where(result => result.LastUsedSymbolIndex != -1),
-            resultCollection.Count
-        );
-
-        notEmptyMatches.TrimExcess();
-
-        return notEmptyMatches;
     }
 }

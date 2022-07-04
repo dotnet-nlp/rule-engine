@@ -34,7 +34,7 @@ internal sealed class EmptyRuleTokenBasedRuleSource : IRuleSource
         catch (Exception exception)
         {
             throw new RuleBuildException(
-                $"Cannot create empty rule matcher for rule '{_rule.GetFullName()}'.",
+                $"Cannot create empty rule matcher for rule '{((IRuleToken) _rule).GetFullName()}'.",
                 exception
             );
         }

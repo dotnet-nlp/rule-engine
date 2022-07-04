@@ -9,12 +9,9 @@ public interface IRuleToken : IToken
     ICSharpTypeToken ReturnType { get; }
     CSharpParameterToken[] RuleParameters { get; }
     IProjectionToken Projection { get; }
-}
 
-public static class RuleTokenExtensions
-{
-    public static string GetFullName(this IRuleToken ruleToken)
+    public string GetFullName()
     {
-        return ruleToken.Namespace is null ? ruleToken.Name : $"{ruleToken.Namespace}.{ruleToken.Name}";
+        return Namespace is null ? Name : $"{Namespace}.{Name}";
     }
 }
