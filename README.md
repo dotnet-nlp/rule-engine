@@ -63,7 +63,21 @@ var ruleSpace = Factory.Create(
 using DotnetNlp.RuleEngine.Bundle;
 
 int Root = peg#($Number:n)# { return n; }
-int Number = peg#($Number_0:n_0|$Number_1:n_1|$Number_2:n_2|$Number_3:n_3|$Number_4:n_4|$Number_5:n_5|$Number_6:n_6|$Number_7:n_7|$Number_8:n_8|$Number_9:n_9)# { return Pick.OneOf(n_0, n_1, n_2, n_3, n_4, n_5, n_6, n_7, n_8, n_9); }
+int Number = peg#(
+    $Number_0:n_0|
+    $Number_1:n_1|
+    $Number_2:n_2|
+    $Number_3:n_3|
+    $Number_4:n_4|
+    $Number_5:n_5|
+    $Number_6:n_6|
+    $Number_7:n_7|
+    $Number_8:n_8|
+    $Number_9:n_9
+)#
+{
+    return Pick.OneOf(n_0, n_1, n_2, n_3, n_4, n_5, n_6, n_7, n_8, n_9);
+}
 int Number_0 = peg#(zero|null)# => 0
 int Number_1 = peg#(one)# => 1
 int Number_2 = peg#(two)# => 2
