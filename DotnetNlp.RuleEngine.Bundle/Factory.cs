@@ -15,11 +15,11 @@ namespace DotnetNlp.RuleEngine.Bundle;
 public static class Factory
 {
     public static IRuleSpace Create(
-        Dictionary<string, string>? ruleSets = null,
-        Dictionary<string, string>? rules = null,
-        Dictionary<string, IRuleMatcher>? matchers = null,
-        Dictionary<string, IRuleSpace>? ruleSpaces = null,
-        Dictionary<string, Type>? ruleSpaceParameterTypes = null,
+        IReadOnlyDictionary<string, string>? ruleSets = null,
+        IReadOnlyDictionary<string, string>? rules = null,
+        IReadOnlyDictionary<string, IRuleMatcher>? matchers = null,
+        IReadOnlyDictionary<string, IRuleSpace>? ruleSpaces = null,
+        IReadOnlyDictionary<string, Type>? ruleSpaceParameterTypes = null,
         IAssembliesProvider? assembliesProvider = null
     )
     {
