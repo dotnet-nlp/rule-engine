@@ -15,11 +15,11 @@ namespace DotnetNlp.RuleEngine.Bundle;
 public static class Factory
 {
     public static IRuleSpace Create(
-        IReadOnlyDictionary<string, string>? ruleSets = null,
-        IReadOnlyDictionary<string, string>? rules = null,
-        IReadOnlyDictionary<string, IRuleMatcher>? matchers = null,
-        IReadOnlyDictionary<string, IRuleSpace>? ruleSpaces = null,
-        IReadOnlyDictionary<string, Type>? ruleSpaceParameterTypes = null,
+        Dictionary<string, string>? ruleSets = null,
+        Dictionary<string, string>? rules = null,
+        Dictionary<string, IRuleMatcher>? matchers = null,
+        Dictionary<string, IRuleSpace>? ruleSpaces = null,
+        Dictionary<string, Type>? ruleSpaceParameterTypes = null,
         IAssembliesProvider? assembliesProvider = null
     )
     {
@@ -51,9 +51,9 @@ public static class Factory
                 )
                 .SelectValues()
                 .ToArray() ?? Array.Empty<IRuleToken>(),
-            matchers ?? ImmutableDictionary<string, IRuleMatcher>.Empty,
-            ruleSpaces ?? ImmutableDictionary<string, IRuleSpace>.Empty,
-            ruleSpaceParameterTypes ?? ImmutableDictionary<string, Type>.Empty,
+            matchers ?? (IReadOnlyDictionary<string, IRuleMatcher>) ImmutableDictionary<string, IRuleMatcher>.Empty,
+            ruleSpaces ?? (IReadOnlyDictionary<string, IRuleSpace>) ImmutableDictionary<string, IRuleSpace>.Empty,
+            ruleSpaceParameterTypes ?? (IReadOnlyDictionary<string, Type>) ImmutableDictionary<string, Type>.Empty,
             assembliesProvider ?? LoadedAssembliesProvider.Instance
         );
     }

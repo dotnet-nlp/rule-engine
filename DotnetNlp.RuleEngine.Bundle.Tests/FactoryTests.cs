@@ -10,8 +10,8 @@ public class FactoryTests
     [Test]
     [TestCaseSource(nameof(_sources))]
     public void Works(
-        IReadOnlyDictionary<string, string> ruleSets,
-        IReadOnlyDictionary<string, string> rules,
+        Dictionary<string, string> ruleSets,
+        Dictionary<string, string> rules,
         IReadOnlyCollection<(string, string, object?)> ruleSetCases,
         IReadOnlyCollection<(string, string, bool)> ruleCases
     )
