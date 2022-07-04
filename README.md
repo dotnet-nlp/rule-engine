@@ -1,3 +1,6 @@
+[![Release NuGet packages on release created](https://github.com/dotnet-nlp/rule-engine/actions/workflows/nuget-release.yml/badge.svg)](https://github.com/dotnet-nlp/rule-engine/actions/workflows/nuget-release.yml)
+[![Release PyPI packages on dotnet release created](https://github.com/dotnet-nlp/rule-engine-python/actions/workflows/pypi-publish.yml/badge.svg)](https://github.com/dotnet-nlp/rule-engine-python/actions/workflows/pypi-publish.yml)
+
 Rule Engine is a pattern matching library, which allows including multiple mechanics to detect if the phrase matches some specific rule.
 
 ## Basic terms
@@ -46,81 +49,49 @@ For each of the library components there are benchmarks written with `BenchmarkD
 ## Usage examples
 
 ```csharp
+using System;
 using System.Collections.Generic;
+using System.Linq;
 using DotnetNlp.RuleEngine.Bundle;
-using DotnetNlp.RuleEngine.Core.Evaluation.Cache;
-using DotnetNlp.RuleEngine.Core.Evaluation.Rule;
-using DotnetNlp.RuleEngine.Core.Evaluation.Rule.Input;
-using DotnetNlp.RuleEngine.Core.Evaluation.Rule.Projection.Arguments;
 
-var ruleSets = new Dictionary<string, string>()
-{
+var ruleSpace = Factory.Create(
+    new Dictionary<string, string>()
     {
-        "number",
-        @"
+        {
+            "number",
+            @"
 using DotnetNlp.RuleEngine.Bundle;
 
 int Root = peg#($Number:n)# { return n; }
 int Number = peg#($Number_0:n_0|$Number_1:n_1|$Number_2:n_2|$Number_3:n_3|$Number_4:n_4|$Number_5:n_5|$Number_6:n_6|$Number_7:n_7|$Number_8:n_8|$Number_9:n_9)# { return Pick.OneOf(n_0, n_1, n_2, n_3, n_4, n_5, n_6, n_7, n_8, n_9); }
-int Number_0 = peg#(ноль)# => 0
-int Number_1 = peg#(один)# => 1
-int Number_2 = peg#(два)# => 2
-int Number_3 = peg#(три)# => 3
-int Number_4 = peg#(четыре)# => 4
-int Number_5 = peg#(пять)# => 5
-int Number_6 = peg#(шесть)# => 6
-int Number_7 = peg#(семь)# => 7
-int Number_8 = peg#(восемь)# => 8
-int Number_9 = peg#(девять)# => 9"
+int Number_0 = peg#(zero|null)# => 0
+int Number_1 = peg#(one)# => 1
+int Number_2 = peg#(two)# => 2
+int Number_3 = peg#(three)# => 3
+int Number_4 = peg#(four)# => 4
+int Number_5 = peg#(five)# => 5
+int Number_6 = peg#(six)# => 6
+int Number_7 = peg#(seven)# => 7
+int Number_8 = peg#(eight)# => 8
+int Number_9 = peg#(nine)# => 9"
+        },
     },
-};
-
-var rules = new Dictionary<string, string>()
-{
+    new Dictionary<string, string>()
     {
-        "hi",
-        "([привет~ здравствуй~]|[добрый доброе доброй доброго] [день дня вечер вечера утро утра ночь ночи])"
-    },
-};
-
-var ruleSpace = Factory.Create(
-    ruleSets: ruleSets,
-    rules: rules
+        {"hi", "(hi|hello|good [morning day afternoon evening])"},
+    }
 );
 
-// testing matcher (with object value extraction)
-{
-    // the same matcher is available under the keys: "number", "number.Number", "number.Root"
-    var numberMatcher = ruleSpace["number"];
+// using HasMatch method to determine if the match was successful
+var isGreeting = ruleSpace["hi"].HasMatch(new[] { "good", "afternoon" });
 
-    // using MatchAndProject method to get the resulting number
-    var results = numberMatcher.MatchAndProject(
-        new RuleInput(
-            new [] {"пять"},
-            RuleSpaceArguments.Empty
-        ),
-        0,
-        RuleArguments.Empty,
-        new RuleSpaceCache()
-    );
+// isGreeting is going to be equal to true
+Console.WriteLine(isGreeting);
 
-    // results.Single().Result.Value == 5
-}
+// the same matcher is available under the keys: "number", "number.Number", "number.Root"
+// using MatchAndProject method to get the resulting number
+var results = ruleSpace["number"].MatchAndProject(new[] { "one" });
 
-// testing rule matcher (with boolean result)
-{
-    var hiMatcher = ruleSpace["hi"];
-
-    // using HasMatch method to determine if the match was successful
-    var hasMatch = hiMatcher.HasMatch(
-        new RuleInput(
-            new [] {"доброго вечера"},
-            RuleSpaceArguments.Empty
-        ),
-        0,
-        new RuleSpaceCache()
-    );
-
-    // hasMatch == true
-}
+// results.Single().Result.Value is equal to integer 1
+Console.WriteLine(results.Single().Result.Value);
 ```
