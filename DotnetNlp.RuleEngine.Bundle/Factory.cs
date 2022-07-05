@@ -20,11 +20,12 @@ public static class Factory
         IReadOnlyDictionary<string, IRuleMatcher>? matchers = null,
         IReadOnlyDictionary<string, IRuleSpace>? ruleSpaces = null,
         IReadOnlyDictionary<string, Type>? ruleSpaceParameterTypes = null,
-        IAssembliesProvider? assembliesProvider = null
+        IAssembliesProvider? assembliesProvider = null,
+        IReadOnlyCollection<MechanicsDescription>? mechanics = null
     )
     {
         var ruleSpaceFactory = new RuleSpaceFactory(
-            new[]
+            mechanics ?? new[]
             {
                 Mechanics.Peg,
                 Mechanics.Regex,
