@@ -277,7 +277,7 @@ public sealed class LoopBasedRegexPatternTokenizer : IPatternTokenizer
                 lastBranchOfCurrentGroup[lastBranchItemIndex] = new QuantifiableBranchItemToken(
                     quantifiableBranchItem.Quantifiable,
                     quantifier,
-                    null
+                    quantifiableBranchItem.VariableName
                 );
             }
             else

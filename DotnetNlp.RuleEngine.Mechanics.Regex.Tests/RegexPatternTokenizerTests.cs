@@ -27,6 +27,7 @@ internal sealed class RegexPatternTokenizerTests
     [TestCaseSource(nameof(Tokenizes_ComplexCases))]
     [TestCaseSource(nameof(Tokenizes_LiteralSet))]
     [TestCaseSource(nameof(Tokenizes_Ner))]
+    [TestCaseSource(nameof(Tokenizes_OptionalNer))]
     [TestCaseSource(nameof(Tokenizes_QuantifierPlus))]
     [TestCaseSource(nameof(Tokenizes_QuantifierQuestion))]
     [TestCaseSource(nameof(Tokenizes_QuantifierStar))]
@@ -1148,6 +1149,29 @@ internal sealed class RegexPatternTokenizerTests
                             ),
                         }
                     ),
+                }
+            ),
+        },
+    };
+
+    public static object?[][] Tokenizes_OptionalNer =
+    {
+        new object?[]
+        {
+            "(<var1 = dummy_ner.two()>?)",
+            new RegexGroupToken(
+                new []
+                {
+                    new BranchToken(
+                        new IBranchItemToken[]
+                        {
+                            new QuantifiableBranchItemToken(
+                                new RuleReferenceToken(null, "dummy_ner.two", Array.Empty<IRuleArgumentToken>()),
+                                new QuantifierToken(0, 1),
+                                "var1"
+                            )
+                        }
+                    )
                 }
             ),
         },
