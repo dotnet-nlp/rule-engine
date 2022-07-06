@@ -751,7 +751,7 @@ public sealed class LoopBasedRegexPatternTokenizer : IPatternTokenizer
 
     private sealed class NerReader
     {
-        private static readonly System.Text.RegularExpressions.Regex GeneralNerRegex = new(@"<\s*(?:(?<var>[a-zA-Z_][a-zA-Z_0-9]*)\s*=\s*)?(?<call>[a-zA-Z_][a-zA-Z_0-9]*(?:\.[a-zA-Z_][a-zA-Z_0-9]*)*)(?:\s*\(\s*(?:(?<arg>(?:default|[a-zA-Z_][a-zA-Z_0-9]*(?:\.[a-zA-Z_][a-zA-Z_0-9]*)*))(?:\s*,\s*(?<arg>(?:default|[a-zA-Z_][a-zA-Z_0-9]*(?:\.[a-zA-Z_][a-zA-Z_0-9]*)*)))*)?\s*\))?\s*>", RegexOptions.Compiled);
+        private static readonly System.Text.RegularExpressions.Regex GeneralNerRegex = new(@"<\s*(?:(?<var>[a-zA-Z_][a-zA-Z_0-9]*)\s*=\s*)?(?<call>[a-zA-Z_0-9]+(?:\.[a-zA-Z_0-9]+)*)(?:\s*\(\s*(?:(?<arg>(?:default|[a-zA-Z_][a-zA-Z_0-9]*(?:\.[a-zA-Z_][a-zA-Z_0-9]*)*))(?:\s*,\s*(?<arg>(?:default|[a-zA-Z_][a-zA-Z_0-9]*(?:\.[a-zA-Z_][a-zA-Z_0-9]*)*)))*)?\s*\))?\s*>", RegexOptions.Compiled);
 
         private readonly ErrorIndexHelper _errorIndexHelper;
 

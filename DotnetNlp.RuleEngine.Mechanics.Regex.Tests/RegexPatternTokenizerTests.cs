@@ -28,6 +28,7 @@ internal sealed class RegexPatternTokenizerTests
     [TestCaseSource(nameof(Tokenizes_LiteralSet))]
     [TestCaseSource(nameof(Tokenizes_Ner))]
     [TestCaseSource(nameof(Tokenizes_OptionalNer))]
+    [TestCaseSource(nameof(Tokenizes_RuleReference))]
     [TestCaseSource(nameof(Tokenizes_QuantifierPlus))]
     [TestCaseSource(nameof(Tokenizes_QuantifierQuestion))]
     [TestCaseSource(nameof(Tokenizes_QuantifierStar))]
@@ -1177,7 +1178,50 @@ internal sealed class RegexPatternTokenizerTests
         },
     };
 
-    public static object?[][] Tokenizes_QuantifierPlus =
+    public static object?[][] Tokenizes_RuleReference =
+        {
+            new object?[]
+            {
+                "(<1> <2_rule> <_rule> <Rule> <rule>)",
+                new RegexGroupToken(
+                    new []
+                    {
+                        new BranchToken(
+                            new IBranchItemToken[]
+                            {
+                                new QuantifiableBranchItemToken(
+                                    new RuleReferenceToken(null, "1", Array.Empty<IRuleArgumentToken>()),
+                                    new QuantifierToken(1, 1),
+                                    null
+                                ),
+                                new QuantifiableBranchItemToken(
+                                    new RuleReferenceToken(null, "2_rule", Array.Empty<IRuleArgumentToken>()),
+                                    new QuantifierToken(1, 1),
+                                    null
+                                ),
+                                new QuantifiableBranchItemToken(
+                                    new RuleReferenceToken(null, "_rule", Array.Empty<IRuleArgumentToken>()),
+                                    new QuantifierToken(1, 1),
+                                    null
+                                ),
+                                new QuantifiableBranchItemToken(
+                                    new RuleReferenceToken(null, "Rule", Array.Empty<IRuleArgumentToken>()),
+                                    new QuantifierToken(1, 1),
+                                    null
+                                ),
+                                new QuantifiableBranchItemToken(
+                                    new RuleReferenceToken(null, "rule", Array.Empty<IRuleArgumentToken>()),
+                                    new QuantifierToken(1, 1),
+                                    null
+                                )
+                            }
+                        )
+                    }
+                ),
+            },
+        };
+
+public static object?[][] Tokenizes_QuantifierPlus =
     {
         new object?[]
         {
