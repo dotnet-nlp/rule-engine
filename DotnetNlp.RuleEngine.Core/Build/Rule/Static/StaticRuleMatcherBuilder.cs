@@ -134,7 +134,7 @@ internal sealed class StaticRuleMatcherBuilder
 
     private static IEnumerable<(TResult Result, int LastUsedSymbolIndex)> WrapSingleResultMethod<TResult>(MethodInfo method, object?[] arguments)
     {
-        (bool Success, TResult Result, int LastUsedSymbolIndex) result = ((bool, TResult, int)) method.Invoke(null, arguments)!;
+        var result = ((bool Success, TResult Result, int LastUsedSymbolIndex)) method.Invoke(null, arguments)!;
 
         if (result.Success)
         {
@@ -193,7 +193,8 @@ internal sealed class StaticRuleMatcherBuilder
         return new RuleParameters(
             parameters
                 .Skip(constantParametersCount)
-                .ToDictionary(parameter => parameter.Name!, parameter => parameter.ParameterType)
+                .Select(parameter => new KeyValuePair<string, Type>(parameter.Name!, parameter.ParameterType))
+                .ToArray()
         );
     }
 }

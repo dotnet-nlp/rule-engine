@@ -2,10 +2,12 @@
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
+using DotnetNlp.RuleEngine.Core.Build.Tokenization.Tokens.Arguments;
 using DotnetNlp.RuleEngine.Core.Evaluation.Cache;
 using DotnetNlp.RuleEngine.Core.Evaluation.Rule.Projection.Arguments;
 using DotnetNlp.RuleEngine.Core.Evaluation.Rule.Projection.Parameters;
 using DotnetNlp.RuleEngine.Core.Evaluation.Rule.Result;
+using DotnetNlp.RuleEngine.Core.Lib.Common.Helpers;
 
 namespace DotnetNlp.RuleEngine.Core.Evaluation.Rule;
 
@@ -14,7 +16,6 @@ public sealed class StaticRuleMatcher<TResult> : IRuleMatcher
     private readonly Func<IEnumerable<string>> _usedWordsProvider;
     private readonly Func<object?[], IEnumerable<(TResult Result, int LastUsedSymbolIndex)>> _ruleEvaluator;
 
-    public IReadOnlySet<string> Dependencies => ImmutableHashSet<string>.Empty;
     public RuleParameters Parameters { get; }
     public RuleMatchResultDescription ResultDescription { get; }
 
@@ -27,28 +28,35 @@ public sealed class StaticRuleMatcher<TResult> : IRuleMatcher
         _usedWordsProvider = usedWordsProvider;
         _ruleEvaluator = ruleEvaluator;
         Parameters = parameters;
-        ResultDescription = new RuleMatchResultDescription(
-            typeof(TResult),
-            ImmutableDictionary<string, Type>.Empty
-        );
+        ResultDescription = new RuleMatchResultDescription(typeof(TResult), ImmutableDictionary<string, Type>.Empty);
+    }
+
+    public IReadOnlySet<string> GetDependencies(IRuleSpace forRuleSpace)
+    {
+        return ImmutableHashSet<string>.Empty;
+    }
+
+    public IReadOnlySet<IChainedMemberAccessToken>? GetDependenciesOnRuleSpaceParameters()
+    {
+        return null;
     }
 
     public RuleMatchResultCollection Match(
         string[] sequence,
         int firstSymbolIndex = 0,
-        RuleSpaceArguments? ruleSpaceArguments = null,
         RuleArguments? ruleArguments = null,
+        RuleSpaceArguments? ruleSpaceArguments = null,
         IRuleSpaceCache? cache = null
     )
     {
-        return MatchAndProject(sequence, firstSymbolIndex, ruleSpaceArguments, ruleArguments, cache);
+        return MatchAndProject(sequence, firstSymbolIndex, ruleArguments, ruleSpaceArguments, cache);
     }
 
     public RuleMatchResultCollection MatchAndProject(
         string[] sequence,
         int firstSymbolIndex = 0,
-        RuleSpaceArguments? ruleSpaceArguments = null,
         RuleArguments? ruleArguments = null,
+        RuleSpaceArguments? ruleSpaceArguments = null,
         IRuleSpaceCache? cache = null
     )
     {
@@ -89,7 +97,7 @@ public sealed class StaticRuleMatcher<TResult> : IRuleMatcher
         if (ruleArguments is not null)
         {
             arguments = arguments
-                .Concat(ruleArguments.Values.Values)
+                .Concat(ruleArguments.Values.SelectValues())
                 .ToArray();
         }
 

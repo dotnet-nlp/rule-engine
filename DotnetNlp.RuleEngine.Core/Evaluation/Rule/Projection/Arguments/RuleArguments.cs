@@ -1,20 +1,19 @@
-﻿using System.Collections.Generic;
-using System.Collections.Immutable;
+﻿using System;
+using System.Collections.Generic;
 
 namespace DotnetNlp.RuleEngine.Core.Evaluation.Rule.Projection.Arguments;
 
-// todo [realtime performance] see if we can just derive from dictionary
 public sealed class RuleArguments
 {
-    public static readonly RuleArguments Empty = new(ImmutableDictionary<string, object?>.Empty);
+    public static readonly RuleArguments Empty = new(Array.Empty<KeyValuePair<string, object?>>());
 
     /// <remarks>
     /// Performance remarks: library performance depends on the way this field is declared.
     /// Please make sure you know what you are doing, when changing this field's declaration.
     /// </remarks>
-    public readonly IReadOnlyDictionary<string, object?> Values;
+    public readonly KeyValuePair<string, object?>[] Values;
 
-    public RuleArguments(IReadOnlyDictionary<string, object?> values)
+    public RuleArguments(KeyValuePair<string, object?>[] values)
     {
         Values = values;
     }

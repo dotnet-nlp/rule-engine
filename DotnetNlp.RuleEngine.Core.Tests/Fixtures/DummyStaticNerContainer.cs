@@ -27,8 +27,33 @@ public static class DummyStaticNerContainer
         var digit = TryParseDigit(sequence[startIndex]);
 
         return digit is not null
-            ? (true, $"digit_{digit.Value}_salt_{Enumerable.Repeat(salt ?? "no salt", saltRepeatTimes ?? 1).JoinToString()}", startIndex)
+            ? (true, $"digit_{digit.Value}_salt_{Enumerable.Repeat(salt ?? "no salt", saltRepeatTimes ?? 1).JoinToString(string.Empty)}", startIndex)
             : (false, default, default);
+    }
+
+    [StaticRule("any_arguments", nameof(GetUsedWords))]
+    public static (bool success, string? result, int lastUsedSymbolIndex) ParseAnyArguments(
+        string[] sequence,
+        int startIndex,
+        string? stringArgument = null,
+        int? intArgument = null
+    )
+    {
+        var extractedStringArgument = sequence[startIndex++];
+
+        if (extractedStringArgument != stringArgument)
+        {
+            return (false, default, default);
+        }
+
+        var extractedIntArgument = TryParseDigit(sequence[startIndex]);
+
+        if (extractedIntArgument != intArgument)
+        {
+            return (false, default, default);
+        }
+
+        return (true, $"{intArgument} {stringArgument}", startIndex);
     }
 
     [StaticRule("number_line", nameof(GetUsedWords))]

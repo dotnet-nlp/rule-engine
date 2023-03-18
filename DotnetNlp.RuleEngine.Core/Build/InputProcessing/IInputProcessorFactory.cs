@@ -1,4 +1,5 @@
-﻿using DotnetNlp.RuleEngine.Core.Build.InputProcessing.Models;
+﻿using System;
+using DotnetNlp.RuleEngine.Core.Build.InputProcessing.Models;
 using DotnetNlp.RuleEngine.Core.Build.Tokenization.Tokens;
 using DotnetNlp.RuleEngine.Core.Evaluation;
 using DotnetNlp.RuleEngine.Core.Evaluation.InputProcessing;
@@ -10,7 +11,8 @@ public interface IInputProcessorFactory
     IInputProcessor Create(
         IPatternToken patternToken,
         IRuleSpace ruleSpace,
-        IRuleSpaceDescription ruleSpaceDescription
+        IRuleSpaceDescription ruleSpaceDescription,
+        Action<Action> subscribeOnRuleSpaceCreated
     );
 
     RuleCapturedVariables ExtractOwnCapturedVariables(

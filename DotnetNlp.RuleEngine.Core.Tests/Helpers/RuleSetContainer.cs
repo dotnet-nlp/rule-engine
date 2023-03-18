@@ -20,10 +20,11 @@ internal sealed class RuleSetContainer
         get
         {
             return _ruleSpace ??= new RuleSpaceFactory(MechanicsCollection).Create(
+                Guid.NewGuid().ToString(),
                 new[] { Token },
                 Array.Empty<RuleToken>(),
                 ImmutableDictionary<string, IRuleMatcher>.Empty,
-                ImmutableDictionary<string, IRuleSpace>.Empty,
+                Array.Empty<IRuleSpace>(),
                 ImmutableDictionary<string, Type>.Empty,
                 LoadedAssembliesProvider.Instance
             );

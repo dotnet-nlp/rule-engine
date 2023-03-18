@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using DotnetNlp.RuleEngine.Core.Build.Composition;
 using DotnetNlp.RuleEngine.Core.Evaluation.Cache;
 using DotnetNlp.RuleEngine.Core.Evaluation.InputProcessing;
 using DotnetNlp.RuleEngine.Core.Evaluation.Rule.Projection.Arguments;
@@ -10,24 +11,13 @@ namespace DotnetNlp.RuleEngine.Mechanics.Regex.Evaluation.InputProcessing;
 
 internal sealed class RegexProcessor : IInputProcessor
 {
+    public IRuleDependenciesProvider DependenciesProvider { get; }
     private readonly RegexAutomaton _automaton;
-    private readonly IRegexAutomatonWalker<RegexAutomaton> _regexAutomatonWalker;
-    private readonly IReadOnlySet<string> _dependencies;
 
-    public RegexProcessor(
-        RegexAutomaton automaton,
-        IRegexAutomatonWalker<RegexAutomaton> regexAutomatonWalker,
-        IReadOnlySet<string> dependencies
-    )
+    public RegexProcessor(IRuleDependenciesProvider dependenciesProvider, RegexAutomaton automaton)
     {
+        DependenciesProvider = dependenciesProvider;
         _automaton = automaton;
-        _regexAutomatonWalker = regexAutomatonWalker;
-        _dependencies = dependencies;
-    }
-
-    public IReadOnlySet<string> GetDependencies()
-    {
-        return _dependencies;
     }
 
     public RuleMatchResultCollection Match(
@@ -37,7 +27,7 @@ internal sealed class RegexProcessor : IInputProcessor
         IRuleSpaceCache? cache = null
     )
     {
-        return _regexAutomatonWalker.Walk(_automaton, sequence, firstSymbolIndex, ruleSpaceArguments, cache);
+        return RegexAutomatonWalker.Instance.Walk(_automaton, sequence, firstSymbolIndex, ruleSpaceArguments, cache);
     }
 
     public IEnumerable<string> GetUsedWords()

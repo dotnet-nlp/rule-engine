@@ -2,11 +2,11 @@ using DotnetNlp.RuleEngine.Core.Lib.Common.Helpers;
 
 namespace DotnetNlp.RuleEngine.Core.Build.Tokenization.Tokens.Arguments;
 
-public sealed class RuleChainedMemberAccessArgumentToken : IRuleArgumentToken
+public sealed class ChainedMemberAccessArgumentToken : IRuleArgumentToken, IChainedMemberAccessToken
 {
     public string[] CallChain { get; }
 
-    public RuleChainedMemberAccessArgumentToken(string[] callChain)
+    public ChainedMemberAccessArgumentToken(string[] callChain)
     {
         CallChain = callChain;
     }

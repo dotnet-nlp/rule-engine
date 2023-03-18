@@ -1,9 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
 using DotnetNlp.RuleEngine.Core.Build.Tokenization.Tokens.Arguments;
-using DotnetNlp.RuleEngine.Core.Lib.Common.Helpers;
 
 namespace DotnetNlp.RuleEngine.Core.Build.Tokenization.Equality;
 
@@ -45,7 +43,7 @@ public sealed class RuleArgumentTokenEqualityComparer : IEqualityComparer<IRuleA
         return x switch
         {
             RuleDefaultArgumentToken => true,
-            RuleChainedMemberAccessArgumentToken token => RuleChainedMemberAccessArgumentTokenEqualityComparer.Instance.Equals(token, y as RuleChainedMemberAccessArgumentToken),
+            ChainedMemberAccessArgumentToken token => ChainedMemberAccessArgumentTokenEqualityComparer.Instance.Equals(token, y as ChainedMemberAccessArgumentToken),
             _ => throw new ArgumentOutOfRangeException(nameof(x)),
         };
     }
@@ -55,37 +53,8 @@ public sealed class RuleArgumentTokenEqualityComparer : IEqualityComparer<IRuleA
         return obj switch
         {
             RuleDefaultArgumentToken => typeof(RuleDefaultArgumentToken).GetHashCode(),
-            RuleChainedMemberAccessArgumentToken token => RuleChainedMemberAccessArgumentTokenEqualityComparer.Instance.GetHashCode(token),
+            ChainedMemberAccessArgumentToken token => ChainedMemberAccessArgumentTokenEqualityComparer.Instance.GetHashCode(token),
             _ => throw new ArgumentOutOfRangeException(nameof(obj)),
         };
-    }
-
-    private sealed class RuleChainedMemberAccessArgumentTokenEqualityComparer : IEqualityComparer<RuleChainedMemberAccessArgumentToken>
-    {
-        public static readonly RuleChainedMemberAccessArgumentTokenEqualityComparer Instance = new();
-
-        private RuleChainedMemberAccessArgumentTokenEqualityComparer()
-        {
-        }
-
-        public bool Equals(RuleChainedMemberAccessArgumentToken? x, RuleChainedMemberAccessArgumentToken? y)
-        {
-            if (ReferenceEquals(x, y))
-            {
-                return true;
-            }
-
-            if (ReferenceEquals(x, null) || ReferenceEquals(y, null))
-            {
-                return false;
-            }
-
-            return x.CallChain.SequenceEqual(y.CallChain);
-        }
-
-        public int GetHashCode(RuleChainedMemberAccessArgumentToken obj)
-        {
-            return obj.CallChain.GetSequenceHashCode<string>();
-        }
     }
 }

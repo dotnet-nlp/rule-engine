@@ -34,6 +34,7 @@ internal sealed class RuleSpaceSource
     private IRuleSpace CreateRuleSpace()
     {
         return _factory.Create(
+            Guid.NewGuid().ToString(),
             _ruleSets
                 .MapValue((ruleSetName, ruleSet) => _factory.RuleSetTokenizer.Tokenize(ruleSet, ruleSetName, false))
                 .SelectValues()
@@ -53,7 +54,7 @@ internal sealed class RuleSpaceSource
                 .SelectValues()
                 .ToArray(),
             ImmutableDictionary<string, IRuleMatcher>.Empty,
-            ImmutableDictionary<string, IRuleSpace>.Empty,
+            Array.Empty<IRuleSpace>(),
             ImmutableDictionary<string, Type>.Empty,
             LoadedAssembliesProvider.Instance
         );

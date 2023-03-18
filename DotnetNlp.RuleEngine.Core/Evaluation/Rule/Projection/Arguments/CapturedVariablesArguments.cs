@@ -5,6 +5,8 @@ namespace DotnetNlp.RuleEngine.Core.Evaluation.Rule.Projection.Arguments;
 // todo [realtime performance] see if we can just derive from dictionary
 public sealed class CapturedVariablesArguments
 {
+    public static readonly CapturedVariablesArguments Empty = new(new SortedDictionary<string, object?>());
+
     /// <remarks>
     /// Performance remarks: library performance depends on the way this field is declared.
     /// Please make sure you know what you are doing, when changing this field's declaration.

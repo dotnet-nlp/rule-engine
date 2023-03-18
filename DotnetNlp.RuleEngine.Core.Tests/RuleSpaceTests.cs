@@ -13,8 +13,8 @@ internal sealed class RuleSpaceTests
     public void Prunes(
         IReadOnlyDictionary<string, string> rules,
         IReadOnlyDictionary<string, string> ruleSets,
-        IReadOnlyCollection<string> rulesToPreserve,
-        IReadOnlyCollection<string> expectedRemovedRuleKeys
+        IReadOnlySet<string> rulesToPreserve,
+        IReadOnlySet<string> expectedRemovedRuleKeys
     )
     {
         var ruleSpaceSource = new RuleSpaceSource(
@@ -68,12 +68,12 @@ internal sealed class RuleSpaceTests
                         "int three = peg#(три)# => 3\r\nint four = peg#(четыре)# => 4"
                     },
                 },
-                new []
+                new HashSet<string>()
                 {
                     "preserve_1",
                     "preserve_2",
                 },
-                new []
+                new HashSet<string>()
                 {
                     "not_preserve_1",
                     "not_preserve_2",

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using DotnetNlp.RuleEngine.Core.Build;
+using DotnetNlp.RuleEngine.Core.Build.Composition;
 using DotnetNlp.RuleEngine.Core.Build.InputProcessing;
 using DotnetNlp.RuleEngine.Core.Build.InputProcessing.Models;
 using DotnetNlp.RuleEngine.Core.Build.Tokenization.Tokens;
@@ -12,7 +13,6 @@ using DotnetNlp.RuleEngine.Mechanics.Regex.Build.InputProcessing.Automaton;
 using DotnetNlp.RuleEngine.Mechanics.Regex.Build.InputProcessing.Automaton.Optimization;
 using DotnetNlp.RuleEngine.Mechanics.Regex.Build.Tokenization.Tokens;
 using DotnetNlp.RuleEngine.Mechanics.Regex.Evaluation.InputProcessing;
-using DotnetNlp.RuleEngine.Mechanics.Regex.Evaluation.InputProcessing.Automaton.Walker;
 using DotnetNlp.RuleEngine.Mechanics.Regex.Exceptions;
 
 namespace DotnetNlp.RuleEngine.Mechanics.Regex.Build.InputProcessing;
@@ -29,14 +29,20 @@ public sealed class RegexProcessorFactory : IInputProcessorFactory
     public IInputProcessor Create(
         IPatternToken patternToken,
         IRuleSpace ruleSpace,
-        IRuleSpaceDescription ruleSpaceDescription
+        IRuleSpaceDescription ruleSpaceDescription,
+        Action<Action> subscribeOnRuleSpaceCreated
     )
     {
-        var group = (RegexGroupToken) patternToken;
+        var groupToken = (RegexGroupToken) patternToken;
 
         try
         {
-            var (automaton, dependencies) = new RegexAutomatonBuilder(group, ruleSpace).Build();
+            var (automaton, dependencies, dependenciesOnRuleSpaceParameters) = new RegexAutomatonBuilder(
+                groupToken,
+                ruleSpaceDescription,
+                ruleSpace,
+                subscribeOnRuleSpaceCreated
+            ).Build();
 
             RegexAutomatonPostprocessor.Instance.ValidateAndOptimize(
                 automaton,
@@ -44,7 +50,10 @@ public sealed class RegexProcessorFactory : IInputProcessorFactory
                 ruleSpaceDescription
             );
 
-            return new RegexProcessor(automaton, RegexAutomatonWalker.Instance, dependencies);
+            return new RegexProcessor(
+                new RuleDependenciesProvider(dependencies, dependenciesOnRuleSpaceParameters, ruleSpace.Id, ruleSpace.Name),
+                automaton
+            );
         }
         catch (RuleBuildException exception) when (exception is not RegexProcessorBuildException)
         {

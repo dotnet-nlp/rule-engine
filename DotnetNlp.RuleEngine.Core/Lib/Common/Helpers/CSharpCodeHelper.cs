@@ -11,7 +11,7 @@ public static class CSharpCodeHelper
 
         var targetList = Activator.CreateInstance(targetListType)!;
 
-        var addMethod = targetListType.GetMethod("Add")!;
+        var addMethod = targetListType.GetMethod(nameof(List<object>.Add))!;
 
         return (targetList, item => addMethod.Invoke(targetList, new []{item}));
     }

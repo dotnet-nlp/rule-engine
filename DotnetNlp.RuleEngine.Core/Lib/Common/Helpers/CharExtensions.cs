@@ -11,7 +11,7 @@ public static class CharExtensions
         {
             >= 'A' and <= 'Z' => (char) (c - 65 + 97),
             >= 'А' and <= 'Я' => (char) (c - 1040 + 1072),
-            _ => c == 'Ё' ? 'ё' : c
+            _ => c == 'Ё' ? 'ё' : c,
         };
     }
 }

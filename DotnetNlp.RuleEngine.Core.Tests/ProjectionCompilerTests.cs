@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Collections.Immutable;
 using DotnetNlp.RuleEngine.Core.Build.Rule.Projection;
 using DotnetNlp.RuleEngine.Core.Build.Rule.Projection.Models;
 using DotnetNlp.RuleEngine.Core.Evaluation.Rule.Projection;
@@ -52,9 +51,9 @@ internal sealed class ProjectionCompilerTests
         var result = projection.Invoke(
             new ProjectionArguments(
                 Array.Empty<string>(),
-                new CapturedVariablesArguments(new Dictionary<string, object?>()),
-                new RuleArguments(ImmutableDictionary<string, object?>.Empty),
-                new RuleSpaceArguments(ImmutableDictionary<string, object?>.Empty)
+                CapturedVariablesArguments.Empty,
+                RuleArguments.Empty,
+                RuleSpaceArguments.Empty
             )
         );
 
@@ -90,8 +89,8 @@ internal sealed class ProjectionCompilerTests
             new ProjectionArguments(
                 Array.Empty<string>(),
                 new CapturedVariablesArguments(arguments),
-                new RuleArguments(ImmutableDictionary<string, object?>.Empty),
-                new RuleSpaceArguments(ImmutableDictionary<string, object?>.Empty)
+                RuleArguments.Empty,
+                RuleSpaceArguments.Empty
             )
         );
 
@@ -115,8 +114,8 @@ internal sealed class ProjectionCompilerTests
                             {"a", typeof(int)},
                         }
                     ),
-                    new RuleParameters(new Dictionary<string, Type>()),
-                    new RuleSpaceParameters(new Dictionary<string, Type>())
+                    RuleParameters.Empty,
+                    RuleSpaceParameters.Empty
                 ),
                 "{ return a; }"
             ),
@@ -141,8 +140,8 @@ internal sealed class ProjectionCompilerTests
                             {"b", typeof(int)},
                         }
                     ),
-                    new RuleParameters(new Dictionary<string, Type>()),
-                    new RuleSpaceParameters(new Dictionary<string, Type>())
+                    RuleParameters.Empty,
+                    RuleSpaceParameters.Empty
                 ),
                 "{ return a - b; }"
             ),
@@ -171,8 +170,8 @@ internal sealed class ProjectionCompilerTests
                             {"minutes", typeof(int)},
                         }
                     ),
-                    new RuleParameters(new Dictionary<string, Type>()),
-                    new RuleSpaceParameters(new Dictionary<string, Type>())
+                    RuleParameters.Empty,
+                    RuleSpaceParameters.Empty
                 ),
                 "{ return TimeSpan.FromHours(hours).Add(System.TimeSpan.FromMinutes(minutes)); }"
             ),
@@ -195,9 +194,9 @@ internal sealed class ProjectionCompilerTests
                 typeof((int, int)),
                 new ProjectionParameters(
                     typeof(string[]),
-                    new CapturedVariablesParameters(new Dictionary<string, Type>()),
-                    new RuleParameters(new Dictionary<string, Type>()),
-                    new RuleSpaceParameters(new Dictionary<string, Type>())
+                    CapturedVariablesParameters.Empty,
+                    RuleParameters.Empty,
+                    RuleSpaceParameters.Empty
                 ),
                 "{ return (2, 3); }"
             ),
@@ -211,9 +210,9 @@ internal sealed class ProjectionCompilerTests
                 typeof((int foo, int bar)),
                 new ProjectionParameters(
                     typeof(string[]),
-                    new CapturedVariablesParameters(new Dictionary<string, Type>()),
-                    new RuleParameters(new Dictionary<string, Type>()),
-                    new RuleSpaceParameters(new Dictionary<string, Type>())
+                    CapturedVariablesParameters.Empty,
+                    RuleParameters.Empty,
+                    RuleSpaceParameters.Empty
                 ),
                 "{ return (2, 3); }"
             ),
@@ -227,9 +226,9 @@ internal sealed class ProjectionCompilerTests
                 typeof((int foo, int bar)),
                 new ProjectionParameters(
                     typeof(string[]),
-                    new CapturedVariablesParameters(new Dictionary<string, Type>()),
-                    new RuleParameters(new Dictionary<string, Type>()),
-                    new RuleSpaceParameters(new Dictionary<string, Type>())
+                    CapturedVariablesParameters.Empty,
+                    RuleParameters.Empty,
+                    RuleSpaceParameters.Empty
                 ),
                 "{ return (foo: 2, bar: 3); }"
             ),
@@ -243,9 +242,9 @@ internal sealed class ProjectionCompilerTests
                 typeof((int foo, int bar)),
                 new ProjectionParameters(
                     typeof(string[]),
-                    new CapturedVariablesParameters(new Dictionary<string, Type>()),
-                    new RuleParameters(new Dictionary<string, Type>()),
-                    new RuleSpaceParameters(new Dictionary<string, Type>())
+                    CapturedVariablesParameters.Empty,
+                    RuleParameters.Empty,
+                    RuleSpaceParameters.Empty
                 ),
                 "{ return (2, 3); }"
             ),
@@ -259,9 +258,9 @@ internal sealed class ProjectionCompilerTests
                 typeof((int foo, int bar)),
                 new ProjectionParameters(
                     typeof(string[]),
-                    new CapturedVariablesParameters(new Dictionary<string, Type>()),
-                    new RuleParameters(new Dictionary<string, Type>()),
-                    new RuleSpaceParameters(new Dictionary<string, Type>())
+                    CapturedVariablesParameters.Empty,
+                    RuleParameters.Empty,
+                    RuleSpaceParameters.Empty
                 ),
                 "{ return (foo: 2, 3); }"
             ),
@@ -275,9 +274,9 @@ internal sealed class ProjectionCompilerTests
                 typeof((int foo, int bar)),
                 new ProjectionParameters(
                     typeof(string[]),
-                    new CapturedVariablesParameters(new Dictionary<string, Type>()),
-                    new RuleParameters(new Dictionary<string, Type>()),
-                    new RuleSpaceParameters(new Dictionary<string, Type>())
+                    CapturedVariablesParameters.Empty,
+                    RuleParameters.Empty,
+                    RuleSpaceParameters.Empty
                 ),
                 "{ return (2, bar: 3); }"
             ),
@@ -291,9 +290,9 @@ internal sealed class ProjectionCompilerTests
                 typeof((int foo, int bar)),
                 new ProjectionParameters(
                     typeof(string[]),
-                    new CapturedVariablesParameters(new Dictionary<string, Type>()),
-                    new RuleParameters(new Dictionary<string, Type>()),
-                    new RuleSpaceParameters(new Dictionary<string, Type>())
+                    CapturedVariablesParameters.Empty,
+                    RuleParameters.Empty,
+                    RuleSpaceParameters.Empty
                 ),
                 "{ return (foo: 2, bar: 3); }"
             ),
@@ -307,9 +306,9 @@ internal sealed class ProjectionCompilerTests
                 typeof((int foo, int)),
                 new ProjectionParameters(
                     typeof(string[]),
-                    new CapturedVariablesParameters(new Dictionary<string, Type>()),
-                    new RuleParameters(new Dictionary<string, Type>()),
-                    new RuleSpaceParameters(new Dictionary<string, Type>())
+                    CapturedVariablesParameters.Empty,
+                    RuleParameters.Empty,
+                    RuleSpaceParameters.Empty
                 ),
                 "{ return (2, 3); }"
             ),
@@ -322,9 +321,9 @@ internal sealed class ProjectionCompilerTests
                 new HashSet<string>(),
                 typeof((int foo, int)),
                 new ProjectionParameters(typeof(string[]),
-                    new CapturedVariablesParameters(new Dictionary<string, Type>()),
-                    new RuleParameters(new Dictionary<string, Type>()),
-                    new RuleSpaceParameters(new Dictionary<string, Type>())
+                    CapturedVariablesParameters.Empty,
+                    RuleParameters.Empty,
+                    RuleSpaceParameters.Empty
                 ),
                 "{ return (foo: 2, 3); }"
             ),
@@ -338,9 +337,9 @@ internal sealed class ProjectionCompilerTests
                 typeof((int, int bar)),
                 new ProjectionParameters(
                     typeof(string[]),
-                    new CapturedVariablesParameters(new Dictionary<string, Type>()),
-                    new RuleParameters(new Dictionary<string, Type>()),
-                    new RuleSpaceParameters(new Dictionary<string, Type>())
+                    CapturedVariablesParameters.Empty,
+                    RuleParameters.Empty,
+                    RuleSpaceParameters.Empty
                 ),
                 "{ return (2, 3); }"
             ),
@@ -354,9 +353,9 @@ internal sealed class ProjectionCompilerTests
                 typeof((int, int bar)),
                 new ProjectionParameters(
                     typeof(string[]),
-                    new CapturedVariablesParameters(new Dictionary<string, Type>()),
-                    new RuleParameters(new Dictionary<string, Type>()),
-                    new RuleSpaceParameters(new Dictionary<string, Type>())
+                    CapturedVariablesParameters.Empty,
+                    RuleParameters.Empty,
+                    RuleSpaceParameters.Empty
                 ),
                 "{ return (2, bar: 3); }"
             ),
@@ -374,9 +373,9 @@ internal sealed class ProjectionCompilerTests
                 typeof(int),
                 new ProjectionParameters(
                     typeof(string[]),
-                    new CapturedVariablesParameters(new Dictionary<string, Type>()),
-                    new RuleParameters(new Dictionary<string, Type>()),
-                    new RuleSpaceParameters(new Dictionary<string, Type>())
+                    CapturedVariablesParameters.Empty,
+                    RuleParameters.Empty,
+                    RuleSpaceParameters.Empty
                 ),
                 "{ return 1; }"
             ),
@@ -390,9 +389,9 @@ internal sealed class ProjectionCompilerTests
                 typeof(string),
                 new ProjectionParameters(
                     typeof(string[]),
-                    new CapturedVariablesParameters(new Dictionary<string, Type>()),
-                    new RuleParameters(new Dictionary<string, Type>()),
-                    new RuleSpaceParameters(new Dictionary<string, Type>())
+                    CapturedVariablesParameters.Empty,
+                    RuleParameters.Empty,
+                    RuleSpaceParameters.Empty
                 ),
                 "{ return \"string1\"; }"
             ),
@@ -406,9 +405,9 @@ internal sealed class ProjectionCompilerTests
                 typeof(TimeSpan),
                 new ProjectionParameters(
                     typeof(string[]),
-                    new CapturedVariablesParameters(new Dictionary<string, Type>()),
-                    new RuleParameters(new Dictionary<string, Type>()),
-                    new RuleSpaceParameters(new Dictionary<string, Type>())
+                    CapturedVariablesParameters.Empty,
+                    RuleParameters.Empty,
+                    RuleSpaceParameters.Empty
                 ),
                 "{ return System.TimeSpan.FromHours(3); }"
             ),
@@ -425,9 +424,9 @@ internal sealed class ProjectionCompilerTests
                 typeof(TimeSpan),
                 new ProjectionParameters(
                     typeof(string[]),
-                    new CapturedVariablesParameters(new Dictionary<string, Type>()),
-                    new RuleParameters(new Dictionary<string, Type>()),
-                    new RuleSpaceParameters(new Dictionary<string, Type>())
+                    CapturedVariablesParameters.Empty,
+                    RuleParameters.Empty,
+                    RuleSpaceParameters.Empty
                 ),
                 "{ return System.TimeSpan.FromHours(3); }"
             ),
@@ -444,9 +443,9 @@ internal sealed class ProjectionCompilerTests
                 typeof(TimeSpan),
                 new ProjectionParameters(
                     typeof(string[]),
-                    new CapturedVariablesParameters(new Dictionary<string, Type>()),
-                    new RuleParameters(new Dictionary<string, Type>()),
-                    new RuleSpaceParameters(new Dictionary<string, Type>())
+                    CapturedVariablesParameters.Empty,
+                    RuleParameters.Empty,
+                    RuleSpaceParameters.Empty
                 ),
                 "{ return TimeSpan.FromHours(3); }"
             ),

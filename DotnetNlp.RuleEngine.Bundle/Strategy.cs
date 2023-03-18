@@ -8,7 +8,7 @@ public static class Strategy
         new IResultSelectionStrategy[]
         {
             new MaxExplicitSymbolsStrategy(),
-            new MaxProgressStrategy()
+            new MaxProgressStrategy(),
         }
     );
 }

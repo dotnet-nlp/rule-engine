@@ -23,7 +23,7 @@ public sealed class ProjectionArguments
         .ToDictionaryWithKnownCapacity(
             1 +
             _capturedVariablesArguments.Values.Count +
-            _ruleArguments.Values.Count +
+            _ruleArguments.Values.Length +
             _ruleSpaceArguments.Values.Count
         );
 

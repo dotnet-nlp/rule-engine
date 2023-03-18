@@ -624,7 +624,6 @@ public sealed class LoopBasedRegexPatternTokenizer : IPatternTokenizer
             var reachedClosing = false;
             var noCharactersAfterComma = false;
 
-            // We are not interested in '{' opening character
             i++;
 
             while (i < pattern.Length && !reachedClosing)
@@ -796,7 +795,7 @@ public sealed class LoopBasedRegexPatternTokenizer : IPatternTokenizer
                             return RuleDefaultArgumentToken.Instance;
                         }
 
-                        return new RuleChainedMemberAccessArgumentToken(
+                        return new ChainedMemberAccessArgumentToken(
                             capture.Value.Split('.', StringSplitOptions.RemoveEmptyEntries)
                         );
                     }

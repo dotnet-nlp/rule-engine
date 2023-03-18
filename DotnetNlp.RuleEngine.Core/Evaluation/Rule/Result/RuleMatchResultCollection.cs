@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using DotnetNlp.RuleEngine.Core.Evaluation.Rule.Result.SelectionStrategy;
+using DotnetNlp.RuleEngine.Core.Lib.Common.Helpers;
 
 namespace DotnetNlp.RuleEngine.Core.Evaluation.Rule.Result;
 
@@ -84,49 +85,6 @@ public sealed class RuleMatchResultCollection : HashSet<RuleMatchResult>
             hashCode = (hashCode * 397) ^ obj.ExplicitlyMatchedSymbolsCount.GetHashCode();
             hashCode = (hashCode * 397) ^ obj.LastUsedSymbolIndex.GetHashCode();
             return hashCode;
-        }
-
-        private class DictionaryEqualityComparer<TKey, TValue> : IEqualityComparer<IReadOnlyDictionary<TKey, TValue>>
-            where TKey : notnull
-        {
-            public static readonly DictionaryEqualityComparer<TKey, TValue> Instance = new();
-
-            private DictionaryEqualityComparer()
-            {
-            }
-
-            public bool Equals(IReadOnlyDictionary<TKey, TValue>? x, IReadOnlyDictionary<TKey, TValue>? y)
-            {
-                if (ReferenceEquals(x, y))
-                {
-                    return true;
-                }
-
-                if (ReferenceEquals(x, null) || ReferenceEquals(y, null))
-                {
-                    return false;
-                }
-
-                foreach (var (xKey, xValue) in x)
-                {
-                    if (!y.TryGetValue(xKey, out var yValue))
-                    {
-                        return false;
-                    }
-
-                    if (!Equals(xValue, yValue))
-                    {
-                        return false;
-                    }
-                }
-
-                return true;
-            }
-
-            public int GetHashCode(IReadOnlyDictionary<TKey, TValue> obj)
-            {
-                return obj.GetHashCode();
-            }
         }
     }
 }

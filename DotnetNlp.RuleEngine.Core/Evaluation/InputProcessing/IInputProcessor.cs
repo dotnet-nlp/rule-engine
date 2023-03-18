@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+﻿using DotnetNlp.RuleEngine.Core.Build.Composition;
 using DotnetNlp.RuleEngine.Core.Evaluation.Cache;
 using DotnetNlp.RuleEngine.Core.Evaluation.Rule.Projection.Arguments;
 using DotnetNlp.RuleEngine.Core.Evaluation.Rule.Result;
@@ -8,7 +8,7 @@ namespace DotnetNlp.RuleEngine.Core.Evaluation.InputProcessing;
 
 public interface IInputProcessor : IUsedWordsProvider
 {
-    IReadOnlySet<string> GetDependencies();
+    IRuleDependenciesProvider DependenciesProvider { get; }
 
     RuleMatchResultCollection Match(
         string[] sequence,

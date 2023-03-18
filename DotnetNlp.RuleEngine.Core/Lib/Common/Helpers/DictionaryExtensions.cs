@@ -6,6 +6,24 @@ namespace DotnetNlp.RuleEngine.Core.Lib.Common.Helpers;
 
 public static class DictionaryExtensions
 {
+    public static TValue GetOrAdd<TKey, TValue>(
+        this IDictionary<TKey, TValue> dictionary,
+        TKey key,
+        Func<TValue> valueFactory
+    )
+    {
+        if (dictionary.TryGetValue(key, out var value))
+        {
+            return value;
+        }
+
+        value = valueFactory();
+
+        dictionary.Add(key, value);
+
+        return value;
+    }
+
     public static IEnumerable<KeyValuePair<TNewKey, TValue>> MapKey<TKey, TValue, TNewKey>(
         this IEnumerable<KeyValuePair<TKey, TValue>> dictionary,
         Func<TKey, TValue, TNewKey> keyProjection
@@ -72,6 +90,14 @@ public static class DictionaryExtensions
         where TKey : notnull
     {
         return dictionary.Where(pair => valuePredicate(pair.Value));
+    }
+
+    public static IEnumerable<TKey> SelectKeys<TKey, TValue>(
+        this IEnumerable<KeyValuePair<TKey, TValue>> dictionary
+    )
+        where TKey : notnull
+    {
+        return dictionary.Select(pair => pair.Key);
     }
 
     public static IEnumerable<TValue> SelectValues<TKey, TValue>(
@@ -201,7 +227,7 @@ public static class DictionaryExtensions
         return new []
             {
                 dictionary!,
-                other!
+                other!,
             }
             .MergeWithKnownCapacity(capacity, ignoreDuplicates);
     }

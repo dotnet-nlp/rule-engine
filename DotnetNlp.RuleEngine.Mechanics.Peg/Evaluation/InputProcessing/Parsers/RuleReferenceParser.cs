@@ -2,37 +2,40 @@
 using System.Collections.Generic;
 using DotnetNlp.RuleEngine.Core.Build.Tokenization.Tokens;
 using DotnetNlp.RuleEngine.Core.Build.Tokenization.Tokens.Arguments;
-using DotnetNlp.RuleEngine.Core.Evaluation;
-using DotnetNlp.RuleEngine.Core.Evaluation.ArgumentsBinding;
 using DotnetNlp.RuleEngine.Core.Evaluation.Cache;
 using DotnetNlp.RuleEngine.Core.Evaluation.Rule;
 using DotnetNlp.RuleEngine.Core.Evaluation.Rule.Projection.Arguments;
 using DotnetNlp.RuleEngine.Core.Evaluation.Rule.Result.SelectionStrategy;
+using DotnetNlp.RuleEngine.Core.Lib.Common.Helpers;
+using DotnetNlp.RuleEngine.Mechanics.Peg.Exceptions;
 
 namespace DotnetNlp.RuleEngine.Mechanics.Peg.Evaluation.InputProcessing.Parsers;
 
 internal sealed class RuleReferenceParser : IQuantifiableParser
 {
-    public Type ResultType => Matcher.ResultDescription.ResultType;
-
-    public string RuleSpaceKey { get; }
-    private readonly IRuleArgumentToken[] _ruleArguments;
+    public Type ResultType { get; }
+    private readonly IRuleArgumentToken[]? _ruleArguments;
     private readonly IResultSelectionStrategy _resultSelectionStrategy;
-    private readonly IRuleSpace _ruleSpace;
 
     private IRuleMatcher? _matcher;
-    private IRuleMatcher Matcher => _matcher ??= _ruleSpace[RuleSpaceKey];
+    private IRuleMatcher Matcher => _matcher ?? throw new PegProcessorBuildException(
+        $"{nameof(RuleReferenceParser)} is not initialized with {nameof(IRuleMatcher)}."
+    );
 
     public RuleReferenceParser(
+        Type resultType,
         IRuleReferenceToken ruleReferenceToken,
-        IResultSelectionStrategy resultSelectionStrategy,
-        IRuleSpace ruleSpace
+        IResultSelectionStrategy resultSelectionStrategy
     )
     {
-        RuleSpaceKey = ruleReferenceToken.GetRuleSpaceKey();
-        _ruleArguments = ruleReferenceToken.Arguments;
+        ResultType = resultType;
+        _ruleArguments = ruleReferenceToken.Arguments.NullIfEmpty();
         _resultSelectionStrategy = resultSelectionStrategy;
-        _ruleSpace = ruleSpace;
+    }
+
+    public void SetMatcher(IRuleMatcher matcher)
+    {
+        _matcher = matcher;
     }
 
     public bool TryParse(
@@ -48,12 +51,8 @@ internal sealed class RuleReferenceParser : IQuantifiableParser
             .MatchAndProject(
                 sequence,
                 index,
+                Matcher.Parameters.BindRuleArguments(_ruleArguments, ruleSpaceArguments),
                 ruleSpaceArguments,
-                ArgumentsBinder.BindRuleArguments(
-                    Matcher.Parameters,
-                    _ruleArguments,
-                    ruleSpaceArguments
-                ),
                 cache
             )
             .Best(_resultSelectionStrategy);
@@ -76,7 +75,6 @@ internal sealed class RuleReferenceParser : IQuantifiableParser
 
     public IEnumerable<string> GetUsedWords()
     {
-        // rule reference itself doesn't use any words
         yield break;
     }
 }

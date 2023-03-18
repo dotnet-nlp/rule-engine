@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using DotnetNlp.RuleEngine.Core.Build.Tokenization.Tokens.Arguments;
 using DotnetNlp.RuleEngine.Core.Evaluation.Cache;
 using DotnetNlp.RuleEngine.Core.Evaluation.InputProcessing;
 using DotnetNlp.RuleEngine.Core.Evaluation.Rule.Projection;
@@ -16,7 +17,6 @@ internal sealed class RuleMatcher : IRuleMatcher
     private readonly IRuleProjection _projection;
     private readonly CapturedVariablesParameters _capturedVariablesParameters;
 
-    public IReadOnlySet<string> Dependencies => _inputProcessor.GetDependencies();
     public RuleParameters Parameters { get; }
     public RuleMatchResultDescription ResultDescription { get; }
 
@@ -35,11 +35,21 @@ internal sealed class RuleMatcher : IRuleMatcher
         _projection = projection;
     }
 
+    public IReadOnlySet<string> GetDependencies(IRuleSpace forRuleSpace)
+    {
+        return _inputProcessor.DependenciesProvider.GetDependencies(forRuleSpace);
+    }
+
+    public IReadOnlySet<IChainedMemberAccessToken>? GetDependenciesOnRuleSpaceParameters()
+    {
+        return _inputProcessor.DependenciesProvider.GetDependenciesOnRuleSpaceParameters();
+    }
+
     public RuleMatchResultCollection Match(
         string[] sequence,
         int firstSymbolIndex = 0,
-        RuleSpaceArguments? ruleSpaceArguments = null,
         RuleArguments? ruleArguments = null,
+        RuleSpaceArguments? ruleSpaceArguments = null,
         IRuleSpaceCache? cache = null
     )
     {
@@ -51,12 +61,12 @@ internal sealed class RuleMatcher : IRuleMatcher
     public RuleMatchResultCollection MatchAndProject(
         string[] sequence,
         int firstSymbolIndex = 0,
-        RuleSpaceArguments? ruleSpaceArguments = null,
         RuleArguments? ruleArguments = null,
+        RuleSpaceArguments? ruleSpaceArguments = null,
         IRuleSpaceCache? cache = null
     )
     {
-        var inputProcessorResult = Match(sequence, firstSymbolIndex, ruleSpaceArguments, ruleArguments, cache);
+        var inputProcessorResult = Match(sequence, firstSymbolIndex, ruleArguments, ruleSpaceArguments, cache);
 
         return new RuleMatchResultCollection(
             inputProcessorResult

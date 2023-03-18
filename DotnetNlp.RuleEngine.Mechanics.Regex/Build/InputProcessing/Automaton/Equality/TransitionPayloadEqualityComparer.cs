@@ -105,13 +105,14 @@ internal sealed class TransitionPayloadEqualityComparer : IEqualityComparer<ITra
             }
 
             return x.RuleSpaceKey == y.RuleSpaceKey &&
-                   x.RuleArguments.SequenceEqual(y.RuleArguments, RuleArgumentTokenEqualityComparer.Instance);
+                   x.RuleArguments is null == y.RuleArguments is null &&
+                   (x.RuleArguments?.SequenceEqual(y.RuleArguments!, RuleArgumentTokenEqualityComparer.Instance) ?? true);
         }
 
         public int GetHashCode(NerPayload obj)
         {
             var hashCode = obj.RuleSpaceKey.GetHashCode();
-            hashCode = (hashCode * 397) ^ obj.RuleArguments.GetSequenceHashCode(RuleArgumentTokenEqualityComparer.Instance);
+            hashCode = (hashCode * 397) ^ (obj.RuleArguments?.GetSequenceHashCode(RuleArgumentTokenEqualityComparer.Instance) ?? 0);
             return hashCode;
         }
     }
@@ -137,13 +138,13 @@ internal sealed class TransitionPayloadEqualityComparer : IEqualityComparer<ITra
             }
 
             return x.RuleSpaceKey == y.RuleSpaceKey &&
-                   x.RuleArguments.SequenceEqual(y.RuleArguments, RuleArgumentTokenEqualityComparer.Instance);
+                   (x.RuleArguments?.SequenceEqual(y.RuleArguments!, RuleArgumentTokenEqualityComparer.Instance) ?? true);
         }
 
         public int GetHashCode(RuleReferencePayload obj)
         {
             var hashCode = obj.RuleSpaceKey.GetHashCode();
-            hashCode = (hashCode * 397) ^ obj.RuleArguments.GetSequenceHashCode(RuleArgumentTokenEqualityComparer.Instance);
+            hashCode = (hashCode * 397) ^ (obj.RuleArguments?.GetSequenceHashCode(RuleArgumentTokenEqualityComparer.Instance) ?? 0);
             return hashCode;
         }
     }

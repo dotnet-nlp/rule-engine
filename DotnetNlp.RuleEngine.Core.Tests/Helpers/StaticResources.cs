@@ -95,7 +95,8 @@ internal static class StaticResources
         public IInputProcessor Create(
             IPatternToken patternToken,
             IRuleSpace ruleSpace,
-            IRuleSpaceDescription ruleSpaceDescription
+            IRuleSpaceDescription ruleSpaceDescription,
+            Action<Action> subscribeOnRuleSpaceCreated
         )
         {
             throw new Exception("Wrong usage");

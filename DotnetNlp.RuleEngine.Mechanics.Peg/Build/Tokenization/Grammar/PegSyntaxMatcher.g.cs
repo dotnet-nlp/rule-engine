@@ -2167,7 +2167,7 @@ namespace DotnetNlp.RuleEngine.Mechanics.Peg.Build.Tokenization.Grammar
             if (_r0 != null)
             {
                 _memo.Results.Pop();
-                _memo.Results.Push( new _PegSyntaxMatcher_Item(_r0.StartIndex, _r0.NextIndex, _memo.InputEnumerable, _Thunk(_IM_Result => { return new RuleChainedMemberAccessArgumentToken(((CSharpChainedMemberAccessToken) memberAccess.Results.Single()).Value); }, _r0), true) );
+                _memo.Results.Push( new _PegSyntaxMatcher_Item(_r0.StartIndex, _r0.NextIndex, _memo.InputEnumerable, _Thunk(_IM_Result => { return new ChainedMemberAccessArgumentToken(((CSharpChainedMemberAccessToken) memberAccess.Results.Single()).Value); }, _r0), true) );
             }
 
         }

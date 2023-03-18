@@ -64,6 +64,7 @@ public class RuleMatcherBenchmarks
             );
 
             return factory.Create(
+                Guid.NewGuid().ToString(),
                 new []
                 {
                     factory.RuleSetTokenizer.Tokenize(DataProvider.MatcherCases.RuleSets["ner.time"], "ner.time", true),
@@ -71,7 +72,7 @@ public class RuleMatcherBenchmarks
                 },
                 Array.Empty<RuleToken>(),
                 ImmutableDictionary<string, IRuleMatcher>.Empty,
-                ImmutableDictionary<string, IRuleSpace>.Empty,
+                Array.Empty<IRuleSpace>(),
                 ImmutableDictionary<string, Type>.Empty,
                 LoadedAssembliesProvider.Instance
             );

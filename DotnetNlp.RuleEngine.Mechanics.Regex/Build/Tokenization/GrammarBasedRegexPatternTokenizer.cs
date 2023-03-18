@@ -4,8 +4,6 @@ using DotnetNlp.RuleEngine.Core.Build.Tokenization.Tokens;
 using DotnetNlp.RuleEngine.Core.Lib.CodeAnalysis.Tokenization.Grammar;
 using DotnetNlp.RuleEngine.Mechanics.Regex.Build.Tokenization.Grammar;
 using DotnetNlp.RuleEngine.Mechanics.Regex.Exceptions;
-using IronMeta.Matcher;
-using IToken = DotnetNlp.RuleEngine.Core.Lib.CodeAnalysis.Tokenization.Tokens.IToken;
 
 namespace DotnetNlp.RuleEngine.Mechanics.Regex.Build.Tokenization;
 
@@ -22,7 +20,7 @@ public sealed class GrammarBasedRegexPatternTokenizer : IPatternTokenizer
         }
 
         var matcher = new RegexSyntaxMatcher(@namespace, new CSharpSyntaxMatcher());
-        MatchResult<char, IToken> result = matcher.GetMatch(pattern.ReplaceLineEndings().ToList(), matcher.Pattern);
+        var result = matcher.GetMatch(pattern.ReplaceLineEndings().ToList(), matcher.Pattern);
 
         if (!result.Success)
         {

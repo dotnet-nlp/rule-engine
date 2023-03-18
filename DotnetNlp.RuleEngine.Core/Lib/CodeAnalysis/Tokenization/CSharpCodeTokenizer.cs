@@ -7,7 +7,6 @@ using DotnetNlp.RuleEngine.Core.Lib.CodeAnalysis.Tokenization.Grammar;
 using DotnetNlp.RuleEngine.Core.Lib.CodeAnalysis.Tokenization.Tokens;
 using DotnetNlp.RuleEngine.Core.Lib.CodeAnalysis.Tokenization.Tokens.Internal;
 using DotnetNlp.RuleEngine.Core.Lib.Common.Helpers;
-using IronMeta.Matcher;
 
 namespace DotnetNlp.RuleEngine.Core.Lib.CodeAnalysis.Tokenization;
 
@@ -31,7 +30,7 @@ public sealed class CSharpCodeTokenizer
 
     public ICSharpTypeToken TokenizeCSharpType(string source, List<char> chars, ref int index)
     {
-        MatchResult<char, IToken> result = _cSharpSyntaxMatcher.GetMatch(
+        var result = _cSharpSyntaxMatcher.GetMatch(
             chars,
             _cSharpSyntaxMatcher.CSharpType,
             index
@@ -155,7 +154,7 @@ public sealed class CSharpCodeTokenizer
 
     public void ReadComment(string source, List<char> chars, ref int index)
     {
-        MatchResult<char, IToken> result = _cSharpSyntaxMatcher.GetMatch(
+        var result = _cSharpSyntaxMatcher.GetMatch(
             chars,
             _cSharpSyntaxMatcher.CSharpComment,
             index
@@ -215,7 +214,7 @@ public sealed class CSharpCodeTokenizer
 
     public string ParseMethodBody(string source, List<char> chars, ref int index)
     {
-        MatchResult<char, IToken> emptyBodyMatchResult = _cSharpSyntaxMatcher.GetMatch(
+        var emptyBodyMatchResult = _cSharpSyntaxMatcher.GetMatch(
             chars,
             _cSharpSyntaxMatcher.CSharpEmptyMethodBody,
             index
@@ -228,7 +227,7 @@ public sealed class CSharpCodeTokenizer
             return "{}";
         }
 
-        MatchResult<char, IToken> bodyMatchResult = _cSharpSyntaxMatcher.GetMatch(
+        var bodyMatchResult = _cSharpSyntaxMatcher.GetMatch(
             chars,
             _cSharpSyntaxMatcher.CSharpMethodBody,
             index

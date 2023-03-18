@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using DotnetNlp.RuleEngine.Core.Build.Composition;
 using DotnetNlp.RuleEngine.Core.Evaluation.Cache;
 using DotnetNlp.RuleEngine.Core.Evaluation.InputProcessing;
 using DotnetNlp.RuleEngine.Core.Evaluation.Rule.Projection.Arguments;
@@ -10,18 +11,13 @@ namespace DotnetNlp.RuleEngine.Mechanics.Peg.Evaluation.InputProcessing;
 
 internal sealed class PegProcessor : IInputProcessor
 {
+    public IRuleDependenciesProvider DependenciesProvider { get; }
     private readonly OrderedChoiceComposer _root;
-    private readonly IReadOnlySet<string> _dependencies;
 
-    public PegProcessor(OrderedChoiceComposer root, IReadOnlySet<string> dependencies)
+    public PegProcessor(IRuleDependenciesProvider dependenciesProvider, OrderedChoiceComposer root)
     {
+        DependenciesProvider = dependenciesProvider;
         _root = root;
-        _dependencies = dependencies;
-    }
-
-    public IReadOnlySet<string> GetDependencies()
-    {
-        return _dependencies;
     }
 
     public RuleMatchResultCollection Match(
@@ -31,7 +27,7 @@ internal sealed class PegProcessor : IInputProcessor
         IRuleSpaceCache? cache = null
     )
     {
-        var dataCollector = new PegInputProcessorDataCollector();
+        var dataCollector = new PegProcessorDataCollector();
 
         var nextSymbolIndex = firstSymbolIndex;
 

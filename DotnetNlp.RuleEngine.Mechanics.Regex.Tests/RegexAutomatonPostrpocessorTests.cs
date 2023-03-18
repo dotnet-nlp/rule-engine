@@ -52,9 +52,11 @@ internal sealed class RegexAutomatonPostprocessorTests
     [TestCase("(「маркер」 один*){2,}")]
     public void FailsWithLoopError(string regex)
     {
-        var (automaton, _) = new RegexAutomatonBuilder(
+        var (automaton, _, _) = new RegexAutomatonBuilder(
             (RegexGroupToken) StaticResources.Tokenizer.Tokenize(regex, null, false),
-            DummyRuleSpace.Instance
+            DummyRuleSpace.DescriptionInstance,
+            DummyRuleSpace.Instance,
+            _ => {}
         ).Build();
 
         var exception = Assert.Throws<RegexProcessorBuildException>(
@@ -146,9 +148,11 @@ internal sealed class RegexAutomatonPostprocessorTests
         OptimizationLevel optimizationLevel
     )
     {
-        var (automaton, _) = new RegexAutomatonBuilder(
+        var (automaton, _, _) = new RegexAutomatonBuilder(
             (RegexGroupToken) StaticResources.Tokenizer.Tokenize(regex, null, false),
-            DummyRuleSpace.Instance
+            DummyRuleSpace.DescriptionInstance,
+            DummyRuleSpace.Instance,
+            _ => {}
         ).Build();
 
         var startDigraph = RecursiveDfsDigraphWalker

@@ -46,11 +46,11 @@ internal sealed class RegexAutomatonLabelProvider : ILabelProvider<RegexAutomato
         return $"{FormatRule(payload.RuleSpaceKey, payload.RuleArguments)} (forward)";
     }
 
-    private static string FormatRule(string ruleKey, IReadOnlyCollection<IRuleArgumentToken> ruleArguments)
+    private static string FormatRule(string ruleKey, IReadOnlyCollection<IRuleArgumentToken>? ruleArguments)
     {
         var formattedPayload = ruleKey;
 
-        if (ruleArguments.Count > 0)
+        if (ruleArguments?.Count > 0)
         {
             formattedPayload = $"{formattedPayload}({ruleArguments.Select(FormatRuleArgument).JoinToString(", ")})";
         }
@@ -61,7 +61,7 @@ internal sealed class RegexAutomatonLabelProvider : ILabelProvider<RegexAutomato
         {
             return ruleArgument switch
             {
-                RuleChainedMemberAccessArgumentToken token => token.ToString(),
+                ChainedMemberAccessArgumentToken token => token.ToString(),
                 RuleDefaultArgumentToken => "default",
                 _ => throw new ArgumentOutOfRangeException(nameof(ruleArgument)),
             };

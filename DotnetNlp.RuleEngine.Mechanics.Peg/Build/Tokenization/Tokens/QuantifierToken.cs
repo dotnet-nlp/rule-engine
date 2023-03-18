@@ -21,7 +21,7 @@ public sealed class QuantifierToken : IToken
             1 when Max is null => "+",
             0 when Max == 1 => "?",
             0 when Max is null => "*",
-            _ => $"{{{Min.ToString()},{Max?.ToString()}}}"
+            _ => $"{{{Min.ToString()},{Max?.ToString()}}}",
         };
     }
 }

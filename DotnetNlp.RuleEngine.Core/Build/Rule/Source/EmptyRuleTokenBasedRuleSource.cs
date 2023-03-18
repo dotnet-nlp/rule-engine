@@ -25,7 +25,7 @@ internal sealed class EmptyRuleTokenBasedRuleSource : IRuleSource
         _resultDescription = resultDescription;
     }
 
-    public IRuleMatcher GetRuleMatcher(in IRuleSpace ruleSpace)
+    public IRuleMatcher GetRuleMatcher(in IRuleSpace ruleSpace, Action<Action> subscribeOnRuleSpaceCreated)
     {
         try
         {

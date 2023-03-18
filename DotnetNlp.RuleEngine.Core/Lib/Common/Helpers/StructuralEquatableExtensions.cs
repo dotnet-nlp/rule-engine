@@ -28,6 +28,6 @@ public static class StructuralEquatableExtensions
     )
         where TKey : notnull
     {
-        return dictionary.Aggregate(0, (current, pair) => current * 17 + equalityComparer.GetHashCode(pair));
+        return dictionary.Aggregate(0, (current, pair) => current + equalityComparer.GetHashCode(pair) * 17);
     }
 }

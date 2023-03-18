@@ -29,7 +29,7 @@ internal sealed class GroupParser : IQuantifiableParser
     {
         result = null;
 
-        var dataCollector = new PegInputProcessorDataCollector();
+        var dataCollector = new PegProcessorDataCollector();
 
         var isMatched = _composer.Match(sequence, ref index, dataCollector, ruleSpaceArguments, cache);
 

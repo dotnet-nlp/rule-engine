@@ -1,6 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
+using DotnetNlp.RuleEngine.Core.Build;
+using DotnetNlp.RuleEngine.Core.Build.Tokenization.Equality;
 using DotnetNlp.RuleEngine.Core.Build.Tokenization.Tokens;
+using DotnetNlp.RuleEngine.Core.Build.Tokenization.Tokens.Arguments;
 using DotnetNlp.RuleEngine.Core.Evaluation;
 using DotnetNlp.RuleEngine.Mechanics.Regex.Build.Tokenization.Tokens;
 using DotnetNlp.RuleEngine.Mechanics.Regex.Evaluation.InputProcessing.Automaton.Models;
@@ -28,7 +32,11 @@ namespace DotnetNlp.RuleEngine.Mechanics.Regex.Build.InputProcessing.Automaton;
 internal sealed class RegexAutomatonBuilder
 {
     private readonly RegexGroupToken _groupToken;
+    private readonly IRuleSpaceDescription _ruleSpaceDescription;
     private readonly IRuleSpace _ruleSpace;
+    private readonly Action<Action> _subscribeOnRuleSpaceCreated;
+    private readonly HashSet<string> _dependencies;
+    private readonly HashSet<IChainedMemberAccessToken> _dependenciesOnRuleSpaceParameters;
 
     private int _nextStateId = 0;
     private int NextStateId => _nextStateId++;
@@ -36,27 +44,39 @@ internal sealed class RegexAutomatonBuilder
     private int _nextTransitionId = 0;
     private int NextTransitionId => _nextTransitionId++;
 
-    public RegexAutomatonBuilder(RegexGroupToken groupToken, IRuleSpace ruleSpace)
+    public RegexAutomatonBuilder(
+        RegexGroupToken groupToken,
+        IRuleSpaceDescription ruleSpaceDescription,
+        IRuleSpace ruleSpace,
+        Action<Action> subscribeOnRuleSpaceCreated
+    )
     {
         _groupToken = groupToken;
+        _ruleSpaceDescription = ruleSpaceDescription;
         _ruleSpace = ruleSpace;
+        _subscribeOnRuleSpaceCreated = subscribeOnRuleSpaceCreated;
+        _dependencies = new HashSet<string>();
+        _dependenciesOnRuleSpaceParameters = new HashSet<IChainedMemberAccessToken>(
+            ChainedMemberAccessTokenEqualityComparer.Instance
+        );
     }
 
-    public (RegexAutomaton Automaton, IReadOnlySet<string> Dependencies) Build()
+    public (RegexAutomaton Automaton, IReadOnlySet<string> Dependencies, IReadOnlySet<IChainedMemberAccessToken> DependenciesOnRuleSpaceParameters) Build()
     {
-        var dependencies = new HashSet<string>();
-        var automaton = BuildGroupAutomaton(_groupToken, dependencies);
+        var automaton = BuildGroupAutomaton(_groupToken);
 
-        return (automaton, dependencies);
+        return (
+            automaton,
+            _dependencies,
+            _dependenciesOnRuleSpaceParameters
+        );
     }
 
     private RegexAutomaton BuildGroupAutomaton(
         RegexGroupToken groupToken,
-        HashSet<string> dependencies,
         (RegexAutomatonState StartState, int EndStateOutgoingTransitionsCount, int AdditionalEndStateIncomingTransitionsCount)? parent = null
     )
     {
-
         var groupAutomaton = new RegexAutomaton(
             parent?.StartState ?? new RegexAutomatonState(NextStateId, groupToken.Branches.Length, 0),
             new RegexAutomatonState(
@@ -102,8 +122,7 @@ internal sealed class RegexAutomatonBuilder
                     QuantifiableBranchItemToken quantifiable => BuildQuantifiableAutomaton(
                         quantifiable,
                         previousState,
-                        endStateOutgoingTransitionsCount,
-                        dependencies
+                        endStateOutgoingTransitionsCount
                     ),
                     _ => throw new RegexProcessorBuildException($"Unknown branch item type {currentBranchItem.GetType().FullName}."),
                 };
@@ -175,8 +194,7 @@ internal sealed class RegexAutomatonBuilder
     private RegexAutomatonState BuildQuantifiableAutomaton(
         QuantifiableBranchItemToken branchItem,
         RegexAutomatonState startState,
-        int endStateOutgoingTransitionsCount,
-        HashSet<string> dependencies
+        int endStateOutgoingTransitionsCount
     )
     {
         var min = branchItem.Quantifier.Min;
@@ -278,7 +296,6 @@ internal sealed class RegexAutomatonBuilder
             {
                 return BuildGroupAutomaton(
                     groupToken,
-                    dependencies,
                     (
                         quantifiableStartState,
                         quantifiableEndStateOutgoingTransitionsCount,
@@ -289,17 +306,22 @@ internal sealed class RegexAutomatonBuilder
 
             if (quantifiableToken is IRuleReferenceToken ruleReferenceToken)
             {
+                var ruleSpaceKey = ruleReferenceToken.GetRuleSpaceKey();
+                _ruleSpaceDescription.ThrowIfNotExists(ruleSpaceKey);
+
                 var variableName = branchItem.VariableName;
 
                 if (variableName is null)
                 {
-                    singlePayload ??= CreateRuleReferencePayload(ruleReferenceToken);
+                    singlePayload ??= CreateRuleReferencePayload(ruleReferenceToken, ruleSpaceKey);
                 }
                 else
                 {
-                    pairedPayloads ??= CreateNerPayloads(variableName, ruleReferenceToken);
+                    pairedPayloads ??= CreateNerPayloads(variableName, ruleReferenceToken, ruleSpaceKey);
                 }
-                dependencies.Add(ruleReferenceToken.GetRuleSpaceKey());
+
+                _dependencies.Add(ruleSpaceKey);
+                _dependenciesOnRuleSpaceParameters.UnionWith(ruleReferenceToken.Arguments.OfType<IChainedMemberAccessToken>());
             }
             else if (quantifiableToken is ITerminalToken terminalToken)
             {
@@ -363,17 +385,26 @@ internal sealed class RegexAutomatonBuilder
         }
     }
 
-    private RuleReferencePayload CreateRuleReferencePayload(IRuleReferenceToken ruleReference)
+    private RuleReferencePayload CreateRuleReferencePayload(IRuleReferenceToken ruleReference, string ruleSpaceKey)
     {
-        return new RuleReferencePayload(ruleReference, _ruleSpace);
+        var payload = new RuleReferencePayload(ruleReference);
+
+        _subscribeOnRuleSpaceCreated(() => payload.SetMatcher(_ruleSpace[ruleSpaceKey]));
+
+        return payload;
     }
 
     private (NerPayload, VariableCapturePayload) CreateNerPayloads(
         string variableName,
-        IRuleReferenceToken ruleReference
+        IRuleReferenceToken ruleReference,
+        string ruleSpaceKey
     )
     {
-        return (new NerPayload(ruleReference, _ruleSpace), new VariableCapturePayload(variableName));
+        var nerPayload = new NerPayload(ruleReference);
+
+        _subscribeOnRuleSpaceCreated(() => nerPayload.SetMatcher(_ruleSpace[ruleSpaceKey]));
+
+        return (nerPayload, new VariableCapturePayload(variableName));
     }
 
     private TerminalPayload CreateTerminalPayload(ITerminalToken terminal)

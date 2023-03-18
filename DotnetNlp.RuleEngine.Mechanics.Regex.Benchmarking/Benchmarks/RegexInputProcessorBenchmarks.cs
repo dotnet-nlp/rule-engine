@@ -53,12 +53,13 @@ public class RegexInputProcessorBenchmarks
                 const string runeName = "foo";
 
                 var ruleSpace = factory.Create(
+                    Guid.NewGuid().ToString(),
                     Array.Empty<RuleSetToken>(),
                     new []
                     {
                         new RuleToken(
                             null,
-                            new ResolvedCSharpTypeToken("string", typeof(string)),
+                            MatchedInputBasedProjectionToken.ReturnType,
                             runeName,
                             Array.Empty<CSharpParameterToken>(),
                             "regex",
@@ -67,7 +68,7 @@ public class RegexInputProcessorBenchmarks
                         ),
                     },
                     ImmutableDictionary<string, IRuleMatcher>.Empty,
-                    ImmutableDictionary<string, IRuleSpace>.Empty,
+                    Array.Empty<IRuleSpace>(),
                     ImmutableDictionary<string, Type>.Empty,
                     LoadedAssembliesProvider.Instance
                 );

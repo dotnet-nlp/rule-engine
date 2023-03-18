@@ -1,5 +1,4 @@
-﻿using DotnetNlp.RuleEngine.Core.Evaluation.Cache;
-using DotnetNlp.RuleEngine.Core.Evaluation.Rule.Projection.Arguments;
+﻿using DotnetNlp.RuleEngine.Core.Evaluation.Rule.Projection.Arguments;
 using DotnetNlp.RuleEngine.Core.Evaluation.Rule.Projection.Parameters;
 using DotnetNlp.RuleEngine.Core.Evaluation.Rule.Result;
 using DotnetNlp.RuleEngine.Core.Lib.Common.Helpers;
@@ -15,8 +14,7 @@ internal static class ProjectionFactory
         IRuleProjection projection,
         int firstSymbolIndex = 0,
         RuleSpaceArguments? ruleSpaceArguments = null,
-        RuleArguments? ruleArguments = null,
-        IRuleSpaceCache? cache = null
+        RuleArguments? ruleArguments = null
     )
     {
         var arguments = new ProjectionArguments(

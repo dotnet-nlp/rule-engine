@@ -11,7 +11,7 @@ internal static class DotHelper
             new ProcessStartInfo
             {
                 FileName = "dot",
-                Arguments = $"-T{outputFormat} {pathToGvFile.AbsolutePath} -o {pathToOutputFile.AbsolutePath}"
+                Arguments = $"-T{outputFormat} {pathToGvFile.AbsolutePath} -o {pathToOutputFile.AbsolutePath}",
             }
         );
 

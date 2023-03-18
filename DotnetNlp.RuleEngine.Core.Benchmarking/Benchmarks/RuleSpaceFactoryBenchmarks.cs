@@ -83,10 +83,11 @@ public class RuleSpaceFactoryBenchmarks
         {
             _consumer.Consume(
                 _ruleSpaceFactory.Create(
+                    Guid.NewGuid().ToString(),
                     ruleSets,
                     rules,
                     ImmutableDictionary<string, IRuleMatcher>.Empty,
-                    ImmutableDictionary<string, IRuleSpace>.Empty,
+                    Array.Empty<IRuleSpace>(),
                     ImmutableDictionary<string, Type>.Empty,
                     LoadedAssembliesProvider.Instance
                 )

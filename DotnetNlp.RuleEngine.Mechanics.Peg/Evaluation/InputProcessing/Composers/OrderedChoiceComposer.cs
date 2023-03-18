@@ -18,7 +18,7 @@ internal sealed class OrderedChoiceComposer : IComposer
     public bool Match(
         string[] sequence,
         ref int index,
-        in PegInputProcessorDataCollector dataCollector,
+        in PegProcessorDataCollector dataCollector,
         RuleSpaceArguments? ruleSpaceArguments,
         IRuleSpaceCache? cache
     )

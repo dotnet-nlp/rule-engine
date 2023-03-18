@@ -51,7 +51,7 @@ internal sealed class RegexAutomaton : IUsedWordsProvider
         {
             VisualizationFormat.Gv => (DotGraphFormatter.Instance, "gv"),
             VisualizationFormat.Svg => (SvgFormatter.Instance, "svg"),
-            _ => throw new ArgumentOutOfRangeException(nameof(format), format, "Unsupported format")
+            _ => throw new ArgumentOutOfRangeException(nameof(format), format, "Unsupported format"),
         };
 
         return DigraphVisualizer.Instance.Format(

@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using System.Runtime.CompilerServices;
 
 namespace DotnetNlp.RuleEngine.Core.Lib.Common.Helpers;
@@ -10,9 +11,14 @@ public static class StringExtensions
         return string.Join("", input);
     }
 
-    public static string JoinToString(this IEnumerable<string> input, string separator = "")
+    public static string JoinToString(this IEnumerable<string> input, string separator, string? wrapper = null)
     {
-        return string.Join(separator, input);
+        return string.Join(
+            separator,
+            wrapper is not null
+                ? input.Select(item => $"{wrapper}{item}{wrapper}")
+                : input
+        );
     }
 
     public static string Capitalize(this string input)

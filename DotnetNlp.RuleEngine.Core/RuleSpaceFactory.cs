@@ -35,6 +35,7 @@ public sealed class RuleSpaceFactory
     private readonly ITypeResolver _typeResolver;
     private readonly IReadOnlyDictionary<Type, IInputProcessorFactory> _inputProcessorFactoriesByPatternTokenType;
     private int _lastUsedCachedMatcherId = 0;
+    private int _lastRuleSpaceId = 0;
 
     public StaticRuleFactory StaticRuleFactory { get; }
     public IReadOnlyDictionary<string, IPatternTokenizer> PatternTokenizers { get; }
@@ -64,6 +65,9 @@ public sealed class RuleSpaceFactory
     /// This method allows to create a rule space from different sources:
     /// rule set, rules, already built (standalone) matchers, and rule spaces, built before.
     /// </summary>
+    /// <param name="name">
+    /// Rule space unique identifier (name).
+    /// </param>
     /// <param name="ruleSets">
     /// Collection of rule sets to include to new rule space.
     /// The keys for the provided rules will be extracted from the rule tokens.
@@ -77,8 +81,8 @@ public sealed class RuleSpaceFactory
     /// The keys for the provided rules will be extracted from the this dictionary keys.
     /// </param>
     /// <param name="includedRuleSpaces">
-    /// Dictionary of previously compiled rule spaces to include to new rule space,
-    /// where key are prefixes of the respective values' matchers in new rule space.
+    /// Collection of previously compiled rule spaces to include to new rule space. Included rule space names
+    /// will be used as prefixes of the respective values' matchers in new rule space.
     /// </param>
     /// <param name="ruleSpaceParameterTypes">
     /// Description of the rule space parameters.
@@ -93,10 +97,11 @@ public sealed class RuleSpaceFactory
     /// </param>
     /// <returns>Compiled rule space.</returns>
     public IRuleSpace Create(
+        string name,
         IReadOnlyCollection<RuleSetToken> ruleSets,
         IReadOnlyCollection<IRuleToken> rulesByName,
         IReadOnlyDictionary<string, IRuleMatcher> standaloneMatchersByName,
-        IReadOnlyDictionary<string, IRuleSpace> includedRuleSpaces,
+        IReadOnlyCollection<IRuleSpace> includedRuleSpaces,
         IReadOnlyDictionary<string, Type> ruleSpaceParameterTypes,
         IAssembliesProvider assembliesProvider,
         string rootRuleName = "Root"
@@ -104,20 +109,19 @@ public sealed class RuleSpaceFactory
     {
         IReadOnlyDictionary<string, IRuleToken> ruleTokensByName = CreateRuleTokens(ruleSets, rulesByName);
 
-        IReadOnlyDictionary<string, IRuleMatcher> matchersByName = Enumerable
+        IReadOnlyDictionary<string, IRuleMatcher> transientMatchersByName = Enumerable
             .Empty<IEnumerable<KeyValuePair<string, IRuleMatcher>>>()
             .Append(standaloneMatchersByName)
             .Append(
                 includedRuleSpaces
                     .SelectMany(
-                        pair => pair
-                            .Value
-                            .RuleMatchersByName
-                            .MapKey(key => $"{pair.Key}.{key}")
+                        includedRuleSpace => includedRuleSpace
+                            .GetNonTransientRules()
+                            .MapKey(key => $"{includedRuleSpace.Name}.{key}")
                     )
             )
             .MergeWithKnownCapacity(
-                standaloneMatchersByName.Count + includedRuleSpaces.Aggregate(0, (count, ruleSpace) => count + ruleSpace.Value.RuleResultTypesByName.Count),
+                standaloneMatchersByName.Count + includedRuleSpaces.Aggregate(0, (count, ruleSpace) => count + ruleSpace.RuleResultTypesByName.Count),
                 true
             );
 
@@ -129,12 +133,12 @@ public sealed class RuleSpaceFactory
             _typeResolver,
             assembliesProvider,
             ruleTokensByName,
-            matchersByName,
+            transientMatchersByName,
             aliases,
             usingsByRuleName
         );
 
-        var capturedVariablesParametersByRuleName = GetCapturedVariablesParametersByRuleName(ruleTokensByName, matchersByName, ruleSpaceDescription, aliases);
+        var capturedVariablesParametersByRuleName = GetCapturedVariablesParametersByRuleName(ruleTokensByName, transientMatchersByName, ruleSpaceDescription, aliases);
         var ruleParametersByRuleName = GetRuleParametersByRuleName(ruleTokensByName, usingsByRuleName, assembliesProvider, aliases);
 
         var projectionsByRuleName = CreateProjections(
@@ -148,21 +152,23 @@ public sealed class RuleSpaceFactory
             aliases
         );
 
-        IReadOnlyDictionary<string, IRuleSource> ruleSources = Enumerable
+        var ruleSources = Enumerable
             .Empty<KeyValuePair<string, IRuleSource>>()
             .Concat(CreateTokenBasedRuleSources(ruleTokensByName, capturedVariablesParametersByRuleName, ruleParametersByRuleName, ruleSpaceDescription, projectionsByRuleName))
-            .Concat(CreateMatcherBasedRuleSource(matchersByName))
-            .ToDictionaryWithKnownCapacity(ruleTokensByName.Count + matchersByName.Count);
+            .Concat(CreateMatcherBasedRuleSource(transientMatchersByName))
+            .ToDictionaryWithKnownCapacity(ruleTokensByName.Count + transientMatchersByName.Count);
 
         var ruleSpaceBuilder = new RuleSpaceBuilder(
+            name,
             ruleSpaceDescription,
             ruleSpaceParameterTypes,
             ruleSources,
             aliases,
-            this
+            this,
+            transientMatchersByName.Keys.ToHashSet()
         );
 
-        return ruleSpaceBuilder.Build();
+        return ruleSpaceBuilder.Build(++_lastRuleSpaceId);
     }
 
     public IRuleMatcher AddRule(
@@ -173,9 +179,16 @@ public sealed class RuleSpaceFactory
     {
         var ruleKey = rule.Name;
 
+        var subscriptions = new List<Action>();
+
         var ruleMatcher = CreateSingleRule();
 
         ruleSpace[ruleKey] = ruleMatcher;
+
+        foreach (var subscription in subscriptions)
+        {
+            subscription();
+        }
 
         return ruleMatcher;
 
@@ -220,7 +233,7 @@ public sealed class RuleSpaceFactory
                 description
             );
 
-            return WrapWithCache(ruleSource.GetRuleMatcher(ruleSpace));
+            return WrapWithCache(ruleSource.GetRuleMatcher(ruleSpace, subscriptions.Add));
 
             IEnumerable<KeyValuePair<string, Type>> YieldAllCapturedVariables(RuleCapturedVariables capturedVariables)
             {
@@ -231,7 +244,7 @@ public sealed class RuleSpaceFactory
 
                 foreach (var referencedRuleKey in capturedVariables.ReferencedRules)
                 {
-                    if (ruleSpace.RuleMatchersByName.TryGetValue(referencedRuleKey, out var referencedMatcher))
+                    if (ruleSpace.TryGetValue(referencedRuleKey, out var referencedMatcher))
                     {
                         foreach (var referencedVariable in referencedMatcher.ResultDescription.CapturedVariablesTypes)
                         {
@@ -256,7 +269,7 @@ public sealed class RuleSpaceFactory
 
     private IReadOnlyDictionary<string, CapturedVariablesParameters> GetCapturedVariablesParametersByRuleName(
         IReadOnlyDictionary<string, IRuleToken> ruleTokensByName,
-        IReadOnlyDictionary<string, IRuleMatcher> matcherByName,
+        IReadOnlyDictionary<string, IRuleMatcher> transientMatchersByName,
         IRuleSpaceDescription ruleSpaceDescription,
         IReadOnlyDictionary<string, string> aliases
     )
@@ -265,6 +278,8 @@ public sealed class RuleSpaceFactory
             ruleTokensByName.Count
         );
 
+        // the process is split into two parts intentionally:
+        // first we collect all own variables (i.e. declared directly in the rule)
         foreach (var (ruleKey, ruleToken) in ruleTokensByName)
         {
             capturedVariablesByRuleKey.Add(
@@ -273,8 +288,6 @@ public sealed class RuleSpaceFactory
             );
         }
 
-        // the process is split into two parts intentionally:
-        // first we collect all own variables (i.e. declared directly in the rule)
         // second we collect all the variables (including variables from referenced rules)
         return capturedVariablesByRuleKey
             .MapValue(
@@ -311,7 +324,7 @@ public sealed class RuleSpaceFactory
                 return YieldAllCapturedVariables(originalRuleKey, capturedVariables, discoveredReferences);
             }
 
-            return matcherByName.TryGetValue(referencedRuleKey, out var ruleMatcher)
+            return transientMatchersByName.TryGetValue(referencedRuleKey, out var ruleMatcher)
                 ? ruleMatcher.ResultDescription.CapturedVariablesTypes
                 : Enumerable.Empty<KeyValuePair<string, Type>>();
         }
@@ -407,11 +420,13 @@ public sealed class RuleSpaceFactory
         return new RuleParameters(
             rule
                 .RuleParameters
-                .ToDictionary(
-                    ruleParameter => ruleParameter.Name,
-                    ruleParameter => _typeResolver
-                        .Resolve(ruleParameter.Type, usings, assembliesProvider)
+                .Select(
+                    ruleParameter => new KeyValuePair<string, Type>(
+                        ruleParameter.Name,
+                        _typeResolver.Resolve(ruleParameter.Type, usings, assembliesProvider)
+                    )
                 )
+                .ToArray()
         );
     }
 

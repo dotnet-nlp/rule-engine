@@ -78,7 +78,7 @@ public sealed class RuleSetTokenEqualityComparer : IEqualityComparer<RuleSetToke
         }
     }
 
-    // todo feature generalize for IRuleToken
+    // todo generalize for IRuleToken
     private sealed class RuleTokenEqualityComparer : IEqualityComparer<RuleToken>, IEqualityComparer
     {
         private readonly IEqualityComparer<IPatternToken> _patternTokenEqualityComparer;

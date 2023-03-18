@@ -13,9 +13,7 @@ public static class Configs
 {
     public static readonly IConfig Default = ManualConfig
         .Create(DefaultConfig.Instance)
-        .AddJob(Job.Default.WithRuntime(ClrRuntime.Net472).AsBaseline())
-        .AddJob(Job.Default.WithRuntime(CoreRuntime.Core31))
-        .AddJob(Job.Default.WithRuntime(CoreRuntime.Core50))
+        .AddJob(Job.Default.WithRuntime(CoreRuntime.Core60).AsBaseline())
         .AddDiagnoser(MemoryDiagnoser.Default)
         .AddColumn(CategoriesColumn.Default)
         .AddColumn(StatisticColumn.Mean)

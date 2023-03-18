@@ -79,7 +79,7 @@ internal sealed class RuleMatcherTests
         RuleSetContainer ruleSet,
         string ruleName,
         string phrase,
-        IReadOnlyDictionary<string, object?> ruleArguments,
+        KeyValuePair<string, object?>[] ruleArguments,
         object expectedResult
     )
     {
@@ -93,8 +93,8 @@ internal sealed class RuleMatcherTests
 
         var matchResults = ruleSet.RuleSpace[ruleName].MatchAndProject(
             sequence,
-            ruleSpaceArguments: ruleSpaceArguments,
-            ruleArguments: new RuleArguments(ruleArguments)
+            ruleArguments: new RuleArguments(ruleArguments),
+            ruleSpaceArguments: ruleSpaceArguments
         );
 
         var matchResult = matchResults.Best(new MaxExplicitSymbolsStrategy());
@@ -113,7 +113,7 @@ internal sealed class RuleMatcherTests
         RuleSetContainer ruleSet,
         string ruleName,
         string phrase,
-        IReadOnlyDictionary<string, object?> expectedCapturedVariables
+        IReadOnlyDictionary<string, object?>? expectedCapturedVariables
     )
     {
         var sequence = phrase.Split(' ', StringSplitOptions.RemoveEmptyEntries);
@@ -126,7 +126,12 @@ internal sealed class RuleMatcherTests
 
         Assert.AreEqual(sequence.Length - 1, matchResult!.LastUsedSymbolIndex);
 
-        CollectionAssert.AreEquivalent(expectedCapturedVariables, matchResult.CapturedVariables);
+        Assert.AreEqual(expectedCapturedVariables is null, matchResult.CapturedVariables is null);
+
+        if (expectedCapturedVariables is not null)
+        {
+            CollectionAssert.AreEquivalent(expectedCapturedVariables, matchResult.CapturedVariables);
+        }
     }
 
     [Test]
@@ -140,10 +145,11 @@ internal sealed class RuleMatcherTests
                     StaticResources.PegMechanics(),
                 }
             ).Create(
+                Guid.NewGuid().ToString(),
                 new[] { ruleSetToken },
                 Array.Empty<RuleToken>(),
                 ImmutableDictionary<string, IRuleMatcher>.Empty,
-                ImmutableDictionary<string, IRuleSpace>.Empty,
+                Array.Empty<IRuleSpace>(),
                 ImmutableDictionary<string, Type>.Empty,
                 LoadedAssembliesProvider.Instance
             )
@@ -1932,7 +1938,7 @@ internal sealed class RuleMatcherTests
                 VoidPatternsNer.Instance,
                 "Number_0",
                 "ноль",
-                new Dictionary<string, object?>(),
+                null,
             },
         };
     }
@@ -1950,10 +1956,10 @@ internal sealed class RuleMatcherTests
                 RuleArgumentsExampleNer.Instance,
                 "DummyRuleWithArguments",
                 "привет",
-                new Dictionary<string, object>
+                new KeyValuePair<string, object?>[]
                 {
-                    {"arg1", "пока"},
-                    {"arg2", 42},
+                    new("arg1", "пока"),
+                    new("arg2", 42),
                 },
                 "привет_arg1<пока>_arg2<42>",
             },
@@ -1962,7 +1968,7 @@ internal sealed class RuleMatcherTests
                 RuleArgumentsExampleNer.Instance,
                 "DummyRuleWithReferenceToRuleWithArguments1",
                 "куку",
-                new Dictionary<string, object>(),
+                Array.Empty<KeyValuePair<string, object?>>(),
                 "куку_arg1<фу>_arg2<24>",
             },
             new object?[]
@@ -1970,7 +1976,7 @@ internal sealed class RuleMatcherTests
                 RuleArgumentsExampleNer.Instance,
                 "DummyRuleWithReferenceToRuleWithArguments2",
                 "куку",
-                new Dictionary<string, object>(),
+                Array.Empty<KeyValuePair<string, object?>>(),
                 "куку_arg1<>_arg2<24>",
             },
             new object?[]
@@ -1978,7 +1984,7 @@ internal sealed class RuleMatcherTests
                 RuleArgumentsExampleNer.Instance,
                 "DummyRuleWithReferenceToRuleWithArguments3",
                 "куку",
-                new Dictionary<string, object>(),
+                Array.Empty<KeyValuePair<string, object?>>(),
                 "куку_arg1<фу>_arg2<0>",
             },
             new object?[]
@@ -1986,7 +1992,7 @@ internal sealed class RuleMatcherTests
                 RuleArgumentsExampleNer.Instance,
                 "DummyRuleWithReferenceToRuleWithArguments4",
                 "куку",
-                new Dictionary<string, object>(),
+                Array.Empty<KeyValuePair<string, object?>>(),
                 "куку_arg1<>_arg2<0>",
             },
         };

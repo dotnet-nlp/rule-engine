@@ -19,7 +19,7 @@ internal sealed class RegexAutomatonWalker : IRegexAutomatonWalker<RegexAutomato
         IRuleSpaceCache? cache = null
     )
     {
-        // todo this is rough estimate, think if we can predict this number more precisely
+        // todo think if we can predict this number more precisely
         var results = new RuleMatchResultCollection(10);
         var progresses = new Stack<AutomatonProgress>(10);
 

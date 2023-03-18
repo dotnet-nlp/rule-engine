@@ -6,17 +6,21 @@ namespace DotnetNlp.RuleEngine.Core.Evaluation.Cache;
 public interface IRuleSpaceCache
 {
     RuleMatchResultCollection? GetResult(
+        bool isProjected,
         int ruleId,
         string[] inputSequence,
         int nextSymbolIndex,
-        IReadOnlyDictionary<string, object?>? ruleArguments
+        KeyValuePair<string, object?>[]? ruleArguments,
+        IReadOnlyDictionary<string, object?>? ruleDependenciesOnRuleSpaceArguments
     );
 
     void SetResult(
+        bool isProjected,
         int ruleId,
         string[] inputSequence,
         int nextSymbolIndex,
-        IReadOnlyDictionary<string, object?>? ruleArguments,
+        KeyValuePair<string, object?>[]? ruleArguments,
+        IReadOnlyDictionary<string, object?>? ruleDependenciesOnRuleSpaceArguments,
         RuleMatchResultCollection result
     );
 }

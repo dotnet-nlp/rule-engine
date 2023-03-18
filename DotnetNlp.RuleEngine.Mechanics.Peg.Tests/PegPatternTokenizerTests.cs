@@ -63,9 +63,9 @@ internal sealed class PegPatternTokenizerTests
                                     "foo.bar",
                                     new IRuleArgumentToken[]
                                     {
-                                        new RuleChainedMemberAccessArgumentToken(new []{"patterns", "foo"}),
+                                        new ChainedMemberAccessArgumentToken(new []{"patterns", "foo"}),
                                         RuleDefaultArgumentToken.Instance,
-                                        new RuleChainedMemberAccessArgumentToken(new []{"patterns", "bar"}),
+                                        new ChainedMemberAccessArgumentToken(new []{"patterns", "bar"}),
                                     }
                                 ),
                                 new QuantifierToken(1, 1),

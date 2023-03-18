@@ -740,7 +740,7 @@ internal sealed class RegexPatternTokenizerTests
                                 new RuleReferenceToken(
                                     null,
                                     "bar.baz",
-                                    new IRuleArgumentToken[]{new RuleChainedMemberAccessArgumentToken(new [] {"a", "b"})}
+                                    new IRuleArgumentToken[]{new ChainedMemberAccessArgumentToken(new [] {"a", "b"})}
                                 ),
                                 new QuantifierToken(0, 1),
                                 "foo"
@@ -1035,7 +1035,7 @@ internal sealed class RegexPatternTokenizerTests
                                     "Ner.SomeNer",
                                     new IRuleArgumentToken[]
                                     {
-                                        new RuleChainedMemberAccessArgumentToken(new [] {"SomeArg", "FooBar"}),
+                                        new ChainedMemberAccessArgumentToken(new [] {"SomeArg", "FooBar"}),
                                     }
                                 ),
                                 new QuantifierToken(1, 1),
@@ -1061,7 +1061,7 @@ internal sealed class RegexPatternTokenizerTests
                                     "ner_obj.some_ner",
                                     new IRuleArgumentToken[]
                                     {
-                                        new RuleChainedMemberAccessArgumentToken(new [] {"some_arg", "foo_bar"}),
+                                        new ChainedMemberAccessArgumentToken(new [] {"some_arg", "foo_bar"}),
                                     }
                                 ),
                                 new QuantifierToken(1, 1),
@@ -1087,8 +1087,8 @@ internal sealed class RegexPatternTokenizerTests
                                     "ner.someNer",
                                     new IRuleArgumentToken[]
                                     {
-                                        new RuleChainedMemberAccessArgumentToken(new [] {"someArg", "Foo"}),
-                                        new RuleChainedMemberAccessArgumentToken(new [] {"anotherArg", "Bar"}),
+                                        new ChainedMemberAccessArgumentToken(new [] {"someArg", "Foo"}),
+                                        new ChainedMemberAccessArgumentToken(new [] {"anotherArg", "Bar"}),
                                     }
                                 ),
                                 new QuantifierToken(1, 1),
@@ -1140,9 +1140,9 @@ internal sealed class RegexPatternTokenizerTests
                                     "ner.some_ner",
                                     new IRuleArgumentToken[]
                                     {
-                                        new RuleChainedMemberAccessArgumentToken(new [] {"foo", "Foo"}),
+                                        new ChainedMemberAccessArgumentToken(new [] {"foo", "Foo"}),
                                         RuleDefaultArgumentToken.Instance,
-                                        new RuleChainedMemberAccessArgumentToken(new [] {"foo", "Foo"}),
+                                        new ChainedMemberAccessArgumentToken(new [] {"foo", "Foo"}),
                                     }
                                 ),
                                 new QuantifierToken(1, 1),
@@ -1170,9 +1170,9 @@ internal sealed class RegexPatternTokenizerTests
                                 new RuleReferenceToken(null, "dummy_ner.two", Array.Empty<IRuleArgumentToken>()),
                                 new QuantifierToken(0, 1),
                                 "var1"
-                            )
+                            ),
                         }
-                    )
+                    ),
                 }
             ),
         },
@@ -1213,9 +1213,9 @@ internal sealed class RegexPatternTokenizerTests
                                     new RuleReferenceToken(null, "rule", Array.Empty<IRuleArgumentToken>()),
                                     new QuantifierToken(1, 1),
                                     null
-                                )
+                                ),
                             }
-                        )
+                        ),
                     }
                 ),
             },

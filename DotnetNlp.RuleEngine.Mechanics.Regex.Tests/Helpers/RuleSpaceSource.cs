@@ -34,6 +34,7 @@ internal sealed class RuleSpaceSource<TPatternToken> where TPatternToken : IPatt
     private IRuleSpace CreateRuleSpace()
     {
         return _factory.Create(
+            Guid.NewGuid().ToString(),
             Array.Empty<RuleSetToken>(),
             _rules
                 .MapValue(
@@ -52,7 +53,7 @@ internal sealed class RuleSpaceSource<TPatternToken> where TPatternToken : IPatt
             _staticRuleContainers
                 .Select(_factory.StaticRuleFactory.ConvertStaticRuleContainerToRuleMatchers)
                 .MergeWithKnownCapacity(_staticRuleContainers.Count),
-            ImmutableDictionary<string, IRuleSpace>.Empty,
+            Array.Empty<IRuleSpace>(),
             ImmutableDictionary<string, Type>.Empty,
             LoadedAssembliesProvider.Instance
         );

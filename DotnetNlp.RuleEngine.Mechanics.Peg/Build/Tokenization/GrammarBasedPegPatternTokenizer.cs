@@ -2,10 +2,8 @@
 using DotnetNlp.RuleEngine.Core.Build.Tokenization;
 using DotnetNlp.RuleEngine.Core.Build.Tokenization.Tokens;
 using DotnetNlp.RuleEngine.Core.Lib.CodeAnalysis.Tokenization.Grammar;
-using DotnetNlp.RuleEngine.Core.Lib.CodeAnalysis.Tokenization.Tokens;
 using DotnetNlp.RuleEngine.Mechanics.Peg.Build.Tokenization.Grammar;
 using DotnetNlp.RuleEngine.Mechanics.Peg.Exceptions;
-using IronMeta.Matcher;
 
 namespace DotnetNlp.RuleEngine.Mechanics.Peg.Build.Tokenization;
 
@@ -22,7 +20,7 @@ public sealed class GrammarBasedPegPatternTokenizer : IPatternTokenizer
         }
 
         var matcher = new PegSyntaxMatcher(@namespace, new CSharpSyntaxMatcher());
-        MatchResult<char, IToken> result = matcher.GetMatch(pattern.ReplaceLineEndings().ToList(), matcher.Pattern);
+        var result = matcher.GetMatch(pattern.ReplaceLineEndings().ToList(), matcher.Pattern);
 
         if (!result.Success)
         {

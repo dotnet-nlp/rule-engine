@@ -24,7 +24,7 @@ internal sealed class ProjectionParameters
         .ToDictionaryWithKnownCapacity(
             1 +
             _capturedVariablesParameters.Values.Count +
-            _ruleParameters.Values.Count +
+            _ruleParameters.Values.Length +
             _ruleSpaceParameters.Values.Count
         );
 

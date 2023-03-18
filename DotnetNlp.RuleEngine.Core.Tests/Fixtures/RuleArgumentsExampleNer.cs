@@ -67,14 +67,14 @@ internal static class RuleArgumentsExampleNer
                                             "DummyRuleWithArguments",
                                             new IRuleArgumentToken[]
                                             {
-                                                new RuleChainedMemberAccessArgumentToken(
+                                                new ChainedMemberAccessArgumentToken(
                                                     new []
                                                     {
                                                         "parameters",
                                                         "Foo",
                                                     }
                                                 ),
-                                                new RuleChainedMemberAccessArgumentToken(
+                                                new ChainedMemberAccessArgumentToken(
                                                     new []
                                                     {
                                                         "parameters",
@@ -112,7 +112,7 @@ internal static class RuleArgumentsExampleNer
                                             new IRuleArgumentToken[]
                                             {
                                                 RuleDefaultArgumentToken.Instance,
-                                                new RuleChainedMemberAccessArgumentToken(
+                                                new ChainedMemberAccessArgumentToken(
                                                     new []
                                                     {
                                                         "parameters",
@@ -149,7 +149,7 @@ internal static class RuleArgumentsExampleNer
                                             "DummyRuleWithArguments",
                                             new IRuleArgumentToken[]
                                             {
-                                                new RuleChainedMemberAccessArgumentToken(
+                                                new ChainedMemberAccessArgumentToken(
                                                     new []
                                                     {
                                                         "parameters",

@@ -1,11 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Collections.Immutable;
 using System.Linq;
 using DotnetNlp.RuleEngine.Core.Evaluation.Cache;
 using DotnetNlp.RuleEngine.Core.Evaluation.Rule.Result;
 using DotnetNlp.RuleEngine.Core.Exceptions;
-using DotnetNlp.RuleEngine.Core.Lib.Common.Helpers;
 using NUnit.Framework;
 
 namespace DotnetNlp.RuleEngine.Core.Tests;
@@ -16,22 +14,25 @@ internal sealed class RuleSpaceCacheTests
     [Test]
     [TestCaseSource(nameof(SetsAndGets_Mixed))]
     public void SetsAndGets(
+        bool projected,
         int ruleId,
         string[] inputSequence,
         int nextSymbolIndex,
-        IReadOnlyDictionary<string, object?> ruleArguments
+        KeyValuePair<string, object?>[] ruleArguments
     )
     {
         var result = new RuleMatchResultCollection(0);
         var cache = new RuleSpaceCache();
 
-        cache.SetResult(ruleId, inputSequence, nextSymbolIndex, ruleArguments, result);
+        cache.SetResult(projected, ruleId, inputSequence, nextSymbolIndex, ruleArguments, null, result);
 
         var resultFromCache = cache.GetResult(
+            projected,
             ruleId,
             inputSequence.ToArray(),
             nextSymbolIndex,
-            ruleArguments.ToDictionary()
+            ruleArguments.ToArray(),
+            null
         );
 
         Assert.IsNotNull(resultFromCache);
@@ -41,20 +42,22 @@ internal sealed class RuleSpaceCacheTests
     [Test]
     [TestCaseSource(nameof(DoesNotGetWithWrongKey_Mixed))]
     public void DoesNotGetWithWrongKey(
-        (int RuleId, string[] InputSequence, int NextSymbolIndex, IReadOnlyDictionary<string, object?> RuleArguments) set,
-        (int RuleId, string[] InputSequence, int NextSymbolIndex, IReadOnlyDictionary<string, object?> RuleArguments) get
+        (bool Projected, int RuleId, string[] InputSequence, int NextSymbolIndex, KeyValuePair<string, object?>[] RuleArguments) set,
+        (bool Projected, int RuleId, string[] InputSequence, int NextSymbolIndex, KeyValuePair<string, object?>[] RuleArguments) get
     )
     {
         var result = new RuleMatchResultCollection(0);
         var cache = new RuleSpaceCache();
 
-        cache.SetResult(set.RuleId, set.InputSequence, set.NextSymbolIndex, set.RuleArguments, result);
+        cache.SetResult(set.Projected, set.RuleId, set.InputSequence, set.NextSymbolIndex, set.RuleArguments, null, result);
 
         var resultFromCache = cache.GetResult(
+            get.Projected,
             get.RuleId,
             get.InputSequence,
             get.NextSymbolIndex,
-            get.RuleArguments
+            get.RuleArguments,
+            null
         );
 
         Assert.IsNull(resultFromCache);
@@ -63,18 +66,19 @@ internal sealed class RuleSpaceCacheTests
     [Test]
     [TestCaseSource(nameof(ThrowsOnDuplicate_Mixed))]
     public void ThrowsOnDuplicate(
+        bool projected,
         int ruleId,
         string[] inputSequence,
         int nextSymbolIndex,
-        IReadOnlyDictionary<string, object?> ruleArguments
+        KeyValuePair<string, object?>[] ruleArguments
     )
     {
         var cache = new RuleSpaceCache();
 
-        cache.SetResult(ruleId, inputSequence, nextSymbolIndex, ruleArguments, new RuleMatchResultCollection(0));
+        cache.SetResult(projected, ruleId, inputSequence, nextSymbolIndex, ruleArguments, null, new RuleMatchResultCollection(0));
 
         var exception = Assert.Throws<RuleMatchException>(
-            () => cache.SetResult(ruleId, inputSequence, nextSymbolIndex, ruleArguments, new RuleMatchResultCollection(0))
+            () => cache.SetResult(projected, ruleId, inputSequence, nextSymbolIndex, ruleArguments, null, new RuleMatchResultCollection(0))
         );
 
         Assert.AreEqual("Error during adding rule match result to cache.", exception!.Message);
@@ -90,21 +94,23 @@ internal sealed class RuleSpaceCacheTests
         {
             new object?[]
             {
+                true,
                 1,
                 new []{""},
                 -1,
-                ImmutableDictionary<string, object?>.Empty,
+                Array.Empty<KeyValuePair<string, object?>>(),
             },
             new object?[]
             {
+                false,
                 2,
                 new []{"один", "два"},
                 0,
-                new Dictionary<string, object?>
+                new KeyValuePair<string, object?>[]
                 {
-                    {"foo", 42},
-                    {"bar", TimeSpan.FromDays(1)},
-                    {"baz", "bazz"},
+                    new("foo", 42),
+                    new("bar", TimeSpan.FromDays(1)),
+                    new("baz", "bazz"),
                 },
             },
         };
@@ -114,70 +120,112 @@ internal sealed class RuleSpaceCacheTests
 
     #region Sources_DoesNotGetWithWrongKey
 
-    public static (int, string[], int, IReadOnlyDictionary<string, object?>)[][] DoesNotGetWithWrongKey_Mixed()
+    public static (bool, int, string[], int, KeyValuePair<string, object?>[])[][] DoesNotGetWithWrongKey_Mixed()
     {
         return new []
         {
             new []
             {
                 (
+                    true,
                     1,
                     new []{""},
                     -1,
-                    (IReadOnlyDictionary<string, object?>) ImmutableDictionary<string, object?>.Empty
+                    Array.Empty<KeyValuePair<string, object?>>()
                 ),
                 (
+                    false,
+                    1,
+                    new []{""},
+                    -1,
+                    Array.Empty<KeyValuePair<string, object?>>()
+                ),
+            },
+            new []
+            {
+                (
+                    false,
+                    1,
+                    new []{""},
+                    -1,
+                    Array.Empty<KeyValuePair<string, object?>>()
+                ),
+                (
+                    true,
+                    1,
+                    new []{""},
+                    -1,
+                    Array.Empty<KeyValuePair<string, object?>>()
+                ),
+            },
+            new []
+            {
+                (
+                    true,
+                    1,
+                    new []{""},
+                    -1,
+                    Array.Empty<KeyValuePair<string, object?>>()
+                ),
+                (
+                    true,
                     2,
                     new []{""},
                     -1,
-                    (IReadOnlyDictionary<string, object?>) ImmutableDictionary<string, object?>.Empty
+                    Array.Empty<KeyValuePair<string, object?>>()
                 ),
             },
             new []
             {
                 (
+                    true,
                     1,
                     new []{""},
                     -1,
-                    (IReadOnlyDictionary<string, object?>) ImmutableDictionary<string, object?>.Empty
+                    Array.Empty<KeyValuePair<string, object?>>()
                 ),
                 (
+                    true,
                     1,
                     new []{"один"},
                     -1,
-                    (IReadOnlyDictionary<string, object?>) ImmutableDictionary<string, object?>.Empty
+                    Array.Empty<KeyValuePair<string, object?>>()
                 ),
             },
             new []
             {
                 (
+                    false,
                     1,
                     new []{""},
                     -1,
-                    (IReadOnlyDictionary<string, object?>) ImmutableDictionary<string, object?>.Empty
+                    Array.Empty<KeyValuePair<string, object?>>()
                 ),
                 (
+                    false,
                     1,
                     new []{""},
                     0,
-                    (IReadOnlyDictionary<string, object?>) ImmutableDictionary<string, object?>.Empty
+                    Array.Empty<KeyValuePair<string, object?>>()
                 ),
             },
             new []
             {
                 (
+                    false,
                     1,
                     new []{""},
                     -1,
-                    (IReadOnlyDictionary<string, object?>) ImmutableDictionary<string, object?>.Empty
+                    Array.Empty<KeyValuePair<string, object?>>()
                 ),
                 (
+                    false,
                     1,
                     new []{""},
                     -1,
-                    (IReadOnlyDictionary<string, object?>) new Dictionary<string, object?>
+                    new KeyValuePair<string, object?>[]
                     {
-                        {"foo", "bar"},
+                        new("foo", "bar"),
                     }
                 ),
             },
@@ -194,21 +242,23 @@ internal sealed class RuleSpaceCacheTests
         {
             new object?[]
             {
+                true,
                 1,
                 new []{""},
                 -1,
-                ImmutableDictionary<string, object?>.Empty,
+                Array.Empty<KeyValuePair<string, object?>>(),
             },
             new object?[]
             {
+                false,
                 2,
                 new []{"один", "два"},
                 0,
-                new Dictionary<string, object?>
+                new KeyValuePair<string, object?>[]
                 {
-                    {"foo", 42},
-                    {"bar", TimeSpan.FromDays(1)},
-                    {"baz", "bazz"},
+                    new("foo", 42),
+                    new("bar", TimeSpan.FromDays(1)),
+                    new("baz", "bazz"),
                 },
             },
         };

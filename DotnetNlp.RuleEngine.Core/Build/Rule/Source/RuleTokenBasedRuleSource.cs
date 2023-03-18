@@ -39,12 +39,17 @@ internal sealed class RuleTokenBasedRuleSource : IRuleSource
         _ruleSpaceDescription = ruleSpaceDescription;
     }
 
-    public IRuleMatcher GetRuleMatcher(in IRuleSpace ruleSpace)
+    public IRuleMatcher GetRuleMatcher(in IRuleSpace ruleSpace, Action<Action> subscribeOnRuleSpaceCreated)
     {
         try
         {
             return new RuleMatcher(
-                _inputProcessorFactory.Create(_rule.Pattern, ruleSpace, _ruleSpaceDescription),
+                _inputProcessorFactory.Create(
+                    _rule.Pattern,
+                    ruleSpace,
+                    _ruleSpaceDescription,
+                    subscribeOnRuleSpaceCreated
+                ),
                 _ruleParameters,
                 _capturedVariablesParameters,
                 _resultDescription,

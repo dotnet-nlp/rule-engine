@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Collections.Immutable;
+using DotnetNlp.RuleEngine.Core.Build.Tokenization.Tokens.Arguments;
 using DotnetNlp.RuleEngine.Core.Evaluation.Cache;
 using DotnetNlp.RuleEngine.Core.Evaluation.Rule.Projection.Arguments;
 using DotnetNlp.RuleEngine.Core.Evaluation.Rule.Projection.Parameters;
@@ -9,7 +10,6 @@ namespace DotnetNlp.RuleEngine.Core.Evaluation.Rule;
 
 internal sealed class EmptyRuleMatcher : IRuleMatcher
 {
-    public IReadOnlySet<string> Dependencies => ImmutableHashSet<string>.Empty;
     public RuleParameters Parameters { get; }
     public RuleMatchResultDescription ResultDescription { get; }
 
@@ -19,11 +19,21 @@ internal sealed class EmptyRuleMatcher : IRuleMatcher
         ResultDescription = resultDescription;
     }
 
+    public IReadOnlySet<string> GetDependencies(IRuleSpace forRuleSpace)
+    {
+        return ImmutableHashSet<string>.Empty;
+    }
+
+    public IReadOnlySet<IChainedMemberAccessToken>? GetDependenciesOnRuleSpaceParameters()
+    {
+        return null;
+    }
+
     public RuleMatchResultCollection Match(
         string[] sequence,
         int firstSymbolIndex = 0,
-        RuleSpaceArguments? ruleSpaceArguments = null,
         RuleArguments? ruleArguments = null,
+        RuleSpaceArguments? ruleSpaceArguments = null,
         IRuleSpaceCache? cache = null
     )
     {
@@ -33,12 +43,12 @@ internal sealed class EmptyRuleMatcher : IRuleMatcher
     public RuleMatchResultCollection MatchAndProject(
         string[] sequence,
         int firstSymbolIndex = 0,
-        RuleSpaceArguments? ruleSpaceArguments = null,
         RuleArguments? ruleArguments = null,
+        RuleSpaceArguments? ruleSpaceArguments = null,
         IRuleSpaceCache? cache = null
     )
     {
-        return Match(sequence, firstSymbolIndex, ruleSpaceArguments, ruleArguments, cache);
+        return Match(sequence, firstSymbolIndex, ruleArguments, ruleSpaceArguments, cache);
     }
 
     public IEnumerable<string> GetUsedWords()

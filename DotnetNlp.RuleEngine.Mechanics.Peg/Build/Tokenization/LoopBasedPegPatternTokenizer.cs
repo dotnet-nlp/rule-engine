@@ -680,7 +680,6 @@ public class LoopBasedPegPatternTokenizer : IPatternTokenizer
             var reachedClosing = false;
             var noCharactersAfterComma = false;
 
-            // We are not interested in '{' opening character;
             i++;
 
             while (i < pattern.Length && !reachedClosing)
@@ -849,7 +848,7 @@ public class LoopBasedPegPatternTokenizer : IPatternTokenizer
                             return RuleDefaultArgumentToken.Instance;
                         }
 
-                        return new RuleChainedMemberAccessArgumentToken(
+                        return new ChainedMemberAccessArgumentToken(
                             capture.Value.Split('.', StringSplitOptions.RemoveEmptyEntries)
                         );
                     }

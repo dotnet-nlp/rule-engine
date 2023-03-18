@@ -28,7 +28,7 @@ internal sealed class PegProcessorFactoryTests
     public void Fails(PegGroupToken group, string expectedExceptionMessage)
     {
         var exception = Assert.Throws<PegProcessorBuildException>(
-            () => _factory.Create(group, DummyRuleSpace.Instance, DummyRuleSpace.DescriptionInstance)
+            () => _factory.Create(group, DummyRuleSpace.Instance, DummyRuleSpace.DescriptionInstance, _ => {})
         );
 
         Assert.AreEqual(expectedExceptionMessage, exception!.Message);

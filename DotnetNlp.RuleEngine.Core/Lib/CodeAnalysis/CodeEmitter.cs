@@ -38,7 +38,7 @@ public sealed class CodeEmitter
         var functions = CreateFunctions(
             new Dictionary<string, FunctionCreationData>(1)
             {
-                { key, data }
+                { key, data },
             },
             assembliesProvider
         );

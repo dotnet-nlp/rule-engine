@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using DotnetNlp.RuleEngine.Core.Build;
+using DotnetNlp.RuleEngine.Core.Build.Composition;
 using DotnetNlp.RuleEngine.Core.Build.InputProcessing;
 using DotnetNlp.RuleEngine.Core.Build.InputProcessing.Models;
 using DotnetNlp.RuleEngine.Core.Build.Tokenization.Tokens;
@@ -9,11 +10,10 @@ using DotnetNlp.RuleEngine.Core.Evaluation;
 using DotnetNlp.RuleEngine.Core.Evaluation.InputProcessing;
 using DotnetNlp.RuleEngine.Core.Evaluation.Rule.Result.SelectionStrategy;
 using DotnetNlp.RuleEngine.Core.Exceptions;
+using DotnetNlp.RuleEngine.Core.Lib.Common.Helpers;
+using DotnetNlp.RuleEngine.Mechanics.Peg.Build.InputProcessing.Grammar;
 using DotnetNlp.RuleEngine.Mechanics.Peg.Build.Tokenization.Tokens;
 using DotnetNlp.RuleEngine.Mechanics.Peg.Evaluation.InputProcessing;
-using DotnetNlp.RuleEngine.Mechanics.Peg.Evaluation.InputProcessing.Composers;
-using DotnetNlp.RuleEngine.Mechanics.Peg.Evaluation.InputProcessing.Parsers;
-using DotnetNlp.RuleEngine.Mechanics.Peg.Evaluation.InputProcessing.TerminalDetectors;
 using DotnetNlp.RuleEngine.Mechanics.Peg.Exceptions;
 
 namespace DotnetNlp.RuleEngine.Mechanics.Peg.Build.InputProcessing;
@@ -30,17 +30,23 @@ public sealed class PegProcessorFactory : IInputProcessorFactory
     public IInputProcessor Create(
         IPatternToken patternToken,
         IRuleSpace ruleSpace,
-        IRuleSpaceDescription ruleSpaceDescription
+        IRuleSpaceDescription ruleSpaceDescription,
+        Action<Action> subscribeOnRuleSpaceCreated
     )
     {
-        var pegGroupToken = (PegGroupToken) patternToken;
+        var groupToken = (PegGroupToken) patternToken;
 
         try
         {
-            var dependencies = new HashSet<string>();
-            var root = CreateGroupComposer(pegGroupToken, ruleSpace, false, ruleSpaceDescription, dependencies);
+            var (root, dependencies, dependenciesOnRuleSpaceParameters) = new PegGrammarRuleBuilder(
+                groupToken,
+                ruleSpaceDescription,
+                ruleSpace,
+                _bestReferenceSelectionStrategy,
+                subscribeOnRuleSpaceCreated
+            ).Build();
 
-            return new PegProcessor(root, dependencies);
+            return new PegProcessor(new RuleDependenciesProvider(dependencies, dependenciesOnRuleSpaceParameters, ruleSpace.Id, ruleSpace.Name), root);
         }
         catch (RuleBuildException exception) when (exception is not PegProcessorBuildException)
         {
@@ -116,162 +122,12 @@ public sealed class PegProcessorFactory : IInputProcessorFactory
 
         Type MakeNullableIfPossible(Type type)
         {
-            if (type.IsValueType && !IsNullable())
+            if (type.IsValueType && !type.IsNullable())
             {
                 return typeof(Nullable<>).MakeGenericType(type);
             }
 
             return type;
-
-            bool IsNullable()
-            {
-                return type.IsGenericType && type.GetGenericTypeDefinition() == typeof(Nullable<>);
-            }
         }
-    }
-
-    private OrderedChoiceComposer CreateGroupComposer(
-        PegGroupToken group,
-        IRuleSpace ruleSpace,
-        bool isPartOfNestedGroup,
-        IRuleSpaceDescription ruleSpaceDescription,
-        HashSet<string> dependencies
-    )
-    {
-        return new OrderedChoiceComposer(
-            group
-                .Branches
-                .Select(
-                    branch => new SequenceComposer(
-                        branch
-                            .Items
-                            .Select<BranchItemToken, IComposer>(
-                                branchItem =>
-                                {
-                                    if (branchItem.VariableName is not null)
-                                    {
-                                        if (isPartOfNestedGroup)
-                                        {
-                                            throw new PegProcessorBuildException(
-                                                $"Variable capturing is not allowed in nested groups " +
-                                                $"(variable name '{branchItem.VariableName}')."
-                                            );
-                                        }
-
-                                        if (branchItem.Quantifiable is PegGroupToken)
-                                        {
-                                            throw new PegProcessorBuildException(
-                                                $"Group is not capturable " +
-                                                $"(variable name '{branchItem.VariableName}')."
-                                            );
-                                        }
-
-                                        if (branchItem.Lookahead is not null)
-                                        {
-                                            throw new PegProcessorBuildException(
-                                                $"Capturing lookahead items is not allowed " +
-                                                $"(variable name '{branchItem.VariableName}')."
-                                            );
-                                        }
-                                    }
-
-                                    if (branchItem.Quantifier.Min < 0)
-                                    {
-                                        throw new PegProcessorBuildException(
-                                            $"Min value of quantifier must be greater or equal to zero, " +
-                                            $"'{branchItem.Quantifier}' given."
-                                        );
-                                    }
-
-                                    if (branchItem.Quantifier.Max < 1)
-                                    {
-                                        throw new PegProcessorBuildException(
-                                            $"Max value of quantifier must be greater or equal to one, " +
-                                            $"'{branchItem.Quantifier}' given."
-                                        );
-                                    }
-
-                                    if (branchItem.Quantifier.Min > branchItem.Quantifier.Max)
-                                    {
-                                        throw new PegProcessorBuildException(
-                                            $"Max value of quantifier must be greater or equal to min value, " +
-                                            $"'{branchItem.Quantifier}' given."
-                                        );
-                                    }
-
-                                    var quantifiedPieceComposer = new QuantifiedPieceComposer(
-                                        branchItem.Quantifiable switch
-                                        {
-                                            ITerminalToken terminalToken => new TerminalParser(
-                                                terminalToken switch
-                                                {
-                                                    AnyLiteralToken => AnyLiteralDetector.Instance,
-                                                    LiteralSetToken literalSet => new LiteralSetDetector(literalSet),
-                                                    LiteralToken literal => new LiteralDetector(literal),
-                                                    PrefixToken prefix => new PrefixDetector(prefix),
-                                                    InfixToken infix => new InfixDetector(infix),
-                                                    SuffixToken suffix => new SuffixDetector(suffix),
-                                                    _ => throw new PegProcessorBuildException(
-                                                        $"Unknown terminal type {terminalToken.GetType().FullName}."
-                                                    ),
-                                                }
-                                            ),
-                                            RuleReferenceToken ruleReferenceToken => CreateRuleReferenceParser(
-                                                ruleReferenceToken,
-                                                ruleSpace,
-                                                ruleSpaceDescription,
-                                                dependencies
-                                            ),
-                                            PegGroupToken groupToken => new GroupParser(
-                                                CreateGroupComposer(
-                                                    groupToken,
-                                                    ruleSpace,
-                                                    true,
-                                                    ruleSpaceDescription,
-                                                    dependencies
-                                                )
-                                            ),
-                                            _ => throw new PegProcessorBuildException(
-                                                $"Unknown quantifiable type " +
-                                                $"{branchItem.Quantifiable.GetType().FullName}."
-                                            ),
-                                        },
-                                        branchItem.Quantifier,
-                                        branchItem.VariableName
-                                    );
-
-                                    if (branchItem.Lookahead is not null)
-                                    {
-                                        return new LookaheadComposer(branchItem.Lookahead, quantifiedPieceComposer);
-                                    }
-
-                                    return quantifiedPieceComposer;
-                                }
-                            )
-                            .ToArray()
-                    )
-                )
-                .ToArray()
-        );
-    }
-
-    private RuleReferenceParser CreateRuleReferenceParser(
-        IRuleReferenceToken ruleReferenceToken,
-        IRuleSpace ruleSpace,
-        IRuleSpaceDescription ruleSpaceDescription,
-        HashSet<string> dependencies
-    )
-    {
-        var parser = new RuleReferenceParser(
-            ruleReferenceToken,
-            _bestReferenceSelectionStrategy,
-            ruleSpace
-        );
-
-        ruleSpaceDescription.ThrowIfNotExists(parser.RuleSpaceKey);
-
-        dependencies.Add(parser.RuleSpaceKey);
-
-        return parser;
     }
 }

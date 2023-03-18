@@ -1,8 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Linq;
 using DotnetNlp.RuleEngine.Core.Build.Tokenization.Tokens;
 using DotnetNlp.RuleEngine.Core.Evaluation;
+using DotnetNlp.RuleEngine.Core.Evaluation.Cache;
+using DotnetNlp.RuleEngine.Core.Evaluation.Rule;
 using DotnetNlp.RuleEngine.Core.Evaluation.Rule.Projection.Arguments;
 using DotnetNlp.RuleEngine.Core.Evaluation.Rule.Result.SelectionStrategy;
 using DotnetNlp.RuleEngine.Core.Lib.CodeAnalysis.Assemblies;
@@ -29,7 +32,7 @@ internal sealed class IntegrationTests
 
     private IRuleSpace? _ruleSpace;
 
-    [OneTimeSetUp]
+    [SetUp]
     public void OneTimeSetUp()
     {
         _bestReferenceSelectionStrategy = new CombinedStrategy(
@@ -67,6 +70,10 @@ internal sealed class IntegrationTests
                     "rule_space_test_enumerable_argument",
                     Enumerable.Empty<object>().Append(420).ToList()
                 },
+                {
+                    "mutable_parameters",
+                    new DummyMutableParameters()
+                },
             }
         );
 
@@ -77,7 +84,7 @@ internal sealed class IntegrationTests
             new []
             {
                 new MechanicsDescription("peg", new LoopBasedPegPatternTokenizer(stringInterner, errorIndexHelper), new PegProcessorFactory(_bestReferenceSelectionStrategy), typeof(PegGroupToken)),
-                new MechanicsDescription("regex", new LoopBasedRegexPatternTokenizer(stringInterner, new ErrorIndexHelper(Environment.NewLine)), new RegexProcessorFactory(OptimizationLevel.Max), typeof(RegexGroupToken)),
+                new MechanicsDescription("regex", new LoopBasedRegexPatternTokenizer(stringInterner, errorIndexHelper), new RegexProcessorFactory(OptimizationLevel.Max), typeof(RegexGroupToken)),
             }
         );
 
@@ -199,6 +206,20 @@ internal sealed class IntegrationTests
                     "возможно",
                 }
             },
+            {
+                "ReferenceToRuleFromIncludeWithReferenceToRuleFromOtherInclude",
+                new []
+                {
+                    "(<include4.patterns.rule1>)",
+                }
+            },
+            {
+                "ReferenceToRuleWithArguments",
+                new []
+                {
+                    "(<ner.any_arguments(mutable_parameters.String, mutable_parameters.Int)>)",
+                }
+            },
         };
 
         var sdn = new Dictionary<string, string>
@@ -307,19 +328,17 @@ string RegexDefinedArgs = regex#(<word = ner.digit_with_salt(parametersDigitsSal
 int Foo = peg#($ner.number_line:number)#
 {
     return number;
-}
-
-"
+}"
             },
         };
 
-        IReadOnlyCollection<RuleToken> rulesByName = phrases
+        var rulesByName = phrases
             .MapValue(patterns => $"({patterns.Select<string, string>(pattern => $"({pattern})").JoinToString(" | ")})")
             .MapValue(pattern => factory.PatternTokenizers["regex"].Tokenize(pattern, "patterns", false))
             .MapValue(
                 (ruleName, patternToken) => new RuleToken(
                     "patterns",
-                    new ResolvedCSharpTypeToken("string", typeof(string)),
+                    MatchedInputBasedProjectionToken.ReturnType,
                     ruleName,
                     Array.Empty<CSharpParameterToken>(),
                     "regex",
@@ -330,21 +349,203 @@ int Foo = peg#($ner.number_line:number)#
             .SelectValues()
             .ToArray();
 
-        IReadOnlyCollection<RuleSetToken> sdnRuleSetsByName = sdn
+        var sdnRuleSetsByName = sdn
             .MapValue((ruleSetName, ruleSet) => factory.RuleSetTokenizer.Tokenize(ruleSet, $"sdn.{ruleSetName}", true))
             .SelectValues()
             .ToArray();
 
+        var include1 = CreateIncludedRuleSpace1();
+        var include2 = CreateIncludedRuleSpace2();
+        var include3 = CreateIncludedRuleSpace3();
+        var include4 = CreateIncludedRuleSpace4();
+
         _ruleSpace = factory.Create(
+            "script",
             sdnRuleSetsByName,
             rulesByName,
             new [] { typeof(DummyStaticNerContainer) }
                 .Select(container => factory.StaticRuleFactory.ConvertStaticRuleContainerToRuleMatchers(container))
                 .Merge(),
-            new Dictionary<string, IRuleSpace>(),
+            new []
+            {
+                include1,
+                include2,
+                include4,
+            },
             _ruleSpaceArguments.Values.MapValue(argument => argument!.GetType()).ToDictionary(),
             LoadedAssembliesProvider.Instance
         );
+
+        IRuleSpace CreateIncludedRuleSpace1()
+        {
+            var includeSdn = new Dictionary<string, string>()
+            {
+                { "number1to9", Numbers0To9Ner.Instance.Definition },
+            };
+
+            var includePatterns = new Dictionary<string, string>()
+            {
+                { "rule1", "(<rule2>)" },
+                { "rule2", "(<rule3>)" },
+                { "rule3", "(.*)" },
+                { "rule4", "(.*)" },
+                { "rule5", "(.*)" },
+                { "rule6", "(.*)" },
+            };
+
+            return factory.Create(
+                "include1",
+                includeSdn
+                    .MapValue(
+                        (ruleSetName, ruleSet) => factory.RuleSetTokenizer.Tokenize(ruleSet, $"sdn.{ruleSetName}", false)
+                    )
+                    .SelectValues()
+                    .ToArray(),
+                includePatterns
+                    .MapValue(
+                        (ruleName, value) => new RuleToken(
+                            "patterns",
+                            MatchedInputBasedProjectionToken.ReturnType,
+                            ruleName,
+                            Array.Empty<CSharpParameterToken>(),
+                            "regex",
+                            factory.PatternTokenizers["regex"].Tokenize(value, "patterns", false),
+                            MatchedInputBasedProjectionToken.Instance
+                        )
+                    )
+                    .SelectValues()
+                    .ToArray(),
+                ImmutableDictionary<string, IRuleMatcher>.Empty,
+                Array.Empty<IRuleSpace>(),
+                ImmutableDictionary<string, Type>.Empty,
+                LoadedAssembliesProvider.Instance
+            );
+        }
+
+        IRuleSpace CreateIncludedRuleSpace2()
+        {
+            var includeSdn = new Dictionary<string, string>()
+            {
+                { "digit1to9", Digits0To9Ner.Instance.Definition },
+            };
+
+            var includePatterns = new Dictionary<string, string>()
+            {
+                { "rule1", "(<include1.patterns.rule5>)" },
+            };
+
+            return factory.Create(
+                "include2",
+                includeSdn
+                    .MapValue(
+                        (ruleSetName, ruleSet) => factory.RuleSetTokenizer.Tokenize(ruleSet, $"sdn.{ruleSetName}", false)
+                    )
+                    .SelectValues()
+                    .ToArray(),
+                includePatterns
+                    .MapValue(
+                        (ruleName, value) => new RuleToken(
+                            "patterns",
+                            MatchedInputBasedProjectionToken.ReturnType,
+                            ruleName,
+                            Array.Empty<CSharpParameterToken>(),
+                            "regex",
+                            factory.PatternTokenizers["regex"].Tokenize(value, "patterns", false),
+                            MatchedInputBasedProjectionToken.Instance
+                        )
+                    )
+                    .SelectValues()
+                    .ToArray(),
+                ImmutableDictionary<string, IRuleMatcher>.Empty,
+                new []
+                {
+                    include1,
+                },
+                ImmutableDictionary<string, Type>.Empty,
+                LoadedAssembliesProvider.Instance
+            );
+        }
+
+        IRuleSpace CreateIncludedRuleSpace3()
+        {
+            var includeSdn = new Dictionary<string, string>()
+            {
+                { "doctor", DoctorsNer.Instance.Definition },
+            };
+
+            var includePatterns = new Dictionary<string, string>()
+            {
+                { "rule1", "(<include1.patterns.rule5>)" },
+                { "rule2", "(<include1.patterns.rule6>)" },
+                { "rule3", "(<include2.patterns.rule1>)" },
+            };
+
+            return factory.Create(
+                "include3",
+                includeSdn
+                    .MapValue(
+                        (ruleSetName, ruleSet) => factory.RuleSetTokenizer.Tokenize(ruleSet, $"sdn.{ruleSetName}", false)
+                    )
+                    .SelectValues()
+                    .ToArray(),
+                includePatterns
+                    .MapValue(
+                        (ruleName, value) => new RuleToken(
+                            "patterns",
+                            MatchedInputBasedProjectionToken.ReturnType,
+                            ruleName,
+                            Array.Empty<CSharpParameterToken>(),
+                            "regex",
+                            factory.PatternTokenizers["regex"].Tokenize(value, "patterns", false),
+                            MatchedInputBasedProjectionToken.Instance
+                        )
+                    )
+                    .SelectValues()
+                    .ToArray(),
+                ImmutableDictionary<string, IRuleMatcher>.Empty,
+                new []
+                {
+                    include1,
+                    include2,
+                },
+                ImmutableDictionary<string, Type>.Empty,
+                LoadedAssembliesProvider.Instance
+            );
+        }
+
+        IRuleSpace CreateIncludedRuleSpace4()
+        {
+            var includePatterns = new Dictionary<string, string>()
+            {
+                { "rule1", "(<include3.patterns.rule2>|<include3.patterns.rule3>)" },
+            };
+
+            return factory.Create(
+                "include4",
+                Array.Empty<RuleSetToken>(),
+                includePatterns
+                    .MapValue(
+                        (ruleName, value) => new RuleToken(
+                            "patterns",
+                            MatchedInputBasedProjectionToken.ReturnType,
+                            ruleName,
+                            Array.Empty<CSharpParameterToken>(),
+                            "regex",
+                            factory.PatternTokenizers["regex"].Tokenize(value, "patterns", false),
+                            MatchedInputBasedProjectionToken.Instance
+                        )
+                    )
+                    .SelectValues()
+                    .ToArray(),
+                ImmutableDictionary<string, IRuleMatcher>.Empty,
+                new []
+                {
+                    include3,
+                },
+                ImmutableDictionary<string, Type>.Empty,
+                LoadedAssembliesProvider.Instance
+            );
+        }
     }
 
     [Test]
@@ -463,11 +664,39 @@ int Foo = peg#($ner.number_line:number)#
 
         if (matchResult is not null)
         {
-            Assert.AreEqual(expectedLastUsedSymbolIndex ?? (expectedIsMatched ? sequence.Length - 1 : -1), matchResult.LastUsedSymbolIndex);
+            Assert.AreEqual(expectedLastUsedSymbolIndex ?? sequence.Length - 1, matchResult.LastUsedSymbolIndex);
             Assert.AreEqual(expectedExtractedEntity, matchResult.Result.Value);
         }
     }
 
+    [Test]
+    [TestCaseSource(nameof(FindsMatchesWithMutableArguments_Cases))]
+    public void FindsMatchesWithMutableArguments(
+        string ruleKey,
+        string phrase,
+        (Action<RuleSpaceArguments>? RuleSpaceArgumentsMutation, bool ExpectedIsMatched)[] expectedResults
+    )
+    {
+        var sequence = phrase.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+        var cache = new RuleSpaceCache();
+
+        for (var index = 0; index < expectedResults.Length; index++)
+        {
+            var (ruleSpaceArgumentsMutation, expectedIsMatched) = expectedResults[index];
+
+            ruleSpaceArgumentsMutation?.Invoke(_ruleSpaceArguments!);
+
+            var isMatched = _ruleSpace![ruleKey].HasMatch(
+                sequence,
+                ruleSpaceArguments: _ruleSpaceArguments,
+                cache: cache
+            );
+
+            Assert.AreEqual(expectedIsMatched, isMatched, $"row {index}");
+        }
+    }
+
+    [Test]
     [TestCaseSource(nameof(CapturesVariables_Cases))]
     public void CapturesVariables(
         string ruleKey,
@@ -486,7 +715,69 @@ int Foo = peg#($ner.number_line:number)#
         CollectionAssert.AreEquivalent(expectedCapturedVariables, matchResult!.CapturedVariables);
     }
 
+    [Test]
+    [TestCaseSource(nameof(Prunes_Cases))]
+    public void Prunes(IReadOnlySet<string> rulesToPreserve, IReadOnlySet<string> expectedRulesToBeLeft)
+    {
+        _ruleSpace!.Prune(rulesToPreserve);
+
+        CollectionAssert.AreEquivalent(expectedRulesToBeLeft, _ruleSpace.Keys);
+    }
+
     #region Sources
+
+    #region Sources_FindsMatchesWithMutableArguments
+
+    public static object?[][] FindsMatchesWithMutableArguments_Cases()
+    {
+        return new[]
+        {
+            new object?[]
+            {
+                "patterns.ReferenceToRuleWithArguments",
+                "выход один",
+                new (Action<RuleSpaceArguments>?, bool)[]
+                {
+                    (null, false),
+                    (
+                        arguments =>
+                        {
+                            var mutableParameters = (DummyMutableParameters) arguments.Values["mutable_parameters"]!;
+
+                            mutableParameters.String = "выход";
+                            mutableParameters.Int = 1;
+                        },
+                        true
+                    ),
+                    (null, true),
+                    (
+                        arguments =>
+                        {
+                            var mutableParameters = (DummyMutableParameters) arguments.Values["mutable_parameters"]!;
+
+                            mutableParameters.String = "вход";
+                            mutableParameters.Int = 2;
+                        },
+                        false
+                    ),
+                    (null, false),
+                    (
+                        arguments =>
+                        {
+                            var mutableParameters = (DummyMutableParameters) arguments.Values["mutable_parameters"]!;
+
+                            mutableParameters.String = "выход";
+                            mutableParameters.Int = 1;
+                        },
+                        true
+                    ),
+                    (null, true),
+                },
+            },
+        };
+    }
+
+    #endregion
 
     #region Sources_CapturesVariables
 
@@ -522,6 +813,82 @@ int Foo = peg#($ner.number_line:number)#
                 {
                     {"greeting", "я приветствую тебя"},
                     {"digit", 1},
+                },
+            },
+        };
+    }
+
+    #endregion
+
+    #region Sources_Prunes
+
+    public static object?[][] Prunes_Cases()
+    {
+        return new[]
+        {
+            new object?[]
+            {
+                new HashSet<string>()
+                {
+                    "include2.patterns.rule1",
+                    "patterns.NumberComparisonWithGreeting",
+                },
+                new HashSet<string>()
+                {
+                    "include2.patterns.rule1",
+                    "include1.patterns.rule5",
+                    "patterns.NumberComparisonWithGreeting",
+                    "patterns.Hello",
+                    "ner.digit",
+                },
+            },
+            new object?[]
+            {
+                new HashSet<string>()
+                {
+                    "include1.patterns.rule1",
+                    "include1.sdn.number1to9.Number",
+                },
+                new HashSet<string>()
+                {
+                    "include1.patterns.rule1",
+                    "include1.patterns.rule2",
+                    "include1.patterns.rule3",
+                    "include1.sdn.number1to9.Number",
+                    "include1.sdn.number1to9.Number_0",
+                    "include1.sdn.number1to9.Number_1",
+                    "include1.sdn.number1to9.Number_2",
+                    "include1.sdn.number1to9.Number_3",
+                    "include1.sdn.number1to9.Number_4",
+                    "include1.sdn.number1to9.Number_5",
+                    "include1.sdn.number1to9.Number_6",
+                    "include1.sdn.number1to9.Number_7",
+                    "include1.sdn.number1to9.Number_8",
+                    "include1.sdn.number1to9.Number_9",
+                },
+            },
+            new object?[]
+            {
+                new HashSet<string>()
+                {
+                    "include2.patterns.rule1",
+                },
+                new HashSet<string>()
+                {
+                    "include2.patterns.rule1",
+                    "include1.patterns.rule5",
+                },
+            },
+            new object?[]
+            {
+                new HashSet<string>()
+                {
+                    "patterns.ReferenceToRuleFromIncludeWithReferenceToRuleFromOtherInclude",
+                },
+                new HashSet<string>()
+                {
+                    "patterns.ReferenceToRuleFromIncludeWithReferenceToRuleFromOtherInclude",
+                    "include4.patterns.rule1",
                 },
             },
         };
@@ -568,4 +935,10 @@ public sealed class DummySaltNullParameters
         Salt = null;
         RepeatTimes = null;
     }
+}
+
+public sealed class DummyMutableParameters
+{
+    public int? Int { get; set; }
+    public string? String { get; set; }
 }

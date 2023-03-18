@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using DotnetNlp.RuleEngine.Core.Evaluation.Rule;
 using DotnetNlp.RuleEngine.Core.Exceptions;
@@ -10,85 +11,92 @@ namespace DotnetNlp.RuleEngine.Core.Evaluation;
 
 internal sealed class RuleSpace : IRuleSpace
 {
+    public int Id { get; }
+    public string Name { get; }
     private readonly Dictionary<string, IRuleMatcher> _ruleMatchersByName;
-    public IReadOnlyDictionary<string, IRuleMatcher> RuleMatchersByName => _ruleMatchersByName;
+    private readonly HashSet<string> _transientRulesKeys;
     private readonly Dictionary<string, Type> _ruleResultTypesByName;
     public IReadOnlyDictionary<string, Type> RuleResultTypesByName => _ruleResultTypesByName;
-
     public IReadOnlyDictionary<string, Type> RuleSpaceParameterTypesByName { get; }
+    public IReadOnlySet<string> TransientRulesKeys => _transientRulesKeys;
 
     public IRuleMatcher this[string ruleName]
     {
-        get => ResolveRule(ruleName);
-        set => AddRule(ruleName, value);
+        get
+        {
+            if (TryGetValue(ruleName, out var ruleMatcher))
+            {
+                return ruleMatcher;
+            }
+
+            throw new RuleMatchException(
+                $"Rule space doesn't contain rule '{ruleName}'. " +
+                $"Available rules are: {Keys.Select(key => $"'{key}'").JoinToString(", ")}."
+            );
+        }
+        set
+        {
+            _ruleMatchersByName.Add(ruleName, value);
+            _ruleResultTypesByName.Add(ruleName, value.ResultDescription.ResultType);
+        }
     }
 
     public RuleSpace(
-        IReadOnlyDictionary<string, Type> ruleSpaceParameterTypesByName,
+        int id,
+        string name,
         Dictionary<string, Type> ruleResultTypesByName,
-        Dictionary<string, IRuleMatcher> ruleMatchersByName
+        Dictionary<string, IRuleMatcher> ruleMatchersByName,
+        HashSet<string> transientRulesKeys,
+        IReadOnlyDictionary<string, Type> ruleSpaceParameterTypesByName
     )
     {
-        RuleSpaceParameterTypesByName = ruleSpaceParameterTypesByName;
+        Id = id;
+        Name = name;
         _ruleResultTypesByName = ruleResultTypesByName;
         _ruleMatchersByName = ruleMatchersByName;
+        _transientRulesKeys = transientRulesKeys;
+        RuleSpaceParameterTypesByName = ruleSpaceParameterTypesByName;
     }
 
-    public IReadOnlySet<string> Prune(IReadOnlyCollection<string> neededRules)
+    public IReadOnlySet<string> Prune(IReadOnlySet<string> rulesToPreserve)
     {
         var visitedRules = new HashSet<string>();
-        var rulesToPreserve = new List<string>();
+        var rulesToPreserveWithDependencies = new List<string>();
 
-        WaltThroughDependencyGraph(neededRules);
+        WaltThroughDependencyGraph(rulesToPreserve);
 
-        var removedRules = new HashSet<string>();
-
-        foreach (var pair in this.ExceptBy(rulesToPreserve, pair => pair.Key))
-        {
-            Remove(pair);
-            removedRules.Add(pair.Key);
-        }
-
-        return removedRules;
-
-        void WaltThroughDependencyGraph(IReadOnlyCollection<string> rules)
+        void WaltThroughDependencyGraph(IReadOnlySet<string> rules)
         {
             foreach (var rule in rules)
             {
                 if (!visitedRules.Contains(rule))
                 {
                     visitedRules.Add(rule);
-                    rulesToPreserve.Add(rule);
-                    WaltThroughDependencyGraph(this[rule].Dependencies);
+                    rulesToPreserveWithDependencies.Add(rule);
+
+                    if (TryGetValue(rule, out var ruleMatcher))
+                    {
+                        WaltThroughDependencyGraph(ruleMatcher.GetDependencies(this));
+                    }
                 }
             }
         }
 
-    }
+        var removedRules = new HashSet<string>();
 
-    private void AddRule(string ruleName, IRuleMatcher value)
-    {
-        _ruleMatchersByName.Add(ruleName, value);
-        _ruleResultTypesByName.Add(ruleName, value.ResultDescription.ResultType);
-    }
-
-    private IRuleMatcher ResolveRule(string ruleName)
-    {
-        if (RuleMatchersByName.TryGetValue(ruleName, out var ruleMatcher))
+        foreach (var pair in this.ExceptBy(rulesToPreserveWithDependencies, pair => pair.Key).ToArray())
         {
-            return ruleMatcher;
+            Remove(pair);
+            removedRules.Add(pair.Key);
         }
 
-        throw new RuleMatchException(
-            $"Rule space doesn't contain rule {ruleName}. " +
-            $"Available rules are: {RuleMatchersByName.Keys.JoinToString(", ")}."
-        );
+        return removedRules;
     }
 
     public int Count => _ruleMatchersByName.Count;
     public bool IsReadOnly => ((ICollection<KeyValuePair<string, IRuleMatcher>>) _ruleMatchersByName).IsReadOnly;
-    public ICollection<string> Keys => ((IDictionary<string, IRuleMatcher>) _ruleMatchersByName).Keys;
-    public ICollection<IRuleMatcher> Values => ((IDictionary<string, IRuleMatcher>) _ruleMatchersByName).Values;
+    public ICollection<string> Keys => _ruleMatchersByName.Keys;
+    public ICollection<IRuleMatcher> Values => _ruleMatchersByName.Values;
 
     IEnumerator IEnumerable.GetEnumerator()
     {
@@ -102,12 +110,13 @@ internal sealed class RuleSpace : IRuleSpace
 
     public void Add(KeyValuePair<string, IRuleMatcher> item)
     {
-        AddRule(item.Key, item.Value);
+        this[item.Key] = item.Value;
     }
 
     public void Clear()
     {
         _ruleMatchersByName.Clear();
+        _transientRulesKeys.Clear();
         _ruleResultTypesByName.Clear();
     }
 
@@ -116,34 +125,37 @@ internal sealed class RuleSpace : IRuleSpace
         return _ruleMatchersByName.Contains(item);
     }
 
-    void ICollection<KeyValuePair<string, IRuleMatcher>>.CopyTo(KeyValuePair<string, IRuleMatcher>[] array, int arrayIndex)
+    public void CopyTo(KeyValuePair<string, IRuleMatcher>[] array, int arrayIndex)
     {
         ((ICollection<KeyValuePair<string, IRuleMatcher>>) _ruleMatchersByName).CopyTo(array, arrayIndex);
     }
 
     public bool Remove(KeyValuePair<string, IRuleMatcher> item)
     {
-        return ((ICollection<KeyValuePair<string, IRuleMatcher>>) _ruleMatchersByName).Remove(item) &&
-               _ruleMatchersByName.Remove(item.Key);
+        _transientRulesKeys.Remove(item.Key);
+
+        return _ruleMatchersByName.Remove(item.Key) && _ruleResultTypesByName.Remove(item.Key);
     }
 
     public void Add(string key, IRuleMatcher value)
     {
-        AddRule(key, value);
+        this[key] = value;
     }
 
     public bool ContainsKey(string key)
     {
-        return ((IDictionary<string, IRuleMatcher>) _ruleMatchersByName).ContainsKey(key);
+        return _ruleMatchersByName.ContainsKey(key);
     }
 
     public bool Remove(string key)
     {
-        return ((IDictionary<string, IRuleMatcher>) _ruleMatchersByName).Remove(key);
+        _transientRulesKeys.Remove(key);
+
+        return _ruleMatchersByName.Remove(key);
     }
 
-    public bool TryGetValue(string key, out IRuleMatcher value)
+    public bool TryGetValue(string key, [MaybeNullWhen(false)] out IRuleMatcher value)
     {
-        return ((IDictionary<string, IRuleMatcher>) _ruleMatchersByName).TryGetValue(key, out value!);
+        return _ruleMatchersByName.TryGetValue(key, out value);
     }
 }

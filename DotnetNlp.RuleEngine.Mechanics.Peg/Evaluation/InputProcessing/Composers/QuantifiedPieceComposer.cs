@@ -31,22 +31,21 @@ internal sealed class QuantifiedPieceComposer : IComposer
     public bool Match(
         string[] sequence,
         ref int index,
-        in PegInputProcessorDataCollector dataCollector,
+        in PegProcessorDataCollector dataCollector,
         RuleSpaceArguments? ruleSpaceArguments,
         IRuleSpaceCache? cache
     )
     {
-        var resultsCollector = _variableName is null
-            ? null
-            : new QuantifiableResultsCollector(_quantifiable.ResultType, _quantifier.Max);
+        var hasToCaptureVariable = _variableName is not null;
+        var resultsCollector = hasToCaptureVariable
+            ? new QuantifiableResultsCollector(_quantifiable.ResultType, _quantifier.Max)
+            : null;
 
         if (Quantify(sequence, ref index, dataCollector, resultsCollector, ruleSpaceArguments, cache))
         {
-            if (resultsCollector is not null)
+            if (hasToCaptureVariable)
             {
-                dataCollector
-                    .CapturedVariables
-                    .Add(_variableName!, resultsCollector.GetResult());
+                dataCollector.AddCapturedVariable(_variableName!, resultsCollector!.GetOverallResult());
             }
 
             return true;
@@ -63,7 +62,7 @@ internal sealed class QuantifiedPieceComposer : IComposer
     private bool Quantify(
         string[] sequence,
         ref int index,
-        in PegInputProcessorDataCollector dataCollector,
+        in PegProcessorDataCollector dataCollector,
         in QuantifiableResultsCollector? resultsCollector,
         RuleSpaceArguments? ruleSpaceArguments,
         IRuleSpaceCache? cache
@@ -83,7 +82,7 @@ internal sealed class QuantifiedPieceComposer : IComposer
             if (isMatched)
             {
                 dataCollector.ExplicitlyMatchedSymbolsCount += explicitlyMatchedSymbolsCount;
-                resultsCollector?.LocalResults.Add(result);
+                resultsCollector?.AddLocalResult(result);
             }
             else
             {
@@ -107,7 +106,7 @@ internal sealed class QuantifiedPieceComposer : IComposer
                 if (isMatched)
                 {
                     dataCollector.ExplicitlyMatchedSymbolsCount += explicitlyMatchedSymbolsCount;
-                    resultsCollector?.LocalResults.Add(result);
+                    resultsCollector?.AddLocalResult(result);
                 }
                 else
                 {
@@ -121,7 +120,7 @@ internal sealed class QuantifiedPieceComposer : IComposer
         while (_quantifiable.TryParse(sequence, ref index, out var explicitlyMatchedSymbolsCount, out var result, ruleSpaceArguments: ruleSpaceArguments, cache: cache))
         {
             dataCollector.ExplicitlyMatchedSymbolsCount += explicitlyMatchedSymbolsCount;
-            resultsCollector?.LocalResults.Add(result);
+            resultsCollector?.AddLocalResult(result);
         }
 
         return true;
@@ -130,35 +129,52 @@ internal sealed class QuantifiedPieceComposer : IComposer
     private class QuantifiableResultsCollector
     {
         private readonly Type _unaryResultType;
-        private readonly bool _resultTypeIsCollection;
-        public List<object?> LocalResults { get; }
+        private readonly int? _maxResultsCount;
+        private List<object?>? _localResults;
 
-        public QuantifiableResultsCollector(Type unaryResultType, int? resultsCount)
+        public QuantifiableResultsCollector(Type unaryResultType, int? maxResultsCount)
         {
             _unaryResultType = unaryResultType;
-            _resultTypeIsCollection = resultsCount != 1;
-            LocalResults = resultsCount is null ? new List<object?>() : new List<object?>(resultsCount.Value);
+            _maxResultsCount = maxResultsCount;
+            _localResults = null;
         }
 
-        public object? GetResult()
+        public void AddLocalResult(object? result)
         {
-            if (!_resultTypeIsCollection)
+            _localResults ??= _maxResultsCount is null
+                ? new List<object?>()
+                : new List<object?>(_maxResultsCount.Value);
+
+            _localResults.Add(result);
+        }
+
+        public object? GetOverallResult()
+        {
+            if (_maxResultsCount == 1)
             {
-                if (LocalResults.Count > 1)
+                if (_localResults is null)
+                {
+                    return default;
+                }
+
+                if (_localResults.Count > 1)
                 {
                     throw new PegProcessorMatchException(
-                        $"Invalid matching results count {LocalResults.Count} (expected 0 or 1)."
+                        $"Invalid matching results count {_localResults.Count} (expected 0 or 1)."
                     );
                 }
 
-                return LocalResults.SingleOrDefault();
+                return _localResults.SingleOrDefault();
             }
 
             var (list, addMethod) = CSharpCodeHelper.CreateGenericList(_unaryResultType);
 
-            foreach (var unaryResult in LocalResults.Where(localResult => localResult is not null))
+            if (_localResults is not null)
             {
-                addMethod(unaryResult);
+                foreach (var unaryResult in _localResults.Where(localResult => localResult is not null))
+                {
+                    addMethod(unaryResult);
+                }
             }
 
             return list;

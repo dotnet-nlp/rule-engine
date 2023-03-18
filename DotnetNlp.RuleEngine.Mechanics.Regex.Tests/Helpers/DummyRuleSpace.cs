@@ -17,11 +17,18 @@ public class DummyRuleSpace : IRuleSpace
     {
     }
 
+    public int Id { get; } = 1;
+    public string Name { get; } = Guid.NewGuid().ToString();
     public IReadOnlyDictionary<string, Type> RuleSpaceParameterTypesByName => ImmutableDictionary<string, Type>.Empty;
     public IReadOnlyDictionary<string, Type> RuleResultTypesByName => ImmutableDictionary<string, Type>.Empty;
-    public IReadOnlyDictionary<string, IRuleMatcher> RuleMatchersByName => ImmutableDictionary<string, IRuleMatcher>.Empty;
+    public IReadOnlySet<string> TransientRulesKeys => ImmutableHashSet<string>.Empty;
 
-    public IReadOnlySet<string> Prune(IReadOnlyCollection<string> rulesToLeave)
+    public IReadOnlySet<string> Prune(IReadOnlySet<string> rulesToPreserve)
+    {
+        throw new NotImplementedException();
+    }
+
+    public IEnumerable<KeyValuePair<string, IRuleMatcher>> GetNonTransientRules()
     {
         throw new NotImplementedException();
     }
