@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using DotnetNlp.RuleEngine.Core.Build.Tokenization.Tokens;
 using DotnetNlp.RuleEngine.Core.Evaluation;
 using DotnetNlp.RuleEngine.Mechanics.Regex.Build.Tokenization.Tokens;
@@ -24,7 +25,6 @@ namespace DotnetNlp.RuleEngine.Mechanics.Regex.Build.InputProcessing.Automaton;
 /// This means, if the goal is to build independent automatons, the instance of this factory
 /// should be created per each such operation. Otherwise, the same instance should be reused.
 /// </remarks>
-// todo add token validation somewhere
 internal sealed class RegexAutomatonBuilder
 {
     private readonly RegexGroupToken _groupToken;
@@ -42,16 +42,21 @@ internal sealed class RegexAutomatonBuilder
         _ruleSpace = ruleSpace;
     }
 
-    public RegexAutomaton Build()
+    public (RegexAutomaton Automaton, IReadOnlySet<string> Dependencies) Build()
     {
-        return BuildGroupAutomaton(_groupToken);
+        var dependencies = new HashSet<string>();
+        var automaton = BuildGroupAutomaton(_groupToken, dependencies);
+
+        return (automaton, dependencies);
     }
 
     private RegexAutomaton BuildGroupAutomaton(
         RegexGroupToken groupToken,
+        HashSet<string> dependencies,
         (RegexAutomatonState StartState, int EndStateOutgoingTransitionsCount, int AdditionalEndStateIncomingTransitionsCount)? parent = null
     )
     {
+
         var groupAutomaton = new RegexAutomaton(
             parent?.StartState ?? new RegexAutomatonState(NextStateId, groupToken.Branches.Length, 0),
             new RegexAutomatonState(
@@ -97,7 +102,8 @@ internal sealed class RegexAutomatonBuilder
                     QuantifiableBranchItemToken quantifiable => BuildQuantifiableAutomaton(
                         quantifiable,
                         previousState,
-                        endStateOutgoingTransitionsCount
+                        endStateOutgoingTransitionsCount,
+                        dependencies
                     ),
                     _ => throw new RegexProcessorBuildException($"Unknown branch item type {currentBranchItem.GetType().FullName}."),
                 };
@@ -169,7 +175,8 @@ internal sealed class RegexAutomatonBuilder
     private RegexAutomatonState BuildQuantifiableAutomaton(
         QuantifiableBranchItemToken branchItem,
         RegexAutomatonState startState,
-        int endStateOutgoingTransitionsCount
+        int endStateOutgoingTransitionsCount,
+        HashSet<string> dependencies
     )
     {
         var min = branchItem.Quantifier.Min;
@@ -271,6 +278,7 @@ internal sealed class RegexAutomatonBuilder
             {
                 return BuildGroupAutomaton(
                     groupToken,
+                    dependencies,
                     (
                         quantifiableStartState,
                         quantifiableEndStateOutgoingTransitionsCount,
@@ -279,7 +287,7 @@ internal sealed class RegexAutomatonBuilder
                 ).EndState;
             }
 
-            if (quantifiableToken is RuleReferenceToken ruleReferenceToken)
+            if (quantifiableToken is IRuleReferenceToken ruleReferenceToken)
             {
                 var variableName = branchItem.VariableName;
 
@@ -291,6 +299,7 @@ internal sealed class RegexAutomatonBuilder
                 {
                     pairedPayloads ??= CreateNerPayloads(variableName, ruleReferenceToken);
                 }
+                dependencies.Add(ruleReferenceToken.GetRuleSpaceKey());
             }
             else if (quantifiableToken is ITerminalToken terminalToken)
             {

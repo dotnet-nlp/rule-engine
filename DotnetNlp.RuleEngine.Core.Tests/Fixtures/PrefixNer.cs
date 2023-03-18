@@ -42,7 +42,7 @@ internal static class PrefixNer
         ),
         new []
         {
-            NerEnvironment.Mechanics.Peg,
+            StaticResources.PegMechanics(),
         }
     );
 }

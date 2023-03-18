@@ -1925,7 +1925,7 @@ internal static class RelativeTimeSpanNer
         ),
         new []
         {
-            NerEnvironment.Mechanics.Peg,
+            StaticResources.PegMechanics(),
         }
     );
 }

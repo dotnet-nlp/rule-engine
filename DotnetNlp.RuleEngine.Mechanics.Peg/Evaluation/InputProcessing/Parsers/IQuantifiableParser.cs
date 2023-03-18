@@ -8,6 +8,7 @@ namespace DotnetNlp.RuleEngine.Mechanics.Peg.Evaluation.InputProcessing.Parsers;
 internal interface IQuantifiableParser : IUsedWordsProvider
 {
     Type ResultType { get; }
+
     bool TryParse(
         string[] sequence,
         ref int index,

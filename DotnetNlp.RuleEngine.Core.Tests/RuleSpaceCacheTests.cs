@@ -186,7 +186,7 @@ internal sealed class RuleSpaceCacheTests
 
     #endregion
 
-    #region Sources_Overrides
+    #region Sources_ThrowsOnDuplicate
 
     public static object?[][] ThrowsOnDuplicate_Mixed()
     {

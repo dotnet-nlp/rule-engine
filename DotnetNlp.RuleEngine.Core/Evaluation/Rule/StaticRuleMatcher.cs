@@ -14,6 +14,7 @@ public sealed class StaticRuleMatcher<TResult> : IRuleMatcher
     private readonly Func<IEnumerable<string>> _usedWordsProvider;
     private readonly Func<object?[], IEnumerable<(TResult Result, int LastUsedSymbolIndex)>> _ruleEvaluator;
 
+    public IReadOnlySet<string> Dependencies => ImmutableHashSet<string>.Empty;
     public RuleParameters Parameters { get; }
     public RuleMatchResultDescription ResultDescription { get; }
 

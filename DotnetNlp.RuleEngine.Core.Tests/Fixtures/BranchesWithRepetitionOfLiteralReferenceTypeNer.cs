@@ -59,7 +59,7 @@ internal static class BranchesWithRepetitionOfLiteralReferenceTypeNer
         ),
         new []
         {
-            NerEnvironment.Mechanics.Peg,
+            StaticResources.PegMechanics(),
         }
     );
 }

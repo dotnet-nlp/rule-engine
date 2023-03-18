@@ -10,6 +10,7 @@ namespace DotnetNlp.RuleEngine.Core.Evaluation.Rule;
 
 public interface IRuleMatcher : IUsedWordsProvider
 {
+    IReadOnlySet<string> Dependencies { get; }
     RuleParameters Parameters { get; }
     RuleMatchResultDescription ResultDescription { get; }
     RuleMatchResultCollection Match(
@@ -19,7 +20,6 @@ public interface IRuleMatcher : IUsedWordsProvider
         RuleArguments? ruleArguments = null,
         IRuleSpaceCache? cache = null
     );
-
     RuleMatchResultCollection MatchAndProject(
         string[] sequence,
         int firstSymbolIndex = 0,

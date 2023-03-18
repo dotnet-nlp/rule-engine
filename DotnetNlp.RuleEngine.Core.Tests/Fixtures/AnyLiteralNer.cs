@@ -42,7 +42,7 @@ internal static class AnyLiteralNer
         ),
         new []
         {
-            NerEnvironment.Mechanics.Peg,
+            StaticResources.PegMechanics(),
         }
     );
 }

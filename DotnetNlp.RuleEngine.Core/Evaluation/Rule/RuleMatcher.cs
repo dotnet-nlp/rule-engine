@@ -16,6 +16,7 @@ internal sealed class RuleMatcher : IRuleMatcher
     private readonly IRuleProjection _projection;
     private readonly CapturedVariablesParameters _capturedVariablesParameters;
 
+    public IReadOnlySet<string> Dependencies => _inputProcessor.GetDependencies();
     public RuleParameters Parameters { get; }
     public RuleMatchResultDescription ResultDescription { get; }
 

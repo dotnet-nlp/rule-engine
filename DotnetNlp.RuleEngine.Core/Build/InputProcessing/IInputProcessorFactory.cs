@@ -7,7 +7,11 @@ namespace DotnetNlp.RuleEngine.Core.Build.InputProcessing;
 
 public interface IInputProcessorFactory
 {
-    IInputProcessor Create(IPatternToken patternToken, IRuleSpace ruleSpace, IRuleSpaceDescription ruleSpaceDescription);
+    IInputProcessor Create(
+        IPatternToken patternToken,
+        IRuleSpace ruleSpace,
+        IRuleSpaceDescription ruleSpaceDescription
+    );
 
     RuleCapturedVariables ExtractOwnCapturedVariables(
         IPatternToken patternToken,

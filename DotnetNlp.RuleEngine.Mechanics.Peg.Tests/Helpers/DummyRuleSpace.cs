@@ -21,6 +21,11 @@ public class DummyRuleSpace : IRuleSpace
     public IReadOnlyDictionary<string, Type> RuleResultTypesByName => ImmutableDictionary<string, Type>.Empty;
     public IReadOnlyDictionary<string, IRuleMatcher> RuleMatchersByName => ImmutableDictionary<string, IRuleMatcher>.Empty;
 
+    public IReadOnlySet<string> Prune(IReadOnlyCollection<string> rulesToLeave)
+    {
+        throw new NotImplementedException();
+    }
+
     public IRuleMatcher this[string ruleName]
     {
         get => throw new Exception();

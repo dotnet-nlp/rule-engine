@@ -42,7 +42,7 @@ internal static class InfixNer
         ),
         new []
         {
-            NerEnvironment.Mechanics.Peg,
+            StaticResources.PegMechanics(),
         }
     );
 }

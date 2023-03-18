@@ -34,6 +34,38 @@ internal sealed class RuleSpace : IRuleSpace
         _ruleMatchersByName = ruleMatchersByName;
     }
 
+    public IReadOnlySet<string> Prune(IReadOnlyCollection<string> neededRules)
+    {
+        var visitedRules = new HashSet<string>();
+        var rulesToPreserve = new List<string>();
+
+        WaltThroughDependencyGraph(neededRules);
+
+        var removedRules = new HashSet<string>();
+
+        foreach (var pair in this.ExceptBy(rulesToPreserve, pair => pair.Key))
+        {
+            Remove(pair);
+            removedRules.Add(pair.Key);
+        }
+
+        return removedRules;
+
+        void WaltThroughDependencyGraph(IReadOnlyCollection<string> rules)
+        {
+            foreach (var rule in rules)
+            {
+                if (!visitedRules.Contains(rule))
+                {
+                    visitedRules.Add(rule);
+                    rulesToPreserve.Add(rule);
+                    WaltThroughDependencyGraph(this[rule].Dependencies);
+                }
+            }
+        }
+
+    }
+
     private void AddRule(string ruleName, IRuleMatcher value)
     {
         _ruleMatchersByName.Add(ruleName, value);

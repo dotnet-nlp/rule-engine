@@ -117,7 +117,7 @@ internal static class BranchesWithRepetitionOfLiteralValueTypeNer
         ),
         new []
         {
-            NerEnvironment.Mechanics.Peg,
+            StaticResources.PegMechanics(),
         }
     );
 }

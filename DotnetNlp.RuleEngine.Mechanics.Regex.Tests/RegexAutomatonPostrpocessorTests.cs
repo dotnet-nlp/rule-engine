@@ -52,7 +52,7 @@ internal sealed class RegexAutomatonPostprocessorTests
     [TestCase("(「маркер」 один*){2,}")]
     public void FailsWithLoopError(string regex)
     {
-        var automaton = new RegexAutomatonBuilder(
+        var (automaton, _) = new RegexAutomatonBuilder(
             (RegexGroupToken) StaticResources.Tokenizer.Tokenize(regex, null, false),
             DummyRuleSpace.Instance
         ).Build();
@@ -146,7 +146,7 @@ internal sealed class RegexAutomatonPostprocessorTests
         OptimizationLevel optimizationLevel
     )
     {
-        var automaton = new RegexAutomatonBuilder(
+        var (automaton, _) = new RegexAutomatonBuilder(
             (RegexGroupToken) StaticResources.Tokenizer.Tokenize(regex, null, false),
             DummyRuleSpace.Instance
         ).Build();

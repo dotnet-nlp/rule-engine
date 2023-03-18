@@ -137,7 +137,7 @@ internal sealed class RuleMatcherTests
             () => new RuleSpaceFactory(
                 new []
                 {
-                    NerEnvironment.Mechanics.Peg,
+                    StaticResources.PegMechanics(),
                 }
             ).Create(
                 new[] { ruleSetToken },
@@ -2008,7 +2008,7 @@ internal sealed class RuleMatcherTests
                     {
                         new RuleToken(
                             null,
-                            new ClassicCSharpTypeToken(new CSharpTypeNameWithNamespaceToken("void"), Array.Empty<ICSharpTypeToken>()),
+                            VoidProjectionToken.ReturnType,
                             "Foo",
                             Array.Empty<CSharpParameterToken>(),
                             "peg",
@@ -2032,7 +2032,7 @@ internal sealed class RuleMatcherTests
                         ),
                         new RuleToken(
                             null,
-                            new ClassicCSharpTypeToken(new CSharpTypeNameWithNamespaceToken("void"), Array.Empty<ICSharpTypeToken>()),
+                            VoidProjectionToken.ReturnType,
                             "Foo",
                             Array.Empty<CSharpParameterToken>(),
                             "peg",

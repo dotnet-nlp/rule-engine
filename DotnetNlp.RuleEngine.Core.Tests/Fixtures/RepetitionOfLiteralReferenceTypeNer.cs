@@ -48,7 +48,7 @@ internal static class RepetitionOfLiteralReferenceTypeNer
         ),
         new []
         {
-            NerEnvironment.Mechanics.Peg,
+            StaticResources.PegMechanics(),
         }
     );
 }

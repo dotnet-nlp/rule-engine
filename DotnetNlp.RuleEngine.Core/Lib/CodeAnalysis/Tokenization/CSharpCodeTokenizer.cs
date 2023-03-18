@@ -50,6 +50,7 @@ public sealed class CSharpCodeTokenizer
             throw new RuleEngineTokenizationException("C# type token is null.", source);
         }
 
+        // todo: convert trivial ClassicCSharpTypeToken to ResolvedCSharpTypeToken here
         if (result.Result is not ICSharpTypeToken cSharpTypeToken)
         {
             throw new RuleEngineTokenizationException($"C# type token is of unexpected type '{result.Result.GetType().Name}'.", source);

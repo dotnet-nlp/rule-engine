@@ -5,7 +5,6 @@ using System.Linq;
 using DotnetNlp.RuleEngine.Core;
 using DotnetNlp.RuleEngine.Core.Evaluation;
 using DotnetNlp.RuleEngine.Core.Evaluation.Rule;
-using DotnetNlp.RuleEngine.Core.Evaluation.Rule.Result;
 using DotnetNlp.RuleEngine.Core.Lib.Common.Helpers;
 using DotnetNlp.RuleEngine.Mechanics.Regex.Build.InputProcessing.Automaton.Optimization;
 using DotnetNlp.RuleEngine.Mechanics.Regex.Build.Tokenization.Tokens;

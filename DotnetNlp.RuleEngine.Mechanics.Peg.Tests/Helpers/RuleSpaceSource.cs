@@ -57,7 +57,7 @@ internal sealed class RuleSpaceSource
                 .MapValue(
                     (ruleName, rulePattern) => new RuleToken(
                         null,
-                        new ClassicCSharpTypeToken(new CSharpTypeNameWithNamespaceToken("void"), Array.Empty<ICSharpTypeToken>()),
+                        VoidProjectionToken.ReturnType,
                         ruleName,
                         Array.Empty<CSharpParameterToken>(),
                         "peg",

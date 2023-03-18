@@ -385,7 +385,7 @@ internal static class Digits0To9Ner
         ),
         new []
         {
-            NerEnvironment.Mechanics.Peg,
+            StaticResources.PegMechanics(),
         }
     );
 }

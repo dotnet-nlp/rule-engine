@@ -20,22 +20,8 @@ namespace DotnetNlp.RuleEngine.Core.Tests;
 [TestFixture(TestOf = typeof(LoopBasedRuleSetTokenizer))]
 internal sealed class RuleSetTokenizerTests
 {
-    private readonly LoopBasedRuleSetTokenizer _tokenizer = new(
-        new Dictionary<string, IPatternTokenizer>
-        {
-            {NerEnvironment.Mechanics.Dummy.Key, NerEnvironment.Mechanics.Dummy.Tokenizer},
-        },
-        NerEnvironment.ErrorIndexHelper
-    );
-
-    private readonly LoopBasedRuleSetTokenizer _realTokenizer = new(
-        new Dictionary<string, IPatternTokenizer>
-        {
-            {NerEnvironment.Mechanics.Peg.Key, NerEnvironment.Mechanics.Peg.Tokenizer},
-            {NerEnvironment.Mechanics.Regex.Key, NerEnvironment.Mechanics.Regex.Tokenizer},
-        },
-        NerEnvironment.ErrorIndexHelper
-    );
+    private readonly LoopBasedRuleSetTokenizer _tokenizer = StaticResources.DummyRuleSetTokenizer;
+    private readonly LoopBasedRuleSetTokenizer _realTokenizer = StaticResources.RuleSetTokenizer;
 
     private static readonly IReadOnlyDictionary<string, RuleSetContainer> RuleSetsByKey = new Dictionary<string, RuleSetContainer>
     {

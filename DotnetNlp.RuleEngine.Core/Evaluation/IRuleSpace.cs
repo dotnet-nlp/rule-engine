@@ -9,4 +9,5 @@ public interface IRuleSpace : IDictionary<string, IRuleMatcher>
     IReadOnlyDictionary<string, Type> RuleSpaceParameterTypesByName { get; }
     IReadOnlyDictionary<string, Type> RuleResultTypesByName { get; }
     IReadOnlyDictionary<string, IRuleMatcher> RuleMatchersByName { get; }
+    IReadOnlySet<string> Prune(IReadOnlyCollection<string> rulesToLeave);
 }

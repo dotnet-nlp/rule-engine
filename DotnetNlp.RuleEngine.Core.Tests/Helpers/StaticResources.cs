@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using DotnetNlp.RuleEngine.Core.Build;
 using DotnetNlp.RuleEngine.Core.Build.InputProcessing;
 using DotnetNlp.RuleEngine.Core.Build.InputProcessing.Models;
@@ -20,37 +21,60 @@ using DotnetNlp.RuleEngine.Mechanics.Regex.Build.Tokenization.Tokens;
 
 namespace DotnetNlp.RuleEngine.Core.Tests.Helpers;
 
-public static class NerEnvironment
+internal static class StaticResources
 {
-    public static readonly ErrorIndexHelper ErrorIndexHelper = new("\r\n");
+    public static readonly StringInterner StringInterner = new();
+    public static readonly ErrorIndexHelper ErrorIndexHelper = new ErrorIndexHelper("\r\n");
+    public static readonly IResultSelectionStrategy ResultSelectionStrategy = new CombinedStrategy(
+        new IResultSelectionStrategy[]
+        {
+            new MaxExplicitSymbolsStrategy(),
+            new MaxProgressStrategy(),
+        }
+    );
 
-    public static class Mechanics
+    public static readonly IPatternTokenizer RegexTokenizer = new LoopBasedRegexPatternTokenizer(StringInterner, ErrorIndexHelper);
+    public static readonly IPatternTokenizer PegTokenizer = new LoopBasedPegPatternTokenizer(StringInterner, ErrorIndexHelper);
+    public static readonly LoopBasedRuleSetTokenizer RuleSetTokenizer = new (
+        new Dictionary<string, IPatternTokenizer>
+        {
+            {PegMechanics().Key, PegMechanics().Tokenizer},
+            {RegexMechanics().Key, RegexMechanics().Tokenizer},
+        },
+        ErrorIndexHelper
+    );
+    public static readonly LoopBasedRuleSetTokenizer DummyRuleSetTokenizer = new(
+        new Dictionary<string, IPatternTokenizer>
+        {
+            {DummyMechanics().Key, DummyMechanics().Tokenizer},
+        },
+        ErrorIndexHelper
+    );
+
+    public static MechanicsDescription RegexMechanics(OptimizationLevel optimizationLevel = OptimizationLevel.Min)
     {
-        private static readonly StringInterner StringInterner = new();
-
-        public static readonly MechanicsDescription Peg = new(
-            "peg",
-            new LoopBasedPegPatternTokenizer(StringInterner, ErrorIndexHelper),
-            new PegProcessorFactory(
-                new CombinedStrategy(
-                    new IResultSelectionStrategy[]
-                    {
-                        new MaxExplicitSymbolsStrategy(),
-                        new MaxProgressStrategy(),
-                    }
-                )
-            ),
-            typeof(PegGroupToken)
-        );
-
-        public static readonly MechanicsDescription Regex = new(
+        return new MechanicsDescription(
             "regex",
-            new LoopBasedRegexPatternTokenizer(StringInterner, ErrorIndexHelper),
-            new RegexProcessorFactory(OptimizationLevel.Max),
+            RegexTokenizer,
+            new RegexProcessorFactory(optimizationLevel),
             typeof(RegexGroupToken)
         );
+    }
 
-        public static MechanicsDescription Dummy { get; } = new(
+    public static MechanicsDescription PegMechanics(IResultSelectionStrategy? resultSelectionStrategy = null)
+    {
+        return new MechanicsDescription(
+            "peg",
+            PegTokenizer,
+            new PegProcessorFactory(resultSelectionStrategy ?? ResultSelectionStrategy),
+            typeof(PegGroupToken)
+        );
+    }
+
+    
+    public static MechanicsDescription DummyMechanics()
+    {
+        return new MechanicsDescription(
             "dummy",
             new DummyTokenizer(),
             new DummyProcessorFactory(),

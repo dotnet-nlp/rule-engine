@@ -8,6 +8,7 @@ using DotnetNlp.RuleEngine.Core.Build.Tokenization.Tokens;
 using DotnetNlp.RuleEngine.Core.Evaluation;
 using DotnetNlp.RuleEngine.Core.Evaluation.InputProcessing;
 using DotnetNlp.RuleEngine.Core.Evaluation.Rule.Result.SelectionStrategy;
+using DotnetNlp.RuleEngine.Core.Exceptions;
 using DotnetNlp.RuleEngine.Mechanics.Peg.Build.Tokenization.Tokens;
 using DotnetNlp.RuleEngine.Mechanics.Peg.Evaluation.InputProcessing;
 using DotnetNlp.RuleEngine.Mechanics.Peg.Evaluation.InputProcessing.Composers;
@@ -34,7 +35,21 @@ public sealed class PegProcessorFactory : IInputProcessorFactory
     {
         var pegGroupToken = (PegGroupToken) patternToken;
 
-        return new PegProcessor(CreateGroupComposer(pegGroupToken, ruleSpace, false, ruleSpaceDescription));
+        try
+        {
+            var dependencies = new HashSet<string>();
+            var root = CreateGroupComposer(pegGroupToken, ruleSpace, false, ruleSpaceDescription, dependencies);
+
+            return new PegProcessor(root, dependencies);
+        }
+        catch (RuleBuildException exception) when (exception is not PegProcessorBuildException)
+        {
+            throw;
+        }
+        catch (Exception exception) when (exception is not PegProcessorBuildException)
+        {
+            throw new PegProcessorBuildException($"Failed to create {nameof(PegProcessor)}.", exception);
+        }
     }
 
     public RuleCapturedVariables ExtractOwnCapturedVariables(
@@ -119,7 +134,8 @@ public sealed class PegProcessorFactory : IInputProcessorFactory
         PegGroupToken group,
         IRuleSpace ruleSpace,
         bool isPartOfNestedGroup,
-        IRuleSpaceDescription ruleSpaceDescription
+        IRuleSpaceDescription ruleSpaceDescription,
+        HashSet<string> dependencies
     )
     {
         return new OrderedChoiceComposer(
@@ -203,10 +219,17 @@ public sealed class PegProcessorFactory : IInputProcessorFactory
                                             RuleReferenceToken ruleReferenceToken => CreateRuleReferenceParser(
                                                 ruleReferenceToken,
                                                 ruleSpace,
-                                                ruleSpaceDescription
+                                                ruleSpaceDescription,
+                                                dependencies
                                             ),
                                             PegGroupToken groupToken => new GroupParser(
-                                                CreateGroupComposer(groupToken, ruleSpace, true, ruleSpaceDescription)
+                                                CreateGroupComposer(
+                                                    groupToken,
+                                                    ruleSpace,
+                                                    true,
+                                                    ruleSpaceDescription,
+                                                    dependencies
+                                                )
                                             ),
                                             _ => throw new PegProcessorBuildException(
                                                 $"Unknown quantifiable type " +
@@ -235,7 +258,8 @@ public sealed class PegProcessorFactory : IInputProcessorFactory
     private RuleReferenceParser CreateRuleReferenceParser(
         IRuleReferenceToken ruleReferenceToken,
         IRuleSpace ruleSpace,
-        IRuleSpaceDescription ruleSpaceDescription
+        IRuleSpaceDescription ruleSpaceDescription,
+        HashSet<string> dependencies
     )
     {
         var parser = new RuleReferenceParser(
@@ -245,6 +269,8 @@ public sealed class PegProcessorFactory : IInputProcessorFactory
         );
 
         ruleSpaceDescription.ThrowIfNotExists(parser.RuleSpaceKey);
+
+        dependencies.Add(parser.RuleSpaceKey);
 
         return parser;
     }

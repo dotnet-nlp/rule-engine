@@ -205,8 +205,8 @@ internal static class RuleArgumentsExampleNer
         ),
         new []
         {
-            NerEnvironment.Mechanics.Regex,
-            NerEnvironment.Mechanics.Peg,
+            StaticResources.RegexMechanics(),
+            StaticResources.PegMechanics(),
         }
     );
 }

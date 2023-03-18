@@ -11,6 +11,7 @@ internal sealed class CachingRuleMatcher : IRuleMatcher
     private readonly int _id;
     private readonly IRuleMatcher _source;
 
+    public IReadOnlySet<string> Dependencies => _source.Dependencies;
     public RuleParameters Parameters => _source.Parameters;
     public RuleMatchResultDescription ResultDescription => _source.ResultDescription;
 

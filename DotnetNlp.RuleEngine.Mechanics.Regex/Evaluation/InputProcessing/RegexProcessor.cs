@@ -12,11 +12,22 @@ internal sealed class RegexProcessor : IInputProcessor
 {
     private readonly RegexAutomaton _automaton;
     private readonly IRegexAutomatonWalker<RegexAutomaton> _regexAutomatonWalker;
+    private readonly IReadOnlySet<string> _dependencies;
 
-    public RegexProcessor(RegexAutomaton automaton, IRegexAutomatonWalker<RegexAutomaton> regexAutomatonWalker)
+    public RegexProcessor(
+        RegexAutomaton automaton,
+        IRegexAutomatonWalker<RegexAutomaton> regexAutomatonWalker,
+        IReadOnlySet<string> dependencies
+    )
     {
         _automaton = automaton;
         _regexAutomatonWalker = regexAutomatonWalker;
+        _dependencies = dependencies;
+    }
+
+    public IReadOnlySet<string> GetDependencies()
+    {
+        return _dependencies;
     }
 
     public RuleMatchResultCollection Match(

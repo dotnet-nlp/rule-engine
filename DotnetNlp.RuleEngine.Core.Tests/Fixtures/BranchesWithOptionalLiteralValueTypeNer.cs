@@ -142,7 +142,7 @@ internal static class BranchesWithOptionalLiteralValueTypeNer
         ),
         new []
         {
-            NerEnvironment.Mechanics.Peg,
+            StaticResources.PegMechanics(),
         }
     );
 }

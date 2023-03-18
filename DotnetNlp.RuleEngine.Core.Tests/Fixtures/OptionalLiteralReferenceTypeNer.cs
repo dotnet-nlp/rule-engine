@@ -42,7 +42,7 @@ internal static class OptionalLiteralReferenceTypeNer
         ),
         new []
         {
-            NerEnvironment.Mechanics.Peg,
+            StaticResources.PegMechanics(),
         }
     );
 }

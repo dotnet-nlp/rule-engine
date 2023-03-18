@@ -11,10 +11,17 @@ namespace DotnetNlp.RuleEngine.Mechanics.Peg.Evaluation.InputProcessing;
 internal sealed class PegProcessor : IInputProcessor
 {
     private readonly OrderedChoiceComposer _root;
+    private readonly IReadOnlySet<string> _dependencies;
 
-    public PegProcessor(OrderedChoiceComposer root)
+    public PegProcessor(OrderedChoiceComposer root, IReadOnlySet<string> dependencies)
     {
         _root = root;
+        _dependencies = dependencies;
+    }
+
+    public IReadOnlySet<string> GetDependencies()
+    {
+        return _dependencies;
     }
 
     public RuleMatchResultCollection Match(

@@ -36,7 +36,7 @@ public sealed class RegexProcessorFactory : IInputProcessorFactory
 
         try
         {
-            var automaton = new RegexAutomatonBuilder(group, ruleSpace).Build();
+            var (automaton, dependencies) = new RegexAutomatonBuilder(group, ruleSpace).Build();
 
             RegexAutomatonPostprocessor.Instance.ValidateAndOptimize(
                 automaton,
@@ -44,7 +44,7 @@ public sealed class RegexProcessorFactory : IInputProcessorFactory
                 ruleSpaceDescription
             );
 
-            return new RegexProcessor(automaton, RegexAutomatonWalker.Instance);
+            return new RegexProcessor(automaton, RegexAutomatonWalker.Instance, dependencies);
         }
         catch (RuleBuildException exception) when (exception is not RegexProcessorBuildException)
         {
@@ -52,7 +52,7 @@ public sealed class RegexProcessorFactory : IInputProcessorFactory
         }
         catch (Exception exception) when (exception is not RegexProcessorBuildException)
         {
-            throw new RegexProcessorBuildException("Failed to create rule matcher.", exception);
+            throw new RegexProcessorBuildException($"Failed to create {nameof(RegexProcessor)}.", exception);
         }
     }
 

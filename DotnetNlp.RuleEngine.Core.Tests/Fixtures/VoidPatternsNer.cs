@@ -610,8 +610,8 @@ internal static class VoidPatternsNer
         ),
         new []
         {
-            NerEnvironment.Mechanics.Peg,
-            NerEnvironment.Mechanics.Regex,
+            StaticResources.PegMechanics(),
+            StaticResources.RegexMechanics(),
         }
     );
 }

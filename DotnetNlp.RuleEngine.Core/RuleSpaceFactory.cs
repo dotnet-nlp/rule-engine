@@ -443,7 +443,8 @@ public sealed class RuleSpaceFactory
             );
     }
 
-    private IRuleSource CreateRuleSource(IRuleToken ruleToken,
+    private IRuleSource CreateRuleSource(
+        IRuleToken ruleToken,
         RuleParameters ruleParameters,
         CapturedVariablesParameters capturedVariablesParameters,
         Type resultType,

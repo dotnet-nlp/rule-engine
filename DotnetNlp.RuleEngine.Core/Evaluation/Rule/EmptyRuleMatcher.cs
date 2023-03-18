@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Collections.Immutable;
 using DotnetNlp.RuleEngine.Core.Evaluation.Cache;
 using DotnetNlp.RuleEngine.Core.Evaluation.Rule.Projection.Arguments;
 using DotnetNlp.RuleEngine.Core.Evaluation.Rule.Projection.Parameters;
@@ -8,6 +9,7 @@ namespace DotnetNlp.RuleEngine.Core.Evaluation.Rule;
 
 internal sealed class EmptyRuleMatcher : IRuleMatcher
 {
+    public IReadOnlySet<string> Dependencies => ImmutableHashSet<string>.Empty;
     public RuleParameters Parameters { get; }
     public RuleMatchResultDescription ResultDescription { get; }
 

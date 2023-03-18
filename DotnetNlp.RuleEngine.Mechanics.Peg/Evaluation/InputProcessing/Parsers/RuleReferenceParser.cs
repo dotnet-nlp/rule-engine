@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using DotnetNlp.RuleEngine.Core.Build.Tokenization.Tokens;
+using DotnetNlp.RuleEngine.Core.Build.Tokenization.Tokens.Arguments;
 using DotnetNlp.RuleEngine.Core.Evaluation;
 using DotnetNlp.RuleEngine.Core.Evaluation.ArgumentsBinding;
 using DotnetNlp.RuleEngine.Core.Evaluation.Cache;
@@ -13,16 +13,15 @@ namespace DotnetNlp.RuleEngine.Mechanics.Peg.Evaluation.InputProcessing.Parsers;
 
 internal sealed class RuleReferenceParser : IQuantifiableParser
 {
-    public Type ResultType => _ruleSpace[RuleSpaceKey].ResultDescription.ResultType;
+    public Type ResultType => Matcher.ResultDescription.ResultType;
 
-    private readonly IRuleReferenceToken _ruleReferenceToken;
+    public string RuleSpaceKey { get; }
+    private readonly IRuleArgumentToken[] _ruleArguments;
     private readonly IResultSelectionStrategy _resultSelectionStrategy;
     private readonly IRuleSpace _ruleSpace;
 
     private IRuleMatcher? _matcher;
     private IRuleMatcher Matcher => _matcher ??= _ruleSpace[RuleSpaceKey];
-
-    public string RuleSpaceKey => _ruleReferenceToken.GetRuleSpaceKey();
 
     public RuleReferenceParser(
         IRuleReferenceToken ruleReferenceToken,
@@ -30,7 +29,8 @@ internal sealed class RuleReferenceParser : IQuantifiableParser
         IRuleSpace ruleSpace
     )
     {
-        _ruleReferenceToken = ruleReferenceToken;
+        RuleSpaceKey = ruleReferenceToken.GetRuleSpaceKey();
+        _ruleArguments = ruleReferenceToken.Arguments;
         _resultSelectionStrategy = resultSelectionStrategy;
         _ruleSpace = ruleSpace;
     }
@@ -51,7 +51,7 @@ internal sealed class RuleReferenceParser : IQuantifiableParser
                 ruleSpaceArguments,
                 ArgumentsBinder.BindRuleArguments(
                     Matcher.Parameters,
-                    _ruleReferenceToken.Arguments.ToArray(),
+                    _ruleArguments,
                     ruleSpaceArguments
                 ),
                 cache

@@ -1044,7 +1044,7 @@ internal static class DoctorsNer
         ),
         new []
         {
-            NerEnvironment.Mechanics.Peg,
+            StaticResources.PegMechanics(),
         }
     );
 }
